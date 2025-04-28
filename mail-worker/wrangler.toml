@@ -14,6 +14,7 @@ enabled = true
 #binding = "kv"			#kv绑定名默认不可修改
 #id = ""					#kv数据库id
 
+#(可选)
 #[[r2_buckets]]
 #binding = "r2"			#r2对象存储绑定名默认不可修改
 #bucket_name = ""		#r2对象存储桶的名字
@@ -22,10 +23,10 @@ enabled = true
 binding = "assets"		#静态资源绑定名默认不可修改
 directory = "./dist"	#前端vue项目打包的静态资源存放位置,默认dist
 
-[vars]
-domain = []				#邮件域名可可配置多个 示例: ["example1.com","example2.com"]
-admin = ""				#管理员的邮箱	示例: admin@example.com
-r2_domain = ""			#r2对象存储桶的访问域名
-jwt_secret = ""			#jwt令牌的密钥,随便填一串字符串
-site_key = ""			#Turnstile人机验证的站点密钥
-secret_key = ""			#Turnstile人机验证的后端密钥
+#[vars]
+#domain = []				#邮件域名可可配置多个 示例: ["example1.com","example2.com"]
+#admin = ""				#管理员的邮箱	示例: admin@example.com
+#jwt_secret = ""			#jwt令牌的密钥,随便填一串字符串
+#r2_domain = ""			#r2对象存储桶的访问域名(可选)
+#site_key = ""			#Turnstile人机验证的站点密钥(可选)
+#secret_key = ""			#Turnstile人机验证的密钥(可选)

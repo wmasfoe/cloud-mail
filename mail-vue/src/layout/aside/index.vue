@@ -31,7 +31,7 @@
   </el-scrollbar>
   <div class="github">
     <a href="https://github.com/LaziestRen/cloud-mail">
-      <Icon icon="codicon:github-inverted" width="30" height="30" />
+      <Icon icon="codicon:github-inverted" width="28" height="28" />
     </a>
   </div>
 </template>

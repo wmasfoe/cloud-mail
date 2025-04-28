@@ -2,6 +2,7 @@ import KvConst from '../const/kv-const';
 import setting from '../entity/setting';
 import orm from '../entity/orm';
 import { settingConst } from '../const/entity-const';
+import BizError from "../error/biz-error";
 
 const settingService = {
 
@@ -21,6 +22,11 @@ const settingService = {
 	},
 
 	async set(c, params) {
+		if (params.registerVerify === 0 || params.addEmailVerify === 0) {
+			if (!c.env.site_key || !c.env.secret_key) {
+				throw new BizError('Turnstile密钥未配置,不能开启人机验证')
+			}
+		}
 		await orm(c).update(setting).set({ ...params }).returning().get();
 		await this.refresh(c);
 	},

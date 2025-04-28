@@ -19,7 +19,7 @@
 👉 https://skymail.ink
 
 | ![](demo/demo1.png) | ![](demo/demo2.png) |
-|---------------------|---------------------|
+|--------------------------------------------------------|---------------------|
 | ![](demo/demo3.png) | ![](demo/demo4.png) |
 
 
@@ -54,19 +54,47 @@
 
 - **框架**：[Vue3](https://vuejs.org/) + [Element Plus](https://element-plus.org/) 
 
+- **Web框架**：[Hono](https://hono.dev/)
+
+- **ORM：**[Drizzle](https://orm.drizzle.team/)
+
+- **平台：** [Cloudflare workers](https://developers.cloudflare.com/workers/)
+
 - **缓存**：[Cloudflare KV](https://developers.cloudflare.com/kv/)
 
 - **数据库**：[Cloudflare D1](https://developers.cloudflare.com/d1/)
 
 - **文件存储**：[Cloudflare R2](https://developers.cloudflare.com/r2/)
 
-- **ORM：**[Drizzle ORM](https://orm.drizzle.team/)
 
 
 
 
+## 使用教程
 
-## 项目配置
+[**👉小白保姆教程-界面部署**](https://doc.skymail.ink)
+
+### 环境要求
+
+
+
+Nodejs v18.20 +
+
+Cloudflare 账号
+
+
+**克隆项目到本地**
+``` shell
+git clone https://github.com/LaziestRen/cloud-mail #拉取代码
+cd cloud-mail/mail-worker #进入worker目录
+```
+
+**安装依赖**
+```shell
+npm i
+```
+
+**项目配置**
 
 ```toml
 [[d1_databases]]
@@ -78,6 +106,7 @@ database_id = ""		#d1数据库id
 binding = "kv"			#kv绑定名默认不可修改
 id = ""			        #kv数据库id
 
+#(可选)
 [[r2_buckets]]
 binding = "r2"                  #r2对象存储绑定名默认不可修改
 bucket_name = ""	        #r2对象存储桶的名字
@@ -90,12 +119,34 @@ directory = "./dist"	        #前端vue项目打包的静态资源存放位置,�
 [vars]
 domain = []			#邮件域名可以配置多个 示例: ["example1.com","example2.com"]
 admin = ""		        #管理员的邮箱 示例: admin@example.com
-r2_domain = ""			#r2对象存储桶的访问域名
 jwt_secret = ""			#jwt令牌的密钥,随便填一串字符串
-site_key = ""			#Turnstile人机验证的站点密钥
-secret_key = ""			#Turnstile人机验证的后端密钥
+r2_domain = ""			#r2对象存储桶的访问域名(可选)
+site_key = ""			#Turnstile人机验证的站点密钥(可选)
+secret_key = ""			#Turnstile人机验证的后端密钥(可选)
 
 ```
+
+**本地运行**
+
+本地开发环境，数据库会自动安装，无需创建
+
+```shell
+npm run dev 
+```
+
+
+**远程部署**
+
+在Cloudflare控制台创建KV和D1数据库，可选：R2对象存储，Turnstile人机验证 (这两个不配置附件和人机验证不可用)
+
+在 wrangler.toml 中配置对应环境变量
+
+```shell
+npm run deploy 
+```
+
+然后进入域名管理->电子邮件->路由规则->Catch-all 地址. 这里选择发送到 worker, 然后选择创建的worker
+
 
 
 

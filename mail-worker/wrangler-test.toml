@@ -26,8 +26,8 @@ directory = "./dist"
 [vars]
 domain = ["", ""]
 admin = ""
-r2_domain = ""
 jwt_secret = ""
+r2_domain = ""
 site_key = ""
 secret_key = ""
 
