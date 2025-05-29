@@ -6,7 +6,7 @@
 <h1>Cloud Mail</h1>
 </div>
 <div align="center">
-    <h4>一个使用Vue3开发的响应式简约邮箱服务， 可以部署到Cloudflare云平台实现免费白嫖🎉</h4> 
+    <h4>使用Vue3开发的响应式简约邮箱服务，支持邮件发送附件收发，可以部署到Cloudflare云平台实现免费白嫖🎉</h4> 
 </div>
 
 
@@ -14,14 +14,14 @@
 
 
 
-## 在线演示
+## 项目展示 
 
-👉 https://skymail.ink
+[**👉在线演示**](https://skymail.ink)
 
 | ![](demo/demo1.png) | ![](demo/demo2.png) |
-|--------------------------------------------------------|---------------------|
+|---------------------|---------------------|
 | ![](demo/demo3.png) | ![](demo/demo4.png) |
-
+| ![](demo/demo5.png) | ![](demo/demo6.png) |
 
 
 
@@ -32,17 +32,21 @@
 
 - **💻响应式设计**：响应式布局自动适配PC和大部分手机端浏览器
 
+- **📧邮件发送**：集成resend发送邮件，支持内嵌图片和附件发送，发送状态查看
+
+- **🛡️管理员功能**：可以对用户，邮件进行管理，RABC权限控制对功能及使用额度限制
+
 - **🔀多号模式**：开启后一个用户可以添加多个邮箱，默认一用户一邮箱，类似各大邮箱平台
 
 - **📦附件接收**：支持接收附件，使用R2对象存储保存和下载文件 
 
 - **⭐星标邮件**：标记重要邮件，以便快速查阅
 
-- **🎨个性化标题**：可以自定义网站标题
+- **🎨个性化设置**：可以自定义网站标题，登录背景
 
 - **⏱️轮询刷新**：轮询请求服务器自动获取最新邮件，可自定义间隔
 
-- **⚙️功能开关**：可以对注册，添加等功能关闭和开启，设为私人站点
+- **⚙️功能设置**：可以对注册，邮件发送，添加等功能关闭和开启，设为私人站点
 
 - **🤖人机验证**：集成Turnstile人机验证，防止人机批量注册
 
@@ -106,7 +110,7 @@ database_id = ""		#d1数据库id
 binding = "kv"			#kv绑定名默认不可修改
 id = ""			        #kv数据库id
 
-#(可选)
+
 [[r2_buckets]]
 binding = "r2"                  #r2对象存储绑定名默认不可修改
 bucket_name = ""	        #r2对象存储桶的名字
@@ -117,27 +121,18 @@ binding = "assets"		#静态资源绑定名默认不可修改
 directory = "./dist"	        #前端vue项目打包的静态资源存放位置,默认dist
 
 [vars]
-domain = []			#邮件域名可以配置多个 示例: ["example1.com","example2.com"]
+orm_log = false
+domain = []			#邮件域名可以配置多个示例: ["example1.com","example2.com"]
 admin = ""		        #管理员的邮箱 示例: admin@example.com
-jwt_secret = ""			#jwt令牌的密钥,随便填一串字符串
-r2_domain = ""			#r2对象存储桶的访问域名(可选)
-site_key = ""			#Turnstile人机验证的站点密钥(可选)
-secret_key = ""			#Turnstile人机验证的后端密钥(可选)
+jwt_secret = ""			#登录身份令牌的密钥,随便填一串字符串
 
 ```
 
-**本地运行**
-
-本地开发环境，数据库会自动安装，无需创建
-
-```shell
-npm run dev 
-```
 
 
 **远程部署**
 
-在Cloudflare控制台创建KV和D1数据库，可选：R2对象存储，Turnstile人机验证 (这两个不配置附件和人机验证不可用)
+在Cloudflare控制台创建KV，D1数据库，R2对象存储
 
 在 wrangler.toml 中配置对应环境变量
 
@@ -147,7 +142,30 @@ npm run deploy
 
 然后进入域名管理->电子邮件->路由规则->Catch-all 地址. 这里选择发送到 worker, 然后选择创建的worker
 
+浏览器输入 https://<你的项目域名>/api/init/<你的jwt_secret> 初始化或更新 d1和kv数据库
 
+部署完成登录网站，使用管理员账号在设置页面添加配置 R2域名 Turnstile密钥
+
+**邮件发送**
+
+在resend官网注册后验证你的域名并创建ApiKey，回到项目网站设置页面添加 resend token
+
+Webhooks 添加回调地址https://<你的项目域名>/api/webhooks 
+
+勾选✅ (email.bounced email.complained email.delivered email.delivery_delayed)
+
+
+
+**本地运行**
+
+本地运行，数据库，对象存储会自动安装，无需创建
+
+```shell
+npm run dev 
+```
+浏览器输入http://127.0.0.1:8787/api/init/<你的jwt_secret>初始化d1和kv数据库
+
+本地运行r2域名可设置为http://127.0.0.1:8787/api/file
 
 
 ## 目录结构
@@ -162,7 +180,6 @@ cloud-mail
 │   │   ├── entity			#数据库实体层
 │   │   ├── error			#自定义异常
 │   │   ├── hono			#web框架配置 拦截器等
-│   │   ├── init			#项目启动表创建 缓存初始化等
 │   │   ├── model			#响应体数据封装
 │   │   ├── security			#身份认证层
 │   │   ├── service			#服务层
@@ -175,7 +192,6 @@ cloud-mail
     │   ├── assets			#静态资源字体等
     │   ├── axios 			#axios配置
     │   ├── components			#自定义组件
-    │   ├── day				#dayjs配置
     │   ├── layout			#主体布局组件
     │   ├── request			#api接口
     │   ├── router			#路由配置
@@ -195,6 +211,10 @@ cloud-mail
 
 本项目采用 [MIT](LICENSE) 许可证	
 
+
+## 交流
+
+[Telegram](https://t.me/cloud_mail_tg)
 
 
 

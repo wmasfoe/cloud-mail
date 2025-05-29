@@ -1,8 +1,51 @@
 export const userConst = {
-	type: {
-		COMMON: 1,
-		ADMIN: 0,
+	status: {
+		NORMAL: 0,
+		BAN: 1
+	}
+}
+
+export const roleConst = {
+	isDefault: {
+		CLOSE: 0,
+		OPEN: 1
 	},
+	sendType: {
+		COUNT: 'count',
+		DAY: 'day'
+	}
+}
+
+export const permConst = {
+	type: {
+		BUTTON: 2,
+	}
+}
+
+export const emailConst = {
+	type: {
+		SEND: 1,
+		RECEIVE: 0,
+	},
+	status:  {
+		RECEIVE: 0,
+		SENT: 1,
+		DELIVERED: 2,
+		BOUNCED: 3,
+		COMPLAINED: 4,
+		DELAYED: 5
+	}
+}
+
+export const attConst = {
+	status: {
+		NORMAL: 0,
+		UNUSED: 1
+	},
+	type: {
+		ATT: 0,
+		EMBED: 1
+	}
 }
 
 export const settingConst = {
@@ -16,7 +59,7 @@ export const settingConst = {
 	},
 	send: {
 		OPEN: 0,
-		CLOSE: 1,
+		CLOSE: 1
 	},
 	addEmail: {
 		OPEN: 0,
@@ -35,6 +78,7 @@ export const settingConst = {
 		CLOSE: 1,
 	}
 }
+
 
 export const isDel = {
 	DELETE: 1,

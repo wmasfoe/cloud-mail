@@ -20,7 +20,7 @@ const turnstileService = {
 		});
 
 		const result = await res.json();
-		console.log(result)
+
 		if (!result.success) {
 			throw new BizError('人机验证失败,请重试',400)
 		}
