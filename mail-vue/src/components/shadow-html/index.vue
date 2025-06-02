@@ -46,6 +46,7 @@ function updateContent() {
         font-size: 14px;
         line-height: 1.5;
         color: #13181D;
+        overflow-wrap: break-word;
       }
 
       .shadow-content {
@@ -100,8 +101,7 @@ function autoScale() {
   const scale = Math.min(scaleX, scaleY)
 
   const hostElement = shadowRoot.host
-  hostElement.style.transform = `scale(${scale})`
-  hostElement.style.transformOrigin = 'top left'
+  hostElement.style.zoom = scale
 }
 
 onMounted(() => {
