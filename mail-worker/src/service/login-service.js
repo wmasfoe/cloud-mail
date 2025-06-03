@@ -45,7 +45,7 @@ const loginService = {
 		}
 
 		if (accountRow) {
-			throw new BizError('该邮箱已被注册');
+			throw new BizError('该邮箱已被其他用户绑定');
 		}
 
 		if (await settingService.isRegisterVerify(c)) {
@@ -74,15 +74,15 @@ const loginService = {
 		const userRow = await userService.selectByEmailIncludeDel(c, email);
 
 		if (!userRow) {
-			throw new BizError('该邮箱不存在');
+			throw new BizError('该用户不存在');
 		}
 
 		if(userRow.isDel === isDel.DELETE) {
-			throw new BizError('该邮箱已被注销');
+			throw new BizError('该用户已被注销');
 		}
 
 		if(userRow.status === userConst.status.BAN) {
-			throw new BizError('该邮箱已被禁用');
+			throw new BizError('该用户已被禁用');
 		}
 
 		if (!await cryptoUtils.verifyPassword(password, userRow.salt, userRow.password)) {

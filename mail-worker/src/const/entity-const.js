@@ -33,7 +33,8 @@ export const emailConst = {
 		DELIVERED: 2,
 		BOUNCED: 3,
 		COMPLAINED: 4,
-		DELAYED: 5
+		DELAYED: 5,
+		SAVING: 6
 	}
 }
 

@@ -5,6 +5,7 @@ import settingService from '../service/setting-service';
 import attService from '../service/att-service';
 import constant from '../const/constant';
 import fileUtils from '../utils/file-utils';
+import { emailConst, isDel } from '../const/entity-const';
 
 export async function email(message, env, ctx) {
 
@@ -35,7 +36,9 @@ export async function email(message, env, ctx) {
 			content: email.html,
 			text: email.text,
 			userId: account.userId,
-			accountId: account.accountId
+			accountId: account.accountId,
+			isDel: isDel.DELETE,
+			status: emailConst.status.SAVING
 		};
 
 		const attachments = [];
@@ -60,6 +63,7 @@ export async function email(message, env, ctx) {
 		})
 
 		await attService.addAtt({ env }, attachments);
+		await emailService.completeReceive({ env }, emailRow.emailId);
 
 	} catch (e) {
 		console.error('邮件接收异常: ', e);

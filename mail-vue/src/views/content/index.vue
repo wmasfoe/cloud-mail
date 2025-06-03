@@ -47,14 +47,9 @@
                 <div class="att-icon" @click="showImage(att.key)">
                   <Icon :icon="getIconByName(att.filename)" width="20" height="20"/>
                 </div>
-                <el-tooltip
-                    effect="dark"
-                    :content="att.filename"
-                >
-                  <div class="att-name" @click="showImage(att.key)">
-                    {{ att.filename }}
-                  </div>
-                </el-tooltip>
+                <div class="att-name" @click="showImage(att.key)">
+                  {{ att.filename }}
+                </div>
                 <div style="color: rgba(24, 36, 48, 0.6);">{{ formatBytes(att.size) }}</div>
                 <div class="opt-icon att-icon">
                   <Icon v-if="isImage(att.filename)" icon="hugeicons:view" width="22" height="22" @click="showImage(att.key)"/>

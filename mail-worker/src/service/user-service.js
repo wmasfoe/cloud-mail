@@ -103,6 +103,7 @@ const userService = {
 		const { userId } = params
 		await accountService.physicsDeleteByUserIds(c, [userId])
 		await orm(c).delete(user).where(eq(user.userId, userId)).run();
+		await c.env.kv.delete(kvConst.AUTH_INFO + userId);
 	},
 
 	async list(c, params, userId) {
@@ -281,7 +282,7 @@ const userService = {
 			.run();
 
 		if (status === userConst.status.BAN) {
-			c.env.kv.delete(KvConst.AUTH_INFO + userId);
+			await c.env.kv.delete(KvConst.AUTH_INFO + userId);
 		}
 	},
 
@@ -300,14 +301,6 @@ const userService = {
 			.set({ type })
 			.where(eq(user.userId, userId))
 			.run();
-
-		if (type) {
-			const authInfo = await c.env.kv.get(KvConst.AUTH_INFO + userId, { type: 'json' });
-			if (authInfo) {
-				authInfo.user.type = type;
-				await c.env.kv.put(KvConst.AUTH_INFO + userId, JSON.stringify(authInfo));
-			}
-		}
 
 	},
 

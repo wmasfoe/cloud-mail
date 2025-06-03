@@ -827,7 +827,7 @@ function adjustWidth() {
   padding: 20px;
   display: grid;
   gap: 10px;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
 
   .details-item-title {
     white-space: pre;
@@ -894,7 +894,7 @@ function adjustWidth() {
   justify-content: center;
   background-color: rgba(255, 255, 255, 0.8);
   left: 0;
-  z-index: 1000;
+  z-index: 2;
   top: 0;
   width: 100%;
   height: 100%;

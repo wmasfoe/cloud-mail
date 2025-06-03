@@ -1,7 +1,7 @@
 import orm from '../entity/orm';
 import email from '../entity/email';
 import { emailConst, isDel, settingConst } from '../const/entity-const';
-import { and, desc, eq, gt, inArray, lt, count, asc, like } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, lt, count, asc, like, ne } from 'drizzle-orm';
 import { star } from '../entity/star';
 import settingService from './setting-service';
 import accountService from './account-service';
@@ -248,7 +248,7 @@ const emailService = {
 
 		const attsList = await attService.selectByEmailIds(c, [emailRow.emailId]);
 		emailRow.attList = attsList;
-		
+
 		return emailRow;
 	},
 
@@ -261,7 +261,7 @@ const emailService = {
 
 	async latest(c, params, userId) {
 		let { emailId, accountId } = params;
-		const list = orm(c).select().from(email).where(
+		const list = await orm(c).select().from(email).where(
 			and(
 				eq(email.userId, userId),
 				eq(email.isDel, isDel.NORMAL),
@@ -273,12 +273,16 @@ const emailService = {
 			.limit(20);
 
 		const emailIds = list.map(item => item.emailId);
-		const attsList = await attService.selectByEmailIds(c, emailIds);
 
-		list.forEach(emailRow => {
-			const atts = attsList.filter(attsRow => attsRow.emailId === emailRow.emailId);
-			emailRow.attList = atts;
-		});
+		if (emailIds.length > 0) {
+
+			const attsList = await attService.selectByEmailIds(c, emailIds);
+
+			list.forEach(emailRow => {
+				const atts = attsList.filter(attsRow => attsRow.emailId === emailRow.emailId);
+				emailRow.attList = atts;
+			});
+		}
 
 		return list;
 	},
@@ -394,6 +398,8 @@ const emailService = {
 			conditions.push(like(email.subject, `${subject}%`));
 		}
 
+		conditions.push(ne(email.status, emailConst.status.SAVING))
+
 		const countConditions = [...conditions];
 
 		if (timeSort) {
@@ -438,6 +444,10 @@ const emailService = {
 
 	async restoreByUserId(c, userId) {
 		await orm(c).update(email).set({ isDel: isDel.NORMAL }).where(eq(email.userId, userId)).run();
+	},
+
+	async completeReceive(c, emailId) {
+		await orm(c).update(email).set({ isDel: isDel.NORMAL, status: emailConst.status.RECEIVE }).where(eq(email.emailId, emailId)).run();
 	}
 };
 
