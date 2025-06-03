@@ -31,10 +31,10 @@ import writer from '@/layout/write/index.vue'
 
 const uiStore = useUiStore();
 const writerRef = ref({})
-const isMobile = ref(window.innerWidth < 992)
+const isMobile = ref(window.innerWidth < 1024)
 const handleResize = () => {
-  isMobile.value = window.innerWidth < 992
-  uiStore.asideShow = window.innerWidth >= 991;
+  isMobile.value = window.innerWidth < 1024
+  uiStore.asideShow = window.innerWidth >= 1024;
 }
 
 onMounted(() => {
@@ -66,7 +66,7 @@ onBeforeUnmount(() => {
   transform: translateX(0);
   transition: all 100ms ease;
   z-index: 101;
-  @media (max-width: 991px) {
+  @media (max-width: 1024px) {
     position: fixed;
     top: 0;
     left: 0;

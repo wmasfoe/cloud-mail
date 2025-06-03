@@ -4,7 +4,8 @@ export const useSettingStore = defineStore('setting', {
     state: () => ({
         domainList: [],
         settings: {
-            r2Domain: ''
+            r2Domain: '',
+            loginOpacity: 1.00,
         }
     }),
     actions: {

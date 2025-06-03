@@ -285,13 +285,13 @@ function close() {
     border-radius: 8px;
     display: flex;
     flex-direction: column;
-    @media (max-width: 991px) {
+    @media (max-width: 1024px) {
       width: 100%;
       height: 100%;
       border-radius: 0;
     }
 
-    @media (min-width: 992px) {
+    @media (min-width: 1024px) {
       height: min(800px, calc(100vh - 60px));
     }
 

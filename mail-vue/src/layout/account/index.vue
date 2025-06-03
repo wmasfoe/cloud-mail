@@ -334,7 +334,7 @@ function submit()  {
   .item {
     background-color: #fff;
     border-radius: 8px;
-    padding: 12px;
+    padding: 12px 10px;
     margin-bottom: 10px;
     margin-left: 10px;
     margin-right: 10px;

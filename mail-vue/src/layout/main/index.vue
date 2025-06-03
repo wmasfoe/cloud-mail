@@ -78,7 +78,7 @@ const handleResize = () => {
   @media (max-width: 767px) {
     position: fixed;
     z-index: 100;
-    width: 229px;
+    width: 250px;
   }
 }
 
@@ -87,8 +87,8 @@ const handleResize = () => {
   position: fixed;
   transform: translateX(-100%);
   opacity: 0;
-  @media (max-width: 991px) {
-    width: 229px;
+  @media (max-width: 1024px) {
+    width: 250px;
     z-index: 100;
   }
 }
@@ -99,7 +99,7 @@ const handleResize = () => {
   grid-template-columns: 250px  1fr;
   height: calc(100% - 60px);
   @media (max-width: 1200px) {
-    grid-template-columns: 229px  1fr;
+    grid-template-columns: 250px  1fr;
   }
   @media (max-width: 767px) {
     grid-template-columns: 1fr;

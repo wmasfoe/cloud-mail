@@ -58,7 +58,7 @@ const loginService = {
 
 		const userId = await userService.insert(c, { email, password: hash, salt, type: roleRow.roleId });
 
-		await userService.updateUserInfo(c, userId);
+		await userService.updateUserInfo(c, userId, true);
 
 		await accountService.insert(c, { userId: userId, email });
 	},

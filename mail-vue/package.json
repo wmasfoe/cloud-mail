@@ -19,6 +19,7 @@
     "date-time-format-timezone": "^1.0.22",
     "dayjs": "^1.11.13",
     "element-plus": "^2.9.5",
+    "lodash-es": "^4.17.21",
     "path": "^0.12.7",
     "pinia": "^3.0.2",
     "pinia-plugin-persistedstate": "^4.2.0",

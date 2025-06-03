@@ -242,6 +242,7 @@ function openRoleSet(role) {
   roleFormShow.value = true
   form.sort = role.sort
   form.name = role.name
+  form.description = role.description
   form.sendType = role.sendType
   form.sendCount = role.sendCount
   form.accountCount = role.accountCount

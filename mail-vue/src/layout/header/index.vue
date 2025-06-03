@@ -29,7 +29,7 @@
               {{ userStore.user.email }}
             </div>
             <div class="detail-user-type">
-              <el-tag  type="warning">{{userStore.user.role.name}}</el-tag>
+              <el-tag >{{userStore.user.role.name}}</el-tag>
             </div>
             <div class="action-info">
               <div>
@@ -38,14 +38,14 @@
               </div>
               <div>
                 <div>
-                  <span v-if="sendCount !== null" style="margin-right: 5px">{{  sendCount }}</span>
-                  <el-tag v-if="!hasPerm('email:send')" type="warning">{{sendType}}</el-tag>
-                  <el-tag v-else type="success">{{sendType}}</el-tag>
+                  <span v-if="sendCount" style="margin-right: 5px" >{{  sendCount }}</span>
+                  <el-tag v-if="!hasPerm('email:send')" >{{sendType}}</el-tag>
+                  <el-tag v-else >{{sendType}}</el-tag>
                 </div>
                 <div>
                   <span v-if="accountCount && hasPerm('account:add')" style="margin-right: 5px">{{  accountCount }}个</span>
-                  <el-tag v-if="!accountCount && hasPerm('account:add')" type="success">无限制</el-tag>
-                  <el-tag v-if="!hasPerm('account:add')" type="warning">无权限</el-tag>
+                  <el-tag v-if="!accountCount && hasPerm('account:add')" >无限制</el-tag>
+                  <el-tag v-if="!hasPerm('account:add')" >无权限</el-tag>
                 </div>
               </div>
             </div>
@@ -84,6 +84,11 @@ const sendType = computed(() => {
   if (!hasPerm('email:send')) {
     return '无权限'
   }
+
+  if (userStore.user.role.sendCount === 0) {
+    return '无限制'
+  }
+
   if (userStore.user.role.sendType === 'day') {
     return '每天'
   }
@@ -99,7 +104,7 @@ const sendCount = computed(() => {
   }
 
   if (!userStore.user.role.sendCount) {
-    return '无限制'
+    return null
   }
   return userStore.user.sendCount + '/' + userStore.user.role.sendCount
 })
@@ -143,7 +148,7 @@ function formatName(email) {
 }
 
 :deep(.el-popper.is-pure) {
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .user-details {
@@ -196,20 +201,21 @@ function formatName(email) {
     padding-right: 10px;
     padding-bottom: 10px;
     .el-button {
-      height: 26px;
+      border-radius: 8px;
+      height: 28px;
       width: 100%;
     }
   }
   .details-avatar {
     margin-top: 20px;
-    height: 45px;
-    width: 45px;
+    height: 40px;
+    width: 40px;
     border: 1px solid #ccc;
     font-size: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
+    border-radius: 10px;
   }
 }
 

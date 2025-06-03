@@ -1,5 +1,5 @@
 <template>
-  <div id="login-box" :style="background">
+  <div id="login-box">
     <div id="background-wrap" v-if="!settingStore.settings.background">
       <div class="x1 cloud"></div>
       <div class="x2 cloud"></div>
@@ -7,17 +7,14 @@
       <div class="x4 cloud"></div>
       <div class="x5 cloud"></div>
     </div>
+    <div v-else :style="background"></div>
     <div class="form-wrapper">
         <div class="container">
-          <span class="form-title">{{ settingStore.settings.title }}</span>
-          <div class="custom-style" v-if="settingStore.settings.register === 0">
-            <el-segmented v-model="show" :options="options"/>
-          </div>
+          <span class="form-title">{{settingStore.settings.title}}</span>
+          <span class="form-desc" v-if="show === 'login'">请输入你的账号信息以开始使用邮箱系统</span>
+          <span class="form-desc" v-else>请输入你的账号密码以开始注册邮箱系统</span>
           <div v-if="show === 'login'">
-            <el-input v-model="form.email" type="text" placeholder="邮箱" autocomplete="off">
-              <template #prefix>
-                <Icon icon="weui:email-outlined" width="22" height="22"/>
-              </template>
+            <el-input class="email-input" v-model="form.email" type="text" placeholder="邮箱" autocomplete="off">
               <template #append>
                 <div @click.stop="openSelect">
                   <el-select
@@ -41,19 +38,13 @@
               </template>
             </el-input>
             <el-input v-model="form.password" placeholder="密码" type="password" autocomplete="off">
-              <template #prefix>
-                <Icon icon="carbon:password" width="22" height="22"/>
-              </template>
             </el-input>
             <el-button class="btn" type="primary" @click="submit" :loading="loginLoading"
             >登录
             </el-button>
           </div>
           <div v-else>
-            <el-input v-model="registerForm.email" type="text" placeholder="邮箱" autocomplete="off">
-              <template #prefix>
-                <Icon icon="weui:email-outlined" width="22" height="22"/>
-              </template>
+            <el-input class="email-input" v-model="registerForm.email" type="text" placeholder="邮箱" autocomplete="off">
               <template #append>
                 <div @click.stop="openSelect">
                   <el-select
@@ -76,34 +67,21 @@
                 </div>
               </template>
             </el-input>
-            <el-input v-model="registerForm.password" placeholder="密码" type="password" autocomplete="off">
-              <template #prefix>
-                <Icon icon="carbon:password" width="22" height="22"/>
-              </template>
-            </el-input>
-            <el-input v-model="registerForm.confirmPassword" placeholder="确认密码" type="password" autocomplete="off">
-              <template #prefix>
-                <Icon icon="carbon:password" width="22" height="22"/>
-              </template>
-            </el-input>
+            <el-input v-model="registerForm.password" placeholder="密码" type="password" autocomplete="off" />
+            <el-input v-model="registerForm.confirmPassword" placeholder="确认密码" type="password" autocomplete="off" />
+            <div v-show="verifyShow"
+                class="register-turnstile"
+                :data-sitekey="settingStore.settings.siteKey"
+                data-callback="onTurnstileSuccess"
+            ></div>
             <el-button class="btn" type="primary" @click="submitRegister" :loading="registerLoading"
             >注册
             </el-button>
           </div>
+          <div class="switch" @click="show = 'register'" v-if="show === 'login'">还有没有账号? <span>创建账号</span></div>
+          <div class="switch" @click="show = 'login'" v-else>已有账号? <span>去登录</span></div>
         </div>
     </div>
-    <el-dialog
-        v-model="verifyShow"
-        title="验证你是不是人"
-        width="332"
-        align-center
-    >
-      <div
-          class="register-turnstile"
-          :data-sitekey="settingStore.settings.siteKey"
-          data-callback="onTurnstileSuccess"
-      ></div>
-    </el-dialog>
   </div>
 </template>
 
@@ -132,7 +110,6 @@ const form = reactive({
   password: '',
 
 });
-const options = [{label: '登录', value: 'login'}, {label: '注册', value: 'register'}];
 const mySelect = ref()
 const suffix = ref('')
 const registerForm = reactive({
@@ -147,6 +124,19 @@ const verifyShow = ref(false)
 let verifyToken = ''
 let turnstileId = ''
 
+
+window.onTurnstileSuccess = (token) => {
+  verifyToken = token;
+  setTimeout(() => {
+    verifyShow.value = false
+  }, 2000)
+};
+
+
+const loginOpacity = computed(() => {
+  return `rgba(255, 255, 255, ${settingStore.settings.loginOpacity})`
+})
+
 const background = computed(() => {
 
   return settingStore.settings.background ? {
@@ -157,12 +147,6 @@ const background = computed(() => {
   } : ''
 })
 
-window.onTurnstileSuccess = (token) => {
-  verifyToken = token;
-  setTimeout(() => {
-    verifyShow.value = false
-  }, 1500)
-};
 
 const openSelect = () => {
   mySelect.value.toggleMenu()
@@ -302,53 +286,103 @@ function submitRegister() {
 
 </script>
 
+
+<style>
+.el-select-dropdown__item {
+  padding: 0 15px;
+}
+
+.no-autofill-pwd {
+  .el-input__inner {
+    -webkit-text-security: disc !important;
+  }
+}
+</style>
+
 <style lang="scss" scoped>
 
 .form-wrapper {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
+  right: 0;
   height: 100%;
-  z-index: 110;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
+  @media (max-width: 767px) {
+    width: 100%;
+  }
 }
 
 .container {
-  max-width: 380px;
-  background: #FFFFFF;
-  padding: 20px;
-  margin: 0 20px;
-  border-radius: 8px;
+  background: v-bind(loginOpacity);
+  padding-left: 40px;
+  padding-right: 40px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+  width: 450px;
+  height: 100%;
   border: 1px solid #e4e7ed;
   box-shadow: var(--el-box-shadow-light);
-  .switch {
-    padding-top: 10px;
-    font-size: 14px;
+  @media (max-width: 1024px) {
+    padding: 20px 18px;
+    border-radius: 6px;
+    width: 384px;
+    margin-left: 18px;
+  }
+  @media (max-width: 767px) {
+    padding: 20px 18px;
+    border-radius: 6px;
+    height: fit-content;
+    width: 100%;
+    margin-right: 18px;
+    margin-left: 18px;
+  }
+  .btn {
+    height: 36px;
+    width: 100%;
+    border-radius: 6px;
   }
 
-  .btn {
-    width: 100%;
+  .form-desc {
+    margin-top: 5px;
+    margin-bottom: 18px;
+    color: #71717a;
   }
 
   .form-title {
     font-weight: bold;
-    font-size: 18px;
-    margin-bottom: 20px;
+    font-size: 22px !important;
+  }
+
+  .switch {
+    margin-top: 20px;
+    text-align: center;
+    span {
+      color: #006be6;
+      cursor: pointer;
+    }
+  }
+
+  :deep(.el-input__wrapper) {
+    border-radius: 6px;
+  }
+
+  .email-input :deep(.el-input__wrapper){
+    border-radius: 6px 0 0 6px;
   }
 
   .el-input {
+    height: 38px;
     width: 100%;
-    margin-bottom: 15px;
+    margin-bottom: 18px;
   }
 }
 
+:deep(.el-select-dropdown__item) {
+  padding: 0 10px;
+}
 
 .setting-icon {
   position: relative;
@@ -358,7 +392,13 @@ function submitRegister() {
 :deep(.el-input-group__append) {
   padding: 0 !important;
   padding-left: 8px !important;
+  padding-right: 4px !important;
   background: #FFFFFF;
+  border-radius: 0 8px 8px 0;
+}
+
+.register-turnstile {
+  margin-bottom: 18px;
 }
 
 .select {
@@ -378,6 +418,8 @@ function submitRegister() {
   width: 180px;
 }
 
+
+
 #login-box {
   background: linear-gradient(to bottom, #2980b9, #6dd5fa, #fff);
   color: #333;
@@ -386,6 +428,8 @@ function submitRegister() {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  display: grid;
+  grid-template-columns: 1fr;
 }
 
 

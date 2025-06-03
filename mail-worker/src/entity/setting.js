@@ -13,6 +13,7 @@ export const setting = sqliteTable('setting', {
 	secretKey: text('secret_key'),
 	siteKey: text('site_key'),
 	background: text('background'),
+	loginOpacity: integer('login_opacity').default(0.9),
 	resendTokens: text('resend_tokens').default("{}").notNull(),
 });
 export default setting

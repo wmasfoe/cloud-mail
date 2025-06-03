@@ -85,6 +85,12 @@
                 </el-button>
               </div>
             </div>
+            <div class="setting-item">
+              <div class="title-item"><span>登录透明</span></div>
+              <div>
+                <el-input-number size="small" v-model="loginOpacity" @change="opacityChange" :precision="2" :step="0.01" :max="1" :min="0" />
+              </div>
+            </div>
             <div class="setting-item personalized">
               <div><span>登录背景</span></div>
               <div>
@@ -211,16 +217,21 @@
             </div>
             <div class="concerning-item">
               <span>交流:</span>
-              <el-button @click="jumpTelegram">
+              <el-button @click="jump('https://t.me/cloud_mail_tg')">
                 telegram
                 <template #icon>
                   <Icon icon="logos:telegram" width="30" height="30"/>
                 </template>
               </el-button>
+              <el-button @click="jump('https://github.com/LaziestRen/cloud-mail')">
+                github
+                <template #icon>
+                  <Icon icon="codicon:github-inverted" width="22" height="22" />
+                </template>
+              </el-button>
             </div>
           </div>
         </div>
-
       </div>
 
 
@@ -296,6 +307,7 @@ import {Icon} from "@iconify/vue";
 import {compressImage} from "@/utils/file-utils.js";
 import {cvtR2Url} from "@/utils/convert.js";
 import {storeToRefs} from "pinia";
+import { debounce } from 'lodash-es'
 
 defineOptions({
   name: 'sys-setting'
@@ -315,7 +327,8 @@ const {settings: setting} = storeToRefs(settingStore);
 const editTitle = ref('')
 const settingLoading = ref(false)
 const r2DomainInput = ref('')
-let backup = {}
+const loginOpacity = ref(0)
+let backup = '{}'
 const resendTokenForm = reactive({
   domain: '',
   token: '',
@@ -336,6 +349,18 @@ const options = [
 
 onMounted(() => {
   resendTokenForm.domain = settingStore.domainList[0];
+  loginOpacity.value = settingStore.settings.loginOpacity
+})
+
+function doOpacityChange() {
+  const form = {...setting.value}
+  form.loginOpacity = loginOpacity.value
+  editSetting(form,true)
+}
+
+const opacityChange = debounce(doOpacityChange, 1000, {
+  leading: false,
+  trailing: true
 })
 
 function physicsDeleteAllData() {
@@ -468,12 +493,13 @@ function saveTitle() {
   editSetting({title: editTitle.value})
 }
 
-function jumpTelegram() {
+function jump(href) {
   const doc = document.createElement('a')
-  doc.href = 'https://t.me/cloud_mail_tg'
+  doc.href = href
   doc.target = '_blank'
   doc.click()
 }
+
 
 
 function editSetting(settingForm, refreshStatus = true) {
@@ -497,6 +523,7 @@ function editSetting(settingForm, refreshStatus = true) {
     resendTokenFormShow.value = false
     turnstileShow.value = false
   }).catch(() => {
+    loginOpacity.value = setting.value.loginOpacity
     setting.value = {...setting.value, ...JSON.parse(backup)}
   }).finally(() => {
     settingLoading.value = false
@@ -535,8 +562,8 @@ function editSetting(settingForm, refreshStatus = true) {
   border-radius: 4px;
   border: 1px solid #e4e7ed;
   @media (max-width: 500px) {
-    width: 140px;
-    height: 79px;
+    width: 150px;
+    height: 83px;
   }
 }
 
@@ -702,7 +729,7 @@ function editSetting(settingForm, refreshStatus = true) {
   display: grid;
   gap: 10px;
   grid-template-columns: 1fr auto;
-
+  align-items: center;
   span {
     overflow: hidden;
     white-space: nowrap;

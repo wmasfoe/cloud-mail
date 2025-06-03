@@ -52,11 +52,6 @@
       </el-menu>
     </div>
   </el-scrollbar>
-  <div class="github">
-    <a href="https://github.com/LaziestRen/cloud-mail">
-      <Icon icon="codicon:github-inverted" width="28" height="28" />
-    </a>
-  </div>
 </template>
 
 <script setup>
@@ -75,7 +70,7 @@ const route = useRoute();
 .title {
   margin: 15px 10px;
   height: 50px;
-  border-radius: 8px;
+  border-radius: 6px;
   display: flex;
   position: relative;
   font-size: 16px;
@@ -110,7 +105,7 @@ const route = useRoute();
 
 .el-menu-item {
   margin: 5px 10px !important;
-  border-radius: 8px;
+  border-radius: 6px;
   height: 36px;
   padding: 10px !important;
 }
@@ -148,7 +143,7 @@ const route = useRoute();
   border-right: 0;
   width: 250px;
   @media (max-width: 1199px) {
-    width: 230px;
+    width: 250px;
   }
 }
 

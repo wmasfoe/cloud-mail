@@ -610,7 +610,7 @@ function loadData() {
     @media (max-width: 1199px) {
       padding-right: 15px;
     }
-    @media (max-width: 991px) {
+    @media (max-width: 1024px) {
       grid-template-columns: 1fr;
       gap: 4px;
     }
@@ -630,7 +630,7 @@ function loadData() {
         display: grid;
         gap: 5px;
         grid-template-columns: auto 1fr;
-        @media (min-width: 992px) {
+        @media (min-width: 1024px) {
           grid-template-columns: 1fr;
           > span:last-child {
             display: none;
@@ -719,7 +719,7 @@ function loadData() {
   width: 40px;
 }
 
-@media (max-width: 991px) {
+@media (max-width: 1024px) {
   .pc-star {
     display: none;
   }
