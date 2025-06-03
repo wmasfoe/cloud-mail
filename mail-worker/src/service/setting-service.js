@@ -32,10 +32,9 @@ const settingService = {
 
 	async get(c) {
 		const settingRow = await this.query(c);
-		settingRow.siteKey = settingRow.siteKey  ? `${settingRow.siteKey.slice(0, 11)}******` : null ;
-		settingRow.secretKey = settingRow.secretKey ? `${settingRow.secretKey.slice(0, 11)}******`: null ;
+		settingRow.secretKey = settingRow.secretKey ? `${settingRow.secretKey.slice(0, 12)}******`: null ;
 		Object.keys(settingRow.resendTokens).forEach(key => {
-			settingRow.resendTokens[key] = `${settingRow.resendTokens[key].slice(0, 11)}******`;
+			settingRow.resendTokens[key] = `${settingRow.resendTokens[key].slice(0, 12)}******`;
 		});
 		return settingRow
 	},
