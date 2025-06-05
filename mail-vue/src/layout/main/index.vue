@@ -96,7 +96,7 @@ const handleResize = () => {
 
 .main-box-show {
   display: grid;
-  grid-template-columns: 250px  1fr;
+  grid-template-columns: 260px  1fr;
   height: calc(100% - 60px);
   @media (max-width: 1200px) {
     grid-template-columns: 250px  1fr;

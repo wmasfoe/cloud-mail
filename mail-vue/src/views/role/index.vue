@@ -18,7 +18,7 @@
             <template #default="props">
               <div class="role-name">
                 <span >{{props.row.name}}</span>
-                <span v-if="props.row.isDefault"><el-tag class="def-tag" type="success">默认</el-tag></span>
+                <span v-if="props.row.isDefault"><el-tag class="def-tag" >默认</el-tag></span>
               </div>
             </template>
           </el-table-column>

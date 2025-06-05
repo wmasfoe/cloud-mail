@@ -5,8 +5,7 @@ import BizError from '../error/biz-error';
 import { and, desc, eq, lt, sql, inArray } from 'drizzle-orm';
 import email from '../entity/email';
 import { isDel } from '../const/entity-const';
-import { att } from '../entity/att';
-import userService from './user-service';
+import attService from "./att-service";
 
 const starService = {
 
@@ -64,6 +63,16 @@ const starService = {
 			.orderBy(desc(star.emailId))
 			.limit(size)
 			.all();
+
+		const emailIds = list.map(item => item.emailId);
+
+		const attsList = await attService.selectByEmailIds(c, emailIds);
+
+		list.forEach(emailRow => {
+			const atts = attsList.filter(attsRow => attsRow.emailId === emailRow.emailId);
+			emailRow.attList = atts;
+		});
+
 		return { list };
 	},
 	async removeByEmailIds(c, emailIds) {

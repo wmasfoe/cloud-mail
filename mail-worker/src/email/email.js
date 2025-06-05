@@ -5,7 +5,7 @@ import settingService from '../service/setting-service';
 import attService from '../service/att-service';
 import constant from '../const/constant';
 import fileUtils from '../utils/file-utils';
-import { emailConst, isDel } from '../const/entity-const';
+import {attConst, emailConst, isDel} from '../const/entity-const';
 
 export async function email(message, env, ctx) {
 
@@ -60,6 +60,7 @@ export async function email(message, env, ctx) {
 			attachment.emailId = emailRow.emailId;
 			attachment.userId = emailRow.userId;
 			attachment.accountId = emailRow.accountId;
+			attachment.type = attachment.contentId ? attConst.type.EMBED : attConst.type.ATT
 		})
 
 		if (attachments.length > 0) {

@@ -25,7 +25,7 @@
     </div>
 
     <div ref="scroll" class="scroll">
-      <el-scrollbar ref="scrollbarRef" @scroll="handleScroll" >
+      <el-scrollbar ref="scrollbarRef" @scroll="handleScroll">
         <div class="scroll-box" :infinite-scroll-immediate="false" v-infinite-scroll="loadData"
              infinite-scroll-distance="600">
           <div v-for="item in emailList" :key="item.emailId">
@@ -274,16 +274,24 @@ function htmlToText(email) {
     tempDiv.innerHTML = email.content;
     const scriptsAndStyles = tempDiv.querySelectorAll('script, style, title');
     scriptsAndStyles.forEach(el => el.remove());
-    const text = tempDiv.textContent || tempDiv.innerText || '';
-    return text.replace(/\s+/g, ' ').trim();
+    let text = tempDiv.textContent || tempDiv.innerText || '';
+    text = text.replace(/\s+/g, ' ').trim();
+    return cleanSpace(text)
   }
 
   if (email.text) {
-    return email.text
+    return cleanSpace(email.text)
   } else {
     return ''
   }
 
+}
+
+function cleanSpace(text) {
+  return text
+      .replace(/[\u200B-\u200F\uFEFF]/g, '')  // 移除零宽空格、ZWNJ、ZWJ、LRM、RLM、BOM
+      .replace(/\s+/g, ' ')                   // 多空白合并成一个空格
+      .trim();
 }
 
 

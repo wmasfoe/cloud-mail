@@ -154,7 +154,12 @@ const attService = {
 	},
 
 	selectByEmailIds(c, emailIds) {
-		return orm(c).select().from(att).where(and(inArray(att.emailId,emailIds),eq(att.type, attConst.type.ATT))).all();
+		return orm(c).select().from(att).where(
+			and(
+				inArray(att.emailId,emailIds),
+				eq(att.type, attConst.type.ATT),
+				isNull(att.contentId)))
+			.all();
 	}
 };
 

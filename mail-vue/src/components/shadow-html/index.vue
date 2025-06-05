@@ -32,8 +32,17 @@ function loadFontInShadow() {
 }
 
 function updateContent() {
-  if (!shadowRoot) return
+  if (!shadowRoot) return;
 
+  // 1. 提取 <body> 的 style 属性（如果存在）
+  const bodyStyleRegex = /<body[^>]*style="([^"]*)"[^>]*>/i;
+  const bodyStyleMatch = props.html.match(bodyStyleRegex);
+  const bodyStyle = bodyStyleMatch ? bodyStyleMatch[1] : '';
+
+  // 2. 移除 <body> 标签（保留内容）
+  const cleanedHtml = props.html.replace(/<\/?body[^>]*>/gi, '');
+
+  // 3. 将 body 的 style 应用到 .shadow-content
   shadowRoot.innerHTML = `
     <style>
       :host {
@@ -53,6 +62,7 @@ function updateContent() {
         width: fit-content;
         height: fit-content;
         min-width: 100%;
+        ${bodyStyle ? bodyStyle : ''} /* 注入 body 的 style */
       }
 
       img {
@@ -72,12 +82,11 @@ function updateContent() {
       a {
         color: #409EFF !important;
       }
-
     </style>
     <div class="shadow-content">
-      ${props.html}
+      ${cleanedHtml}
     </div>
-  `
+  `;
 }
 
 function autoScale() {
@@ -109,6 +118,7 @@ onMounted(() => {
   shadowRoot = container.value.attachShadow({ mode: 'open' })
   updateContent()
   autoScale()
+  console.log(props.html)
 })
 
 watch(() => props.html, () => {

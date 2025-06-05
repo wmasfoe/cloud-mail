@@ -71,7 +71,7 @@
                 <div>
                   <span class="details-item-title">发件次数:</span>
                   <span>{{ formatSendCount(props.row) }}</span>
-                  <el-tag style="margin-left: 10px" v-if="props.row.sendAction.hasPerm" type="success">
+                  <el-tag style="margin-left: 10px" v-if="props.row.sendAction.hasPerm" >
                     {{ formatSendType(props.row) }}
                   </el-tag>
                   <el-button size="small" style="margin-left: 10px"
@@ -174,10 +174,11 @@
     </el-dialog>
     <el-dialog class="dialog" v-model="setTypeShow" title="设置权限" @closed="resetUserForm">
       <div class="dialog-box">
-        <el-select v-model="userForm.type" placeholder="Select">
+        <el-input disabled model-value="超级管理员" v-if="userForm.type === 0" />
+        <el-select v-else v-model="userForm.type" placeholder="Select" >
           <el-option v-for="item in roleList" :label="item.name" :value="item.roleId" :key="item.roleId"/>
         </el-select>
-        <el-button class="btn" :loading="settingLoading" type="primary" @click="setType"
+        <el-button :disabled="userForm.type === 0" class="btn" :loading="settingLoading" type="primary" @click="setType"
         >保存
         </el-button>
       </div>

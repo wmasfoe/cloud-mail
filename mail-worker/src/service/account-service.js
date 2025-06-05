@@ -46,11 +46,9 @@ const accountService = {
 		const userRow = await userService.selectById(c, userId);
 		const roleRow = await roleService.selectById(c, userRow.type);
 
-		if (roleRow.accountCount) {
-
+		if (roleRow.accountCount && userRow.email !== c.env.admin) {
 			const userAccountCount = await accountService.countUserAccount(c, userId)
 			if(userAccountCount >= roleRow.accountCount) throw new BizError(`添加邮箱数量限制${roleRow.accountCount}个`, 403);
-
 		}
 
 		if (await settingService.isAddEmailVerify(c)) {
