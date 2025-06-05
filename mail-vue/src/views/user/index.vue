@@ -239,12 +239,14 @@ import {tzDayjs} from "@/utils/day.js";
 import {useSettingStore} from "@/store/setting.js";
 import {isEmail} from "@/utils/verify-utils.js";
 import {useRoleStore} from "@/store/role.js";
+import {useUserStore} from "@/store/user.js";
 
 defineOptions({
   name: 'user'
 })
 
 const roleStore = useRoleStore()
+const userStore = useUserStore()
 const settingStore = useSettingStore()
 const filteredValue = ['normal', 'del']
 const filters = [{text: '正常', value: 'normal'}, {text: '删除', value: 'del'}]
@@ -312,6 +314,10 @@ watch(() => roleStore.refresh, () => {
     roleList.length = 0
     roleList.push(...list)
   })
+})
+
+watch(() => userStore.refreshList, () => {
+  getUserList(false)
 })
 
 getUserList()
@@ -631,7 +637,7 @@ function search() {
 
 function updatePwd() {
 
-  if (userForm.password.length < 6) {
+  if (!userForm.password) {
     ElMessage({
       message: '密码不能为空',
       type: 'error',
@@ -753,6 +759,16 @@ function adjustWidth() {
 
 .el-message-box__message {
   word-break: break-all;
+}
+
+.el-table-filter__bottom {
+  button:last-child {
+    display: none;
+  }
+}
+
+.el-table-filter__content {
+  min-width: 0;
 }
 </style>
 <style lang="scss" scoped>

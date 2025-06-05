@@ -122,7 +122,7 @@ const registerLoading = ref(false)
 suffix.value = domainList[0]
 const verifyShow = ref(false)
 let verifyToken = ''
-let turnstileId = ''
+let turnstileId = null
 
 
 window.onTurnstileSuccess = (token) => {
@@ -268,6 +268,7 @@ function submitRegister() {
     registerForm.password = ''
     registerForm.confirmPassword = ''
     registerLoading.value = false
+    turnstileId = null
     verifyToken = ''
     ElMessage({
       message: '注册成功',

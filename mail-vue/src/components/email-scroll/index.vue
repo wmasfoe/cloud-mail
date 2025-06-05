@@ -289,7 +289,7 @@ function htmlToText(email) {
 
 function cleanSpace(text) {
   return text
-      .replace(/[\u200B-\u200F\uFEFF]/g, '')  // 移除零宽空格、ZWNJ、ZWJ、LRM、RLM、BOM
+      .replace(/[\u200B-\u200F\uFEFF\u034F\u200B-\u200F\u00A0\u3000]/g, '')  // 移除零宽空格
       .replace(/\s+/g, ' ')                   // 多空白合并成一个空格
       .trim();
 }
@@ -705,10 +705,7 @@ function loadData() {
   }
 
   &:hover {
-    box-shadow: inset 1px 0 0 rgb(218, 220, 224),
-    inset -1px 0 0 rgb(218, 220, 224),
-    0 1px 2px 0 rgba(60, 64, 67, 0.3),
-    0 1px 3px 1px rgba(60, 64, 67, 0.15);
+    background-color: #F2F6FC;
     z-index: 0;
   }
 

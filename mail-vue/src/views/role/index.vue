@@ -99,11 +99,13 @@ import {roleAdd, roleDelete, rolePermTree, roleRoleList, roleSet, roleSetDef} fr
 import {ElMessage, ElMessageBox} from "element-plus";
 import loading from '@/components/loading/index.vue';
 import {useRoleStore} from "@/store/role.js";
+import {useUserStore} from "@/store/user.js";
 
 defineOptions({
   name: 'role'
 })
 
+const userStore = useUserStore();
 const roleStore = useRoleStore();
 const roleFormShow = ref(false)
 const treeList = reactive([])
@@ -175,6 +177,7 @@ function delRole(role) {
         plain: true
       })
       getRoleList()
+      userStore.refreshUserList()
       roleStore.refreshSelect()
     })
   });
@@ -218,6 +221,13 @@ function setRole() {
       type: "success",
       plain: true
     })
+
+    const names = roles.value.map(role => role.name)
+
+    if (!names.includes(params.name)) {
+      roleStore.refreshSelect()
+    }
+
     roleFormShow.value = false
     getRoleList()
   }).finally(() => {

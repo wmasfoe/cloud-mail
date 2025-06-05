@@ -297,7 +297,7 @@
 </template>
 
 <script setup>
-import {defineOptions, nextTick, onMounted, reactive, ref} from "vue";
+import {defineOptions, onMounted, reactive, ref} from "vue";
 import {physicsDeleteAll, setBackground, settingQuery, settingSet} from "@/request/setting.js";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {useSettingStore} from "@/store/setting.js";
@@ -353,7 +353,7 @@ onMounted(() => {
 })
 
 function doOpacityChange() {
-  const form = {...setting.value}
+  const form = {}
   form.loginOpacity = loginOpacity.value
   editSetting(form,true)
 }

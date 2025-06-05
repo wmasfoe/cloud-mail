@@ -127,7 +127,7 @@ const noLoading = ref(false)
 const loading = ref(false)
 const followLoading = ref(false);
 const verifyShow = ref(false)
-let turnstileId = false
+let turnstileId = null
 let verifyToken = ''
 const addForm = reactive({
   email: '',

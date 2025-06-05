@@ -75,6 +75,7 @@ function initEditor() {
     mobile: {
       toolbar: 'fullscreen bold emoticons forecolor fontsize | alignleft aligncenter alignright alignjustify | outdent indent |  bullist numlist | link image  | table code preview ',
     },
+    font_size_formats: '8pt 10pt 12pt 14pt 16pt 18pt 24pt 36pt',
     emoticons_search: false,
     language: 'zh_CN',
     language_url: '/tinymce/langs/zh_CN.js',

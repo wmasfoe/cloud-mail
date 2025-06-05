@@ -38,7 +38,6 @@ const requirePerms = [
 	'/user/setPwd',
 	'/user/setStatus',
 	'/user/setType',
-	'/user/star',
 	'/user/list',
 	'/user/resetSendCount',
 	'/user/add'
@@ -61,7 +60,6 @@ const premKey = {
 	'user:set-pwd': ['/user/setPwd'],
 	'user:set-status': ['/user/setStatus'],
 	'user:set-type': ['/user/setType'],
-	'user:star': ['/user/star'],
 	'user:delete': ['/user/delete'],
 	'sys-email:query': ['/sys-email/list'],
 	'sys-email:delete': ['/sys-email/delete'],
