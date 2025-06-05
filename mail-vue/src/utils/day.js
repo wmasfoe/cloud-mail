@@ -35,7 +35,7 @@ export function fromNow(date) {
 
 
 export function formatDetailDate(time) {
-    return dayjs.utc(time).format('YYYY年M月D日 ddd AH:mm')
+    return dayjs.utc(time).tz('Asia/Shanghai').format('YYYY年M月D日 ddd AH:mm')
 }
 
 export function tzDayjs(time) {
