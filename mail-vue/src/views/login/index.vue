@@ -377,6 +377,9 @@ function submitRegister() {
     height: 38px;
     width: 100%;
     margin-bottom: 18px;
+    :deep(.el-input__inner) {
+      height: 36px;
+    }
   }
 }
 
