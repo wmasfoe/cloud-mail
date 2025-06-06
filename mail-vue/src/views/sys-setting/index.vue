@@ -285,7 +285,7 @@
               :centerBox="true"
               :full="true"
               :autoCrop="true"
-              :outputSize="0.9"
+              :outputSize="0.92"
           ></vueCropper>
         </div>
         <div class="cut-button">
@@ -304,7 +304,6 @@ import {useSettingStore} from "@/store/setting.js";
 import {useUserStore} from "@/store/user.js";
 import {useAccountStore} from "@/store/account.js";
 import {Icon} from "@iconify/vue";
-import {compressImage} from "@/utils/file-utils.js";
 import {cvtR2Url} from "@/utils/convert.js";
 import {storeToRefs} from "pinia";
 import { debounce } from 'lodash-es'
@@ -424,8 +423,7 @@ function openCut() {
   doc.setAttribute('accept', 'image/*')
   doc.click()
   doc.onchange = async (e) => {
-    const image = await compressImage(e.target.files[0], 0.9)
-    cutImage.value = URL.createObjectURL(image)
+    cutImage.value = URL.createObjectURL(e.target.files[0])
     cutShow.value = true
   }
 }
@@ -550,7 +548,7 @@ function editSetting(settingForm, refreshStatus = true) {
   @media (max-width: 500px) {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   }
-  @media (max-width: 767px) {
+  @media (max-width: 1023px) {
     gap: 15px;
     padding: 15px;
   }

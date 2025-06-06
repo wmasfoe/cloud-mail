@@ -118,7 +118,6 @@ onMounted(() => {
   shadowRoot = container.value.attachShadow({ mode: 'open' })
   updateContent()
   autoScale()
-  console.log(props.html)
 })
 
 watch(() => props.html, () => {

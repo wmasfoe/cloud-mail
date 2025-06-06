@@ -68,7 +68,6 @@ import {useEmailStore} from "@/store/email.js";
 import {fileToBase64, formatBytes} from "@/utils/file-utils.js";
 import {getIconByName} from "@/utils/icon-utils.js";
 import sendPercent from "@/components/send-percent/index.vue"
-import hasPerm from "@/utils/perm.js";
 
 defineExpose({
   open
@@ -277,7 +276,7 @@ function close() {
 
   .write-box {
     background: #FFFFFF;
-    width: 900px;
+    width: 902px;
     box-shadow: var(--el-box-shadow-light);
     border: 1px solid var(--el-border-color-light);
     transition: var(--el-transition-duration);
@@ -292,7 +291,7 @@ function close() {
     }
 
     @media (min-width: 1024px) {
-      height: min(800px, calc(100vh - 60px));
+      height: min(750px, calc(100vh - 60px));
     }
 
     .title {

@@ -108,6 +108,7 @@ function initEditor() {
       input.addEventListener('change', async (e) => {
         let file = e.target.files[0];
         file = await compressImage(file);
+        console.log(file.size / 1024)
         const reader = new FileReader();
         reader.onload = () => {
           const id = 'blobid' + (new Date()).getTime();

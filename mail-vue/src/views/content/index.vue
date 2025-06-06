@@ -208,9 +208,13 @@ const handleDelete = () => {
 
 .container {
   font-size: 14px;
-  padding-left: 15px;
-  padding-right: 15px;
+  padding-left: 20px;
+  padding-right: 20px;
   padding-top: 10px;
+  @media (max-width: 1023px) {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
 
   .email-title {
     font-size: 20px;
@@ -299,7 +303,11 @@ const handleDelete = () => {
     .email-info {
 
       border-bottom: 1px solid #e7e9ec;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      @media (max-width: 1024px) {
+        margin-bottom: 15px;
+      }
       .date {
         color: #585d69;
         margin-bottom: 6px;

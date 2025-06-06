@@ -32,12 +32,16 @@ export function base64Size(base64String) {
     return (base64Length * 3) / 4 - padding;
 }
 
-export function compressImage(file, quality = 0.6) {
+export function compressImage(file, config = {}) {
     return new Promise((resolve, reject) => {
+
+        if (file.size < (config.convertSize || 1024 * 1024)) {
+            resolve(file)
+        }
+
         new Compressor(file, {
-            quality,
+            quality: config.quality || 0.8,
             mimeType: 'image/jpeg',
-            convertSize: 1024 * 1024,
             success(result) {
                 resolve(result);
             },
