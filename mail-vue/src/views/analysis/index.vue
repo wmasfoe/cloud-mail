@@ -533,6 +533,11 @@ function createEmailColumnChart() {
       },
     },
     yAxis: {
+      max: (params) => {
+        if (params.max < 8 ) {
+          return 10
+        }
+      },
       type: 'value',
       boundaryGap: [0, 0.1],
     },
