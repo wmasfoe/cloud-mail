@@ -291,7 +291,7 @@ function full() {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-right: 10px;
+    padding-right: 20px;
     cursor: pointer;
     @media (max-width: 1024px) {
       display: none;
