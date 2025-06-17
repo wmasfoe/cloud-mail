@@ -65,7 +65,8 @@ const premKey = {
 	'sys-email:delete': ['/sys-email/delete'],
 	'setting:query': [],
 	'setting:set': ['/setting/set', '/setting/setBackground'],
-	'setting:clean': ['/setting/physicsDeleteAll']
+	'setting:clean': ['/setting/physicsDeleteAll'],
+	'analysis:query': ['/analysis/echarts']
 };
 
 app.use('*', async (c, next) => {
