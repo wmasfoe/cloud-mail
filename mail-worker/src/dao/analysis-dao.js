@@ -54,7 +54,7 @@ const analysisDao = {
             FROM
                 user
             WHERE
-                DATE(create_time,'+8 hours') BETWEEN DATE('now', '-14 days', '+8 hours') AND DATE('now','-1 day','+8 hours')
+                DATE(create_time,'+8 hours') BETWEEN DATE('now', '-15 days', '+8 hours') AND DATE('now','-1 day','+8 hours')
             GROUP BY
                 DATE(create_time,'+8 hours')
             ORDER BY
@@ -71,7 +71,7 @@ const analysisDao = {
             FROM
                 email
             WHERE
-			  				DATE(create_time,'+8 hours') BETWEEN DATE('now', '-14 days', '+8 hours') AND DATE('now','-1 day','+8 hours')
+			  				DATE(create_time,'+8 hours') BETWEEN DATE('now', '-15 days', '+8 hours') AND DATE('now','-1 day','+8 hours')
                 AND type = 0
             GROUP BY
                 DATE(create_time,'+8 hours')
@@ -89,7 +89,7 @@ const analysisDao = {
             FROM
                 email
             WHERE
-			  				DATE(create_time,'+8 hours') BETWEEN DATE('now', '-14 days', '+8 hours') AND DATE('now','-1 day','+8 hours')
+			  				DATE(create_time,'+8 hours') BETWEEN DATE('now', '-15 days', '+8 hours') AND DATE('now','-1 day','+8 hours')
                 AND type = 1
             GROUP BY
                 DATE(create_time,'+8 hours')
