@@ -47,7 +47,6 @@ function updateContent() {
     <style>
       :host {
         all: initial;
-        display: block;
         width: 100%;
         height: 100%;
         font-family: 'HarmonyOS', -apple-system, BlinkMacSystemFont,
@@ -67,7 +66,6 @@ function updateContent() {
       img {
         max-width: 100%;
         height: auto !important;
-        display: block;
       }
 
       *:not(p) {
