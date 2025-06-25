@@ -28,8 +28,6 @@ export async function email(message, env, ctx) {
 
 		const email = await PostalMime.parse(content);
 
-		console.warn(email)
-
 		const params = {
 			sendEmail: email.from.address,
 			name: email.from.name,
@@ -42,8 +40,8 @@ export async function email(message, env, ctx) {
 			inReplyTo: email.inReplyTo,
 			relation: email.references,
 			messageId: email.messageId,
-			userId: account.userId,
-			accountId: account.accountId,
+			userId: account ? account.userId : 0,
+			accountId: account ? account.accountId : 0,
 			isDel: isDel.DELETE,
 			status: emailConst.status.SAVING
 		};
@@ -74,7 +72,7 @@ export async function email(message, env, ctx) {
 			await attService.addAtt({ env }, attachments);
 		}
 
-		await emailService.completeReceive({ env }, emailRow.emailId);
+		await emailService.completeReceive({ env },account ? emailConst.status.RECEIVE : emailConst.status.NOONE, emailRow.emailId);
 
 	} catch (e) {
 		console.error('邮件接收异常: ', e);

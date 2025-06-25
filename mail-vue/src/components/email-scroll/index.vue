@@ -91,6 +91,14 @@
                             height="20"/>
 
                     </el-tooltip>
+                    <el-tooltip v-if="item.status ===  7"
+                                effect="dark"
+                                content="无人收件"
+                    >
+                      <Icon icon="ic:round-mark-email-read" style="color:#FBBD08" width="20"
+                            height="20"/>
+
+                    </el-tooltip>
                   </div>
                   <div v-else></div>
                   <span class="name">

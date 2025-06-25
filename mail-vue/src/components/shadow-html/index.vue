@@ -76,9 +76,6 @@ function updateContent() {
         -webkit-tap-highlight-color: transparent;
       }
 
-      a {
-        color: #409EFF !important;
-      }
     </style>
     <div class="shadow-content">
       ${cleanedHtml}

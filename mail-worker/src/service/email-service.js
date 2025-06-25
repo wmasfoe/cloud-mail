@@ -505,6 +505,10 @@ const emailService = {
 			conditions.push(eq(email.isDel, isDel.DELETE));
 		}
 
+		if (type === 'noone') {
+			conditions.push(eq(email.status, emailConst.status.NOONE));
+		}
+
 		if (userEmail) {
 			conditions.push(like(user.email, `${userEmail}%`));
 		}
@@ -569,10 +573,10 @@ const emailService = {
 		await orm(c).update(email).set({ isDel: isDel.NORMAL }).where(eq(email.userId, userId)).run();
 	},
 
-	async completeReceive(c, emailId) {
+	async completeReceive(c, status, emailId) {
 		await orm(c).update(email).set({
 			isDel: isDel.NORMAL,
-			status: emailConst.status.RECEIVE
+			status: status
 		}).where(eq(email.emailId, emailId)).run();
 	}
 };

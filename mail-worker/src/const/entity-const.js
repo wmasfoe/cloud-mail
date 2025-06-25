@@ -25,7 +25,7 @@ export const permConst = {
 export const emailConst = {
 	type: {
 		SEND: 1,
-		RECEIVE: 0,
+		RECEIVE: 0
 	},
 	status:  {
 		RECEIVE: 0,
@@ -34,7 +34,8 @@ export const emailConst = {
 		BOUNCED: 3,
 		COMPLAINED: 4,
 		DELAYED: 5,
-		SAVING: 6
+		SAVING: 6,
+		NOONE: 7
 	}
 }
 
