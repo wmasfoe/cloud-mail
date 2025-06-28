@@ -7,7 +7,7 @@
     <el-scrollbar class="scrollbar">
       <div v-infinite-scroll="getAccountList" :infinite-scroll-distance="600"  :infinite-scroll-immediate="false">
         <el-card class="item" :class="itemBg(item.accountId)" v-for="item in accounts" :key="item.accountId" @click="changeAccount(item)">
-          <div class="account">
+          <div class="account" @click.stop>
             {{ item.email }}
           </div>
           <div class="opt">

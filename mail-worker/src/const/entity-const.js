@@ -78,6 +78,18 @@ export const settingConst = {
 	addEmailVerify: {
 		OPEN: 0,
 		CLOSE: 1,
+	},
+	forwardStatus: {
+		OPEN: 0,
+		CLOSE: 1,
+	},
+	tgBotStatus: {
+		OPEN: 0,
+		CLOSE: 1,
+	},
+	ruleType: {
+		ALL: 0,
+		RULE: 1
 	}
 }
 

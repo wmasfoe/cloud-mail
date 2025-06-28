@@ -17,7 +17,6 @@ import account from '../entity/account';
 import starService from './star-service';
 import dayjs from 'dayjs';
 import kvConst from '../const/kv-const';
-import constant from '../const/constant';
 
 const emailService = {
 
@@ -514,7 +513,7 @@ const emailService = {
 		}
 
 		if (accountEmail) {
-			conditions.push(like(account.email, `${accountEmail}%`));
+			conditions.push(like(email.toEmail, `${accountEmail}%`));
 		}
 
 		if (name) {
@@ -535,16 +534,14 @@ const emailService = {
 			conditions.push(lt(email.emailId, emailId));
 		}
 
-		const query = orm(c).select({ ...email, userEmail: user.email, accountEmail: account.email })
+		const query = orm(c).select({ ...email, userEmail: user.email })
 			.from(email)
 			.leftJoin(user, eq(email.userId, user.userId))
-			.leftJoin(account, eq(email.accountId, account.accountId))
 			.where(and(...conditions));
 
 		const queryCount = orm(c).select({ total: count() })
 			.from(email)
 			.leftJoin(user, eq(email.userId, user.userId))
-			.leftJoin(account, eq(email.accountId, account.accountId))
 			.where(and(...countConditions));
 
 		if (timeSort) {
@@ -574,10 +571,10 @@ const emailService = {
 	},
 
 	async completeReceive(c, status, emailId) {
-		await orm(c).update(email).set({
+		return await orm(c).update(email).set({
 			isDel: isDel.NORMAL,
 			status: status
-		}).where(eq(email.emailId, emailId)).run();
+		}).where(eq(email.emailId, emailId)).returning().get();
 	}
 };
 
