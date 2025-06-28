@@ -302,7 +302,7 @@ function htmlToText(email) {
 
 function cleanSpace(text) {
   return text
-      .replace(/[\u200B-\u200F\uFEFF\u034F\u200B-\u200F\u00A0\u3000]/g, '')  // 移除零宽空格
+      .replace(/[\u200B-\u200F\uFEFF\u034F\u200B-\u200F\u00A0\u3000\u00AD]/g, '')// 移除零宽空格
       .replace(/\s+/g, ' ')                   // 多空白合并成一个空格
       .trim();
 }

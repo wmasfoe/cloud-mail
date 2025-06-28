@@ -115,7 +115,7 @@ export async function email(message, env, ctx) {
 <b>收件人：\u200B</b>${message.to}
 <b>时间：</b>${dayjs.utc(emailRow.createTime).tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm')}
 
-${emailUtils.htmlToText(params.content) || ''}
+${params.text || emailUtils.htmlToText(params.content) || ''}
 `;
 
 			const tgChatIds = tgChatId.split(',');

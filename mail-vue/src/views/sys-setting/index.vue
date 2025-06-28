@@ -174,7 +174,7 @@
           </div>
 
           <div class="settings-card">
-            <div class="card-title">邮件转发通知</div>
+            <div class="card-title">邮件推送</div>
             <div class="card-content">
               <div class="setting-item">
                 <div><span>Telegram 机器人</span></div>
@@ -362,7 +362,7 @@
         <template #header>
           <div class="forward-head">
             <span class="forward-set-title">第三方邮箱</span>
-            <el-tooltip effect="dark" trigger="click" content="可以将邮件转到其他服务商邮箱，需要在cloudflare验证邮箱">
+            <el-tooltip effect="dark" content="可以将邮件转到其他服务商邮箱，需要在cloudflare验证邮箱">
               <Icon class="warning" icon="fe:warning" width="18" height="18"/>
             </el-tooltip>
           </div>
