@@ -267,15 +267,17 @@ watch(() => emailStore.deleteIds, () => {
   }
 })
 
+watch(() => emailStore.cancelStarEmailId, () => {
+  emailList.forEach(email => {
+    if (email.emailId === emailStore.cancelStarEmailId) {
+      email.isStar = 0
+    }
+  })
+})
+
 const accountShow = computed(() => {
   return uiStore.accountShow && settingStore.settings.manyEmail === 0
 })
-
-
-function formateReceive(recipient) {
-  recipient = JSON.parse(recipient)
-  return recipient.map(item => item.address).join(', ')
-}
 
 function handleScroll(e) {
 }
