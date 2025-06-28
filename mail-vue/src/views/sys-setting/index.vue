@@ -250,7 +250,7 @@
             <div class="card-content">
               <div class="concerning-item">
                 <span>版本:</span>
-                <span>v1.2.1</span>
+                <span>v1.3.0</span>
               </div>
               <div class="concerning-item">
                 <span>交流:</span>
