@@ -148,7 +148,7 @@
             <div>没有更多数据了</div>
           </div>
           <div class="empty" v-if="noLoading && emailList.length === 0">
-            <el-empty description="没有任何邮件"/>
+            <el-empty :image-size="isMobile ? 120 : 0" description="没有任何邮件"/>
           </div>
         </div>
       </el-scrollbar>
@@ -223,6 +223,7 @@ let scrollTop = 0
 const latestEmail = ref(null)
 const scrollbarRef = ref(null)
 let reqLock = false
+let isMobile = window.innerWidth < 1025
 const queryParam = reactive({
   emailId: 0,
   size: 30,
@@ -403,7 +404,6 @@ function addItem(email) {
     }
   }
 
-  latestEmail.value = email
   total.value++
 }
 

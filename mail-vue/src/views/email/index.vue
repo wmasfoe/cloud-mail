@@ -24,7 +24,6 @@
 import {useAccountStore} from "@/store/account.js";
 import {useEmailStore} from "@/store/email.js";
 import {useSettingStore} from "@/store/setting.js";
-import {useUiStore} from "@/store/ui.js";
 import emailScroll from "@/components/email-scroll/index.vue"
 import {emailList, emailDelete, emailLatest} from "@/request/email.js";
 import {starAdd, starCancel} from "@/request/star.js";

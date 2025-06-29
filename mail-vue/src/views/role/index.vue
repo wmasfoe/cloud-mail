@@ -54,7 +54,10 @@
         <div class="dialog-input">
           <el-input-number placeholder="排序" :min="0" :max="9999" v-model.number="form.sort" controls-position="right" autocomplete="off" />
         </div>
-        <el-segmented size="small" class="perm-expand" @change="expandChange" v-model="expand" :options="options" />
+        <el-radio-group v-model="expand" size="small" @change="expandChange" class="perm-expand">
+          <el-radio-button label="展开" :value="true" />
+          <el-radio-button label="收起" :value="false" />
+        </el-radio-group>
         <el-tree
             :expand-on-click-node="false"
             :check-on-click-node="false"
@@ -133,8 +136,6 @@ const form = reactive({
 })
 
 const expand = ref(false)
-
-const options = [{ label: '展开',value: true }, { label:'收起',value: false}]
 
 let chooseRole = {}
 
@@ -399,8 +400,10 @@ window.onresize = () => {
 }
 
 .perm-expand  {
-  margin-bottom: 10px;
-  --el-border-radius-base: 8px;
+  margin-bottom: 5px;
+  --el-border-radius-base: 4px;
+  position: relative;
+  bottom: 5px;
 }
 
 :deep(.el-dialog) {

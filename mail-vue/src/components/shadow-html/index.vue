@@ -39,8 +39,6 @@ function updateContent() {
   const bodyStyleMatch = props.html.match(bodyStyleRegex);
   const bodyStyle = bodyStyleMatch ? bodyStyleMatch[1] : '';
 
-  console.log(bodyStyle)
-
   // 2. 移除 <body> 标签（保留内容）
   const cleanedHtml = props.html.replace(/<\/?body[^>]*>/gi, '');
 

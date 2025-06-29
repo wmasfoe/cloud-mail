@@ -8,7 +8,7 @@ import { websiteConfig } from "@/request/setting.js";
 import {cvtR2Url} from "@/utils/convert.js";
 
 export async function init() {
-    document.title = 'loading...'
+    document.title = '\u200B'
 
     const settingStore = useSettingStore();
     const userStore = useUserStore();
