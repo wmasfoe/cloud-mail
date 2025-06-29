@@ -32,7 +32,7 @@ export async function email(message, env, ctx) {
 			return;
 		}
 
-		const account = await accountService.selectByEmailIncludeDel({ env: env }, message.to);
+		const account = await accountService.selectByEmailIncludeDelNoCase({ env: env }, message.to);
 
 		const reader = message.raw.getReader();
 		let content = '';

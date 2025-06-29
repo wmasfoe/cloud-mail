@@ -1,7 +1,7 @@
 import orm from '../entity/orm';
 import email from '../entity/email';
 import { emailConst, isDel, settingConst } from '../const/entity-const';
-import { and, desc, eq, gt, inArray, lt, count, asc, like, ne } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, lt, count, asc, sql, ne } from 'drizzle-orm';
 import { star } from '../entity/star';
 import settingService from './setting-service';
 import accountService from './account-service';
@@ -13,7 +13,6 @@ import { parseHTML } from 'linkedom';
 import userService from './user-service';
 import roleService from './role-service';
 import user from '../entity/user';
-import account from '../entity/account';
 import starService from './star-service';
 import dayjs from 'dayjs';
 import kvConst from '../const/kv-const';
@@ -509,19 +508,19 @@ const emailService = {
 		}
 
 		if (userEmail) {
-			conditions.push(like(user.email, `${userEmail}%`));
+			conditions.push(sql`${user.email} COLLATE NOCASE LIKE ${userEmail + '%'}`);
 		}
 
 		if (accountEmail) {
-			conditions.push(like(email.toEmail, `${accountEmail}%`));
+			conditions.push(sql`${email.toEmail} COLLATE NOCASE LIKE ${accountEmail + '%'}`);
 		}
 
 		if (name) {
-			conditions.push(like(email.name, `${name}%`));
+			conditions.push(sql`${email.name} COLLATE NOCASE LIKE ${name + '%'}`);
 		}
 
 		if (subject) {
-			conditions.push(like(email.subject, `${subject}%`));
+			conditions.push(sql`${email.subject} COLLATE NOCASE LIKE ${subject + '%'}`);
 		}
 
 		conditions.push(ne(email.status, emailConst.status.SAVING));

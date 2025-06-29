@@ -55,7 +55,7 @@ function updateContent() {
                     'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         font-size: 14px;
         color: #13181D;
-        overflow-wrap: break-word;
+        word-break: break-word;
       }
 
       .shadow-content {

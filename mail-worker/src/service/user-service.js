@@ -107,7 +107,7 @@ const userService = {
 		await c.env.kv.delete(kvConst.AUTH_INFO + userId);
 	},
 
-	async list(c, params, userId) {
+	async list(c, params) {
 
 		let { num, size, email, timeSort, status } = params;
 
@@ -130,8 +130,9 @@ const userService = {
 
 
 		if (email) {
-			conditions.push(like(user.email, `${email}%`));
+			conditions.push(sql`${user.email} COLLATE NOCASE LIKE ${email + '%'}`);
 		}
+
 
 		if (params.isDel) {
 			conditions.push(eq(user.isDel, params.isDel));
