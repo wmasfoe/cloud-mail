@@ -386,6 +386,7 @@ function close() {
         overflow: hidden;
       }
 
+
       div {
         display: flex;
         align-items: center;

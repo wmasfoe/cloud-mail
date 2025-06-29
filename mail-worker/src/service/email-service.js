@@ -1,7 +1,7 @@
 import orm from '../entity/orm';
 import email from '../entity/email';
 import { emailConst, isDel, settingConst } from '../const/entity-const';
-import { and, desc, eq, gt, inArray, lt, count, asc, sql, ne } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, lt, count, asc, sql, ne, or } from 'drizzle-orm';
 import { star } from '../entity/star';
 import settingService from './setting-service';
 import accountService from './account-service';
@@ -467,7 +467,7 @@ const emailService = {
 
 	async allList(c, params) {
 
-		let { emailId, size, name, subject, accountEmail, userEmail, type, timeSort } = params;
+		let { emailId, size, name, subject, accountEmail, sendEmail, userEmail, type, timeSort } = params;
 
 		size = Number(size);
 
@@ -512,7 +512,12 @@ const emailService = {
 		}
 
 		if (accountEmail) {
-			conditions.push(sql`${email.toEmail} COLLATE NOCASE LIKE ${accountEmail + '%'}`);
+			conditions.push(
+				or(
+					sql`${email.toEmail} COLLATE NOCASE LIKE ${accountEmail + '%'}`,
+					sql`${email.sendEmail} COLLATE NOCASE LIKE ${accountEmail + '%'}`,
+				)
+			)
 		}
 
 		if (name) {

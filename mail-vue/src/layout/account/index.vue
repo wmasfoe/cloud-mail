@@ -7,21 +7,17 @@
     <el-scrollbar class="scrollbar">
       <div v-infinite-scroll="getAccountList" :infinite-scroll-distance="600"  :infinite-scroll-immediate="false">
         <el-card class="item" :class="itemBg(item.accountId)" v-for="item in accounts" :key="item.accountId" @click="changeAccount(item)">
-          <div class="account" @click.stop="copyAccount(item.email)">
-            <el-tooltip v-if="showCopyInfo" effect="dark" :hide-after="0" :show-after="800" placement="top" content="点击复制">
-              {{ item.email }}
-            </el-tooltip>
-            <template v-else >
-              {{ item.email }}
-            </template>
+          <div class="account" >
+            {{ item.email }}
           </div>
           <div class="opt">
             <div class="send-email" @click.stop>
               <Icon  icon="eva:email-fill" width="22" height="22" color="#fbbd08" />
             </div>
             <div class="settings" @click.stop>
+              <Icon icon="streamline-ultimate-color:copy-paste-1" width="19" height="19" @click.stop="copyAccount(item.email)"/>
               <el-dropdown>
-                <Icon icon="fluent:settings-24-filled" width="20" height="20" color="#909399" />
+                <Icon icon="fluent:settings-24-filled" width="21" height="21" color="#909399" />
                 <template #dropdown >
                   <el-dropdown-menu>
                     <el-dropdown-item @click="openSetName(item)">改名</el-dropdown-item>
@@ -147,7 +143,6 @@ const addRef = ref({})
 let account = null
 let turnstileId = null
 let verifyToken = ''
-let showCopyInfo = window.innerWidth > 1024
 const addForm = reactive({
   email: '',
   suffix: settingStore.domainList[0]
@@ -440,7 +435,15 @@ function submit()  {
       justify-content: space-between;
       font-size: 12px;
       color: #888;
-
+      .settings {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .send-email {
+        display: flex;
+        align-items: center;
+      }
     }
 
     :deep(.el-card__body) {

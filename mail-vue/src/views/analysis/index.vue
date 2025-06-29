@@ -178,7 +178,6 @@ const userLineData = reactive({
 })
 
 const emailColumnData = {
-  barWidth: window.innerWidth > 767 ? '40%' : '60%',
   receiveData: [],
   sendData: [],
   daysData: []
@@ -546,7 +545,8 @@ function createEmailColumnChart() {
         name: '接收',
         type: 'bar',
         stack: 'total', // 堆叠组标识（必须相同）
-        barWidth: emailColumnData.barWidth,
+        barWidth: '60%',
+        barMaxWidth: 30,
         emphasis: {
           itemStyle: {
             shadowBlur: 10,
@@ -562,7 +562,6 @@ function createEmailColumnChart() {
         name: '发送',
         type: 'bar',
         stack: 'total', // 堆叠组标识（必须相同）
-        barWidth: '45%',
         emphasis: {
           itemStyle: {
             shadowBlur: 10,
