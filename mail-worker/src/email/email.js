@@ -45,13 +45,15 @@ export async function email(message, env, ctx) {
 
 		const email = await PostalMime.parse(content);
 
+		console.log(email)
+
 		const toName = email.to.find(item => item.address === message.to)?.name || '';
 
 		const params = {
 			toEmail: message.to,
 			toName: toName,
 			sendEmail: email.from.address,
-			name: email.from.name,
+			name: email.from.name || emailUtils.getName(email.from.address),
 			subject: email.subject,
 			content: email.html,
 			text: email.text,

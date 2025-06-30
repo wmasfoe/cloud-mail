@@ -1,5 +1,6 @@
 import settingService from '../service/setting-service';
 import emailUtils from '../utils/email-utils';
+import {emailConst} from "../const/entity-const";
 const init = {
 	async init(c) {
 
@@ -13,8 +14,13 @@ const init = {
 		await this.v1_1DB(c);
 		await this.v1_2DB(c);
 		await this.v1_3DB(c);
+		await this.v1_3_1DB(c);
 		await settingService.refresh(c);
 		return c.text('初始化成功');
+	},
+
+	async v1_3_1DB(c) {
+		await c.env.db.prepare(`UPDATE email SET name = SUBSTR(send_email, 1, INSTR(send_email, '@') - 1) WHERE (name IS NULL OR name = '') AND type = ${emailConst.type.RECEIVE}`).run();
 	},
 
 	async v1_3DB(c) {
