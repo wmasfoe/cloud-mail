@@ -2,18 +2,18 @@ const analysisDao = {
 	async numberCount(c) {
 		const { results } = await c.env.db.prepare(`
             SELECT
-                e.receiveTotal,
-                e.sendTotal,
-                e.delReceiveTotal,
-                e.delSendTotal,
-                e.normalReceiveTotal,
-                e.normalSendTotal,
-                u.userTotal,
-                u.normalUserTotal,
-                u.delUserTotal,
-                a.accountTotal,
-                a.normalAccountTotal,
-                a.delAccountTotal
+				COALESCE(e.receiveTotal, 0) AS receiveTotal,
+				COALESCE(e.sendTotal, 0) AS sendTotal,
+				COALESCE(e.delReceiveTotal, 0) AS delReceiveTotal,
+				COALESCE(e.delSendTotal, 0) AS delSendTotal,
+				COALESCE(e.normalReceiveTotal, 0) AS normalReceiveTotal,
+				COALESCE(e.normalSendTotal, 0) AS normalSendTotal,
+				COALESCE(u.userTotal, 0) AS userTotal,
+				COALESCE(u.normalUserTotal, 0) AS normalUserTotal,
+				COALESCE(u.delUserTotal, 0) AS delUserTotal,
+				COALESCE(a.accountTotal, 0) AS accountTotal,
+				COALESCE(a.normalAccountTotal, 0) AS normalAccountTotal,
+				COALESCE(a.delAccountTotal, 0) AS delAccountTotal
             FROM
                 (
                     SELECT

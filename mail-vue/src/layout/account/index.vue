@@ -104,7 +104,7 @@
           data-callback="onTurnstileSuccess"
       ></div>
     </el-dialog>
-    <el-dialog v-model="setNameShow" title="修改名字" >
+    <el-dialog v-model="setNameShow" title="修改用户名" >
       <div class="container">
         <el-input v-model="accountName" type="text" placeholder="名字" autocomplete="off">
         </el-input>

@@ -89,7 +89,7 @@ export async function email(message, env, ctx) {
 			attachment.type = attachment.contentId ? attConst.type.EMBED : attConst.type.ATT;
 		});
 
-		if (attachments.length > 0) {
+		if (attachments.length > 0 && env.r2) {
 			await attService.addAtt({ env }, attachments);
 		}
 

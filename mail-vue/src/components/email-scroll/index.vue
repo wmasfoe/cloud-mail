@@ -272,6 +272,15 @@ watch(() => emailStore.cancelStarEmailId, () => {
   emailList.forEach(email => {
     if (email.emailId === emailStore.cancelStarEmailId) {
       email.isStar = 0
+      console.log('取消')
+    }
+  })
+})
+
+watch(() => emailStore.addStarEmailId, () => {
+  emailList.forEach(email => {
+    if (email.emailId === emailStore.addStarEmailId) {
+      email.isStar = 1
     }
   })
 })

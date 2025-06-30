@@ -34,6 +34,7 @@ const requirePerms = [
 	'/setting/physicsDeleteAll',
 	'/setting/setBackground',
 	'/setting/set',
+	'/setting/query',
 	'/user/delete',
 	'/user/setPwd',
 	'/user/setStatus',
@@ -63,7 +64,7 @@ const premKey = {
 	'user:delete': ['/user/delete'],
 	'sys-email:query': ['/sys-email/list'],
 	'sys-email:delete': ['/sys-email/delete'],
-	'setting:query': [],
+	'setting:query': ['/setting/query'],
 	'setting:set': ['/setting/set', '/setting/setBackground'],
 	'setting:clean': ['/setting/physicsDeleteAll'],
 	'analysis:query': ['/analysis/echarts']

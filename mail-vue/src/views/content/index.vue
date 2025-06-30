@@ -140,6 +140,8 @@ function changeStar() {
     email.isStar = 0;
     starCancel(email.emailId).then(() => {
       email.isStar = 0;
+      emailStore.cancelStarEmailId = email.emailId
+      setTimeout(() => emailStore.cancelStarEmailId = 0)
       emailStore.starScroll?.deleteEmail([email.emailId])
     }).catch((e) => {
       console.error(e)
@@ -149,6 +151,8 @@ function changeStar() {
     email.isStar = 1;
     starAdd(email.emailId).then(() => {
       email.isStar = 1;
+      emailStore.addStarEmailId = email.emailId
+      setTimeout(() => emailStore.addStarEmailId = 0)
       emailStore.starScroll?.addItem(email)
     }).catch((e) => {
       console.error(e)
