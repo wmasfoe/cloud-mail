@@ -366,6 +366,11 @@ function submit()  {
   })
 }
 </script>
+<style>
+path[fill="#ffdda1"] {
+  fill: #ffdd7d;
+}
+</style>
 <style scoped lang="scss">
 .account-box {
 

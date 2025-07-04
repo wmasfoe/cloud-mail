@@ -296,7 +296,11 @@ function htmlToText(email) {
   if (email.content) {
 
     const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = email.content;
+
+    tempDiv.innerHTML = email.content.replace(
+        /<(img|iframe|object|embed|video|audio|source|link)[^>]*>/gi, ''
+    );
+
     const scriptsAndStyles = tempDiv.querySelectorAll('script, style, title');
     scriptsAndStyles.forEach(el => el.remove());
     let text = tempDiv.textContent || tempDiv.innerText || '';
