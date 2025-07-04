@@ -131,7 +131,7 @@ function clickLogout() {
   logoutLoading.value = true
   logout().then(() => {
     localStorage.removeItem("token")
-    router.push('/login')
+    router.replace('/login')
   }).finally(() => {
     logoutLoading.value = false
   })

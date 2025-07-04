@@ -92,7 +92,6 @@ app.use('*', async (c, next) => {
 	const result = await jwtUtils.verifyToken(c, jwt);
 
 	if (!result) {
-		console.error(401,1)
 		throw new BizError('身份认证失效,请重新登录', 401);
 	}
 
@@ -100,15 +99,12 @@ app.use('*', async (c, next) => {
 	const authInfo = await c.env.kv.get(KvConst.AUTH_INFO + userId, { type: 'json' });
 
 	if (!authInfo) {
-		console.error(401,2)
 		throw new BizError('身份认证失效,请重新登录', 401);
 	}
 
 	if (!authInfo.tokens.includes(token)) {
-		console.error(401,3)
 		throw new BizError('身份认证失效,请重新登录', 401);
 	}
-
 
 	const permIndex = requirePerms.findIndex(item => {
 		return path.startsWith(item);

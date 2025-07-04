@@ -96,6 +96,10 @@ const loginService = {
 
 		if (authInfo) {
 
+			if (authInfo.tokens.length > 10) {
+				authInfo.tokens.shift();
+			}
+
 			authInfo.tokens.push(uuid);
 
 		} else {
