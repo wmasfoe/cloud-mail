@@ -250,7 +250,7 @@
             <div class="card-content">
               <div class="concerning-item">
                 <span>版本:</span>
-                <span>v1.3.0</span>
+                <span>v1.3.1</span>
               </div>
               <div class="concerning-item">
                 <span>交流:</span>
@@ -260,7 +260,7 @@
                     <Icon icon="logos:telegram" width="30" height="30"/>
                   </template>
                 </el-button>
-                <el-button @click="jump('https://github.com/LaziestRen/cloud-mail')">
+                <el-button @click="jump('https://github.com/arexing/cloud-mail')">
                   github
                   <template #icon>
                     <Icon icon="codicon:github-inverted" width="22" height="22" />
