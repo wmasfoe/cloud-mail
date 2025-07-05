@@ -1,14 +1,16 @@
-<script setup>
-import router from "@/router/index.js";
-</script>
-
 <template>
 <div class="box-404">
-  <el-empty class="empty" description="404错误, 找不到页面" >
-    <el-button type="primary" @click="router.replace({name: 'layout'})">返回首页</el-button>
+  <el-empty :image-size="isPhone ? 120 : 0" class="empty" description="404错误, 找不到页面" >
+    <el-button  type="primary" @click="router.replace({name: 'layout'})">返回首页</el-button>
   </el-empty>
 </div>
 </template>
+
+<script lang="js" setup>
+import router from "@/router/index.js";
+
+let isPhone = window.innerWidth < 1025
+</script>
 
 <style scoped lang="scss">
 .box-404 {
