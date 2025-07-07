@@ -113,9 +113,9 @@ function toMessage(message) {
 }
 
 function formatImage(content) {
-  content = content ||  ''
+  content = content || '';
   const domain = settingStore.settings.r2Domain;
-  return content.replace('{{domain}}', domain + '/');
+  return  content.replace(/{{domain}}/g, domain + '/');
 }
 
 function showImage(key) {
