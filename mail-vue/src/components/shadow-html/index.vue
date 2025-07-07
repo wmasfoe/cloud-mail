@@ -64,7 +64,7 @@ function updateContent() {
       }
 
       img:not(table img) {
-        max-width: 100%;
+        max-width: 100% !important;
         height: auto !important;
       }
 
