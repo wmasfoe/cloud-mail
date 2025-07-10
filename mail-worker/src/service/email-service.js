@@ -1,6 +1,6 @@
 import orm from '../entity/orm';
 import email from '../entity/email';
-import { emailConst, isDel, settingConst } from '../const/entity-const';
+import { attConst, emailConst, isDel, settingConst } from '../const/entity-const';
 import { and, desc, eq, gt, inArray, lt, count, asc, sql, ne, or } from 'drizzle-orm';
 import { star } from '../entity/star';
 import settingService from './setting-service';
@@ -120,28 +120,8 @@ const emailService = {
 			.run();
 	},
 
-	receive(c, params, cidAttList) {
-
-		const { document } = parseHTML(params.content);
-
-		const images = Array.from(document.querySelectorAll('img'));
-
-		for (const img of images) {
-
-			const src = img.getAttribute('src');
-			if (src && src.startsWith('cid:')) {
-
-				const cid = src.replace(/^cid:/, '');
-				const attCidIndex = cidAttList.findIndex(cidAtt => cidAtt.contentId.replace(/^<|>$/g, '') === cid);
-
-				if (attCidIndex > -1) {
-					const cidAtt = cidAttList[attCidIndex];
-					img.setAttribute('src', '{{domain}}' + cidAtt.key);
-				}
-			}
-		}
-
-		params.content = document.toString();
+	receive(c, params, cidAttList, r2domain) {
+		params.content = this.imgReplace(params.content, cidAttList, r2domain)
 		return orm(c).insert(email).values({ ...params }).returning().get();
 	},
 
@@ -151,7 +131,7 @@ const emailService = {
 
 		const { resendTokens, r2Domain, send } = await settingService.query(c);
 
-		const { attDataList, html } = await attService.toImageUrlHtml(c, content, r2Domain);
+		let { attDataList, html } = await attService.toImageUrlHtml(c, content, r2Domain);
 
 		if (attDataList.length > 0 && !r2Domain) {
 			throw new BizError('r2域名未配置不能发送正文图片');
@@ -215,7 +195,6 @@ const emailService = {
 		if (!name) {
 			name = emailUtils.getName(accountRow.email);
 		}
-
 
 		let emailRow = {
 			messageId: null
@@ -290,6 +269,7 @@ const emailService = {
 			throw new BizError(error.message);
 		}
 
+		html = this.imgReplace(html, null, r2Domain);
 
 		const emailData = {};
 		emailData.sendEmail = accountRow.email;
@@ -371,6 +351,47 @@ const emailService = {
 		}
 
 		return emailRowList;
+	},
+
+	imgReplace(content, cidAttList, r2domain) {
+
+		if (!content) {
+			return ''
+		}
+
+		const { document } = parseHTML(content);
+
+		const images = Array.from(document.querySelectorAll('img'));
+
+		const useAtts = []
+
+		for (const img of images) {
+
+			const src = img.getAttribute('src');
+			if (src && src.startsWith('cid:') && cidAttList) {
+
+				const cid = src.replace(/^cid:/, '');
+				const attCidIndex = cidAttList.findIndex(cidAtt => cidAtt.contentId.replace(/^<|>$/g, '') === cid);
+
+				if (attCidIndex > -1) {
+					const cidAtt = cidAttList[attCidIndex];
+					img.setAttribute('src', '{{domain}}' + cidAtt.key);
+					useAtts.push(cidAtt)
+				}
+
+			}
+
+			if (src && src.startsWith(r2domain + '/')) {
+				img.setAttribute('src', src.replace(r2domain + '/', '{{domain}}'));
+			}
+
+		}
+
+		useAtts.forEach(att => {
+			att.type = attConst.type.EMBED
+		})
+
+		return document.toString();
 	},
 
 	selectById(c, emailId) {

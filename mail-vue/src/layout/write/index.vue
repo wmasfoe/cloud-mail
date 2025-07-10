@@ -67,12 +67,14 @@ import {fileToBase64, formatBytes} from "@/utils/file-utils.js";
 import {getIconByName} from "@/utils/icon-utils.js";
 import sendPercent from "@/components/send-percent/index.vue"
 import {formatDetailDate} from "@/utils/day.js";
+import {useSettingStore} from "@/store/setting.js";
 
 defineExpose({
   open,
   openReply
 })
 
+const settingStore = useSettingStore()
 const emailStore = useEmailStore();
 const accountStore = useAccountStore()
 const editor = ref({})
@@ -283,11 +285,22 @@ function openReply(email) {
     <br>
         ${ formatDetailDate(email.createTime) }，${email.name} &lt${email.sendEmail}&gt 来信:
     </div>
-    <blockquote style="margin: 0 0 0 0.8ex;border-left: 1px solid rgb(204,204,204);padding-left: 1ex;">${email.content}</blockquote>`
+    <blockquote class="mceNonEditable" style="margin: 0 0 0 0.8ex;border-left: 1px solid rgb(204,204,204);padding-left: 1ex;">
+      <articl>
+          ${formatImage(email.content) || `<pre style="font-family: inherit;word-break: break-word;white-space: pre-wrap;margin: 0">${email.text}</pre>`}
+      </article>
+    </blockquote>`
     open()
+    console.log(defValue.value)
   })
 
+}
 
+function formatImage(content) {
+  content = content || '';
+  const domain = settingStore.settings.r2Domain;
+  console.log(content)
+  return  content.replace(/{{domain}}/g, domain + '/');
 }
 
 function open() {

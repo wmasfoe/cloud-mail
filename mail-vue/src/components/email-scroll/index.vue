@@ -55,7 +55,7 @@
                                 effect="dark"
                                 content="已发送"
                     >
-                      <Icon icon="bi:send-arrow-up" style="color: #67C23A" width="20" height="20"
+                      <Icon icon="bi:send-arrow-up-fill" style="color: #67C23A" width="20" height="20"
                       />
 
                     </el-tooltip>
@@ -87,7 +87,7 @@
                                 effect="dark"
                                 content="发送延迟"
                     >
-                      <Icon icon="quill:send-later" style="color:#FBBD08" width="20"
+                      <Icon icon="bi:send-arrow-up-fill" style="color:#FBBD08" width="20"
                             height="20"/>
 
                     </el-tooltip>
