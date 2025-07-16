@@ -55,14 +55,14 @@ const loginService = {
 
 		if (regKey === settingConst.regKey.OPEN) {
 			const result = await this.handleOpenRegKey(c, regKey, code)
-			type = result.type
-			regKeyId = result.regKeyId
+			type = result?.type
+			regKeyId = result?.regKeyId
 		}
 
 		if (regKey === settingConst.regKey.OPTIONAL) {
 			const result = await this.handleOpenOptional(c, regKey, code)
-			type = result.type
-			regKeyId = result.regKeyId
+			type = result?.type
+			regKeyId = result?.regKeyId
 		}
 
 		const accountRow = await accountService.selectByEmailIncludeDelNoCase(c, email);
