@@ -14,31 +14,31 @@
             style="width: 100%;"
         >
           <el-table-column  width="10" />
-          <el-table-column label="身份名称" prop="name" :min-width="roleWidth">
+          <el-table-column :label="$t('roleName')" prop="name" :min-width="roleWidth">
             <template #default="props">
               <div class="role-name">
                 <span >{{props.row.name}}</span>
-                <span v-if="props.row.isDefault"><el-tag class="def-tag" >默认</el-tag></span>
+                <span v-if="props.row.isDefault"><el-tag class="def-tag" >{{$t('default')}}</el-tag></span>
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="排序" :width="sortWidth" prop="sort"/>
-          <el-table-column v-if="desShow" label="描述" min-width="200" prop="description" >
+          <el-table-column :label="$t('order')" :width="sortWidth" prop="sort"/>
+          <el-table-column v-if="desShow" :label="$t('description')" min-width="200" prop="description" >
             <template #default="props">
               <div class="description">
                 <span >{{props.row.description}}</span>
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="操作" :width="settingWidth">
+          <el-table-column :label="$t('tabSetting')" :width="settingWidth">
             <template #default="props">
               <el-dropdown trigger="click">
-                <el-button size="small" type="primary">操作</el-button>
+                <el-button size="small" type="primary">{{$t('action')}}</el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item @click="openRoleSet(props.row)">修改</el-dropdown-item>
-                    <el-dropdown-item @click="setDef(props.row)">默认</el-dropdown-item>
-                    <el-dropdown-item @click="delRole(props.row)">删除</el-dropdown-item>
+                    <el-dropdown-item @click="openRoleSet(props.row)">{{$t('change')}}</el-dropdown-item>
+                    <el-dropdown-item @click="setDef(props.row)">{{$t('default')}}</el-dropdown-item>
+                    <el-dropdown-item @click="delRole(props.row)">{{$t('delete')}}</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -49,19 +49,19 @@
     </el-scrollbar>
     <el-dialog top="5vh" class="dialog" v-model="roleFormShow" :title="dialogType.title" @closed="resetForm">
       <div class="dialog-box">
-        <el-input class="dialog-input" v-model="form.name" type="text" :maxlength="12" placeholder="身份名称" autocomplete="off" />
-        <el-input class="dialog-input" v-model="form.description" :maxlength="30" type="text" placeholder="描述" autocomplete="off" />
-        <el-input-tag class="dialog-input-tag" tag-type="warning" :class="form.banEmail.length === 0 ? 'dialog-input' : '' " v-model="form.banEmail" @add-tag="banEmailAddTag"  type="text" placeholder="输入邮箱拦截收件, 拦截所有前缀 *@example.com" autocomplete="off" />
+        <el-input class="dialog-input" v-model="form.name" type="text" :maxlength="12" :placeholder="$t('roleName')" autocomplete="off" />
+        <el-input class="dialog-input" v-model="form.description" :maxlength="30" type="text" :placeholder="$t('description')" autocomplete="off" />
+        <el-input-tag class="dialog-input-tag" tag-type="warning" :class="form.banEmail.length === 0 ? 'dialog-input' : '' " v-model="form.banEmail" @add-tag="banEmailAddTag"  type="text" :placeholder="$t('emailBlock')" autocomplete="off" />
         <el-radio-group class="dialog-radio" v-model="form.banEmailType" v-if="form.banEmail.length > 0">
-          <el-radio label="丢弃邮件" :value="0" />
-          <el-radio label="移除正文" :value="1" />
+          <el-radio :label="$t('removeAll')" :value="0" />
+          <el-radio :label="$t('removeBody')" :value="1" />
         </el-radio-group>
         <div class="dialog-input">
-          <el-input-number placeholder="排序" :min="0" :max="9999" v-model.number="form.sort" controls-position="right" autocomplete="off" />
+          <el-input-number :placeholder="$t('order')" :min="0" :max="9999" v-model.number="form.sort" controls-position="right" autocomplete="off" />
         </div>
         <el-radio-group v-model="expand" size="small" @change="expandChange" class="perm-expand">
-          <el-radio-button label="展开" :value="true" />
-          <el-radio-button label="收起" :value="false" />
+          <el-radio-button :label="$t('expand')" :value="true" />
+          <el-radio-button :label="$t('collapse')" :value="false" />
         </el-radio-group>
         <el-tree
             :expand-on-click-node="false"
@@ -79,25 +79,23 @@
             <div>
               <span>{{node.label}}</span>
               <span class="send-num" v-if="data.permKey === 'email:send'" @click.stop>
-                <el-input-number  v-model="form.sendCount" controls-position="right" :max="99999" size="small" placeholder="数量" >
+                <el-input-number  v-model="form.sendCount" controls-position="right" :max="99999" size="small" :placeholder="$t('total')" >
                 </el-input-number>
-                  <el-select v-model="form.sendType" placeholder="Select" size="small" style="width: 60px;margin-left: 5px;">
-                    <el-option label="总数" value="count" />
-                    <el-option label="每天" value="day" />
+                  <el-select v-model="form.sendType" placeholder="Select" size="small" style="width: 65px;margin-left: 5px;">
+                    <el-option :label="$t('total')" value="count" />
+                    <el-option :label="$t('daily')" value="day" />
+                    <el-option :label="$t('btnBan')" value="ban" />
                   </el-select>
-                <el-tooltip effect="dark" content="零无限制 负数无次数">
-                    <Icon class="warning" icon="fe:warning" width="18" height="18"/>
-                  </el-tooltip>
               </span>
               <span class="send-num" v-if="data.permKey === 'account:add'" @click.stop>
-                <el-input-number  v-model="form.accountCount" controls-position="right" :min="0"  :max="99999" size="small" placeholder="数量" >
+                <el-input-number  v-model="form.accountCount" controls-position="right" :min="0"  :max="99999" size="small" :placeholder="$t('total')" >
                 </el-input-number>
               </span>
             </div>
           </template>
         </el-tree>
         <el-button class="btn" type="primary" :loading="permLoading" @click="roleFormClick"
-        >保存
+        >{{$t('save')}}
         </el-button>
       </div>
     </el-dialog>
@@ -111,11 +109,13 @@ import loading from '@/components/loading/index.vue';
 import {useRoleStore} from "@/store/role.js";
 import {useUserStore} from "@/store/user.js";
 import {isEmail} from "@/utils/verify-utils.js";
+import {useI18n} from "vue-i18n";
 
 defineOptions({
   name: 'role'
 })
 
+const { t, locale } = useI18n();
 const userStore = useUserStore();
 const roleStore = useRoleStore();
 const roleFormShow = ref(false)
@@ -182,7 +182,7 @@ function roleFormClick() {
 function setDef(role) {
   roleSetDef(role.roleId).then(() => {
     ElMessage({
-      message: "设置成功",
+      message: t('changSuccessMsg'),
       type: "success",
       plain: true
     })
@@ -191,14 +191,14 @@ function setDef(role) {
 }
 
 function delRole(role) {
-  ElMessageBox.confirm(`确认删除 ${role.name} 吗?`, {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('delConfirm', {msg: role.name}), {
+    confirmButtonText: t('confirm'),
+    cancelButtonText: t('confirm'),
     type: 'warning'
   }).then(() => {
     roleDelete(role.roleId).then(() => {
       ElMessage({
-        message: "删除成功",
+        message: t('copySuccessMsg'),
         type: "success",
         plain: true
       })
@@ -228,7 +228,7 @@ function setRole() {
 
   if (!form.name) {
     ElMessage({
-      message: "身份名不能为空",
+      message: t('emptyRoleNameMsg'),
       type: "error",
       plain: true
     })
@@ -243,7 +243,7 @@ function setRole() {
   permLoading.value = true
   roleSet(params).then(() => {
     ElMessage({
-      message: "修改成功",
+      message: t('changSuccessMsg'),
       type: "success",
       plain: true
     })
@@ -275,7 +275,7 @@ function resetForm() {
 
 function openRoleSet(role) {
   chooseRole = role
-  dialogType.title = '修改身份'
+  dialogType.title = t('changeRoleTitle')
   dialogType.type = 'set'
   roleFormShow.value = true
   form.sort = role.sort
@@ -292,7 +292,7 @@ function openRoleSet(role) {
 
 
 function openAddRole() {
-  dialogType.title = '添加身份'
+  dialogType.title = t('addRoleTitle')
   dialogType.type = 'add'
   roleFormShow.value = true
 }
@@ -306,7 +306,7 @@ function addRole() {
   permLoading.value = true
   roleAdd(params).then(() => {
     ElMessage({
-      message: "添加成功",
+      message: t('addSuccessMsg'),
       type: "success",
       plain: true
     })
@@ -335,7 +335,7 @@ function getRoleList() {
 
 function adjustWidth() {
   desShow.value = window.innerWidth > 767
-  settingWidth.value = window.innerWidth < 480 ? 75 : null
+  settingWidth.value = window.innerWidth < 480 ? (locale.value === 'en' ? 85 : 75) : null
   sortWidth.value = window.innerWidth < 480 ? 75 : null
   roleWidth.value = window.innerWidth < 480 ? 180 : 200
 }

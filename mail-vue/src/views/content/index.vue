@@ -18,20 +18,20 @@
         <div class="content">
           <div class="email-info">
             <div>
-              <div class="send"><span class="send-source">发件人</span>
+              <div class="send"><span class="send-source">{{$t('from')}}</span>
                 <div class="send-name">
                   <span class="send-name-title">{{ email.name }}</span>
                   <span><{{ email.sendEmail }}></span>
                 </div>
               </div>
-              <div class="receive"><span class="source">收件人</span><span class="receive-email">{{  formateReceive(email.recipient) }}</span></div>
+              <div class="receive"><span class="source">{{$t('recipient')}}</span><span class="receive-email">{{  formateReceive(email.recipient) }}</span></div>
               <div class="date">
                 <div>{{ formatDetailDate(email.createTime) }}</div>
               </div>
             </div>
-            <el-alert v-if="email.status === 3" :closable="false" :title="'发送失败: ' + toMessage(email.message)" class="email-msg" type="error" show-icon />
-            <el-alert v-if="email.status === 4" :closable="false" title="被标记为垃圾邮件" class="email-msg" type="warning" show-icon />
-            <el-alert v-if="email.status === 5" :closable="false" title="邮件发送被延迟" class="email-msg" type="warning" show-icon />
+            <el-alert v-if="email.status === 3" :closable="false" :title="`${$t('bounced')} ` + toMessage(email.message)" class="email-msg" type="error" show-icon />
+            <el-alert v-if="email.status === 4" :closable="false" :title="$t('complained')" class="email-msg" type="warning" show-icon />
+            <el-alert v-if="email.status === 5" :closable="false" :title="$t('delayed')" class="email-msg" type="warning" show-icon />
           </div>
           <el-scrollbar class="htm-scrollbar" :class="email.attList.length === 0 ? 'bottom-distance' : ''">
             <ShadowHtml :html="formatImage(email.content)" v-if="email.content" />
@@ -39,8 +39,8 @@
           </el-scrollbar>
           <div class="att" v-if="email.attList.length > 0">
             <div class="att-title">
-              <span>附件列表</span>
-              <span>共 {{email.attList.length}} 个</span>
+              <span>{{$t('attachments')}}</span>
+              <span>{{$t('attCount',{total: email.attList.length})}}</span>
             </div>
             <div class="att-box">
 
@@ -87,8 +87,9 @@ import {getExtName, formatBytes} from "@/utils/file-utils.js";
 import {cvtR2Url} from "@/utils/convert.js";
 import {getIconByName} from "@/utils/icon-utils.js";
 import {useSettingStore} from "@/store/setting.js";
-import {sysEmailDelete} from "@/request/sys-email.js";
+import {allEmailDelete} from "@/request/all-email.js";
 import {useUiStore} from "@/store/ui.js";
+import {useI18n} from "vue-i18n";
 
 const uiStore = useUiStore();
 const settingStore = useSettingStore();
@@ -99,7 +100,7 @@ const email = emailStore.contentData.email
 const showPreview = ref(false)
 const srcList = reactive([])
 
-
+const { t } = useI18n()
 watch(() => accountStore.currentAccountId, () => {
   handleBack()
 })
@@ -166,15 +167,15 @@ const handleBack = () => {
 }
 
 const handleDelete = () => {
-  ElMessageBox.confirm('确认删除该邮件吗？', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('delEmailConfirm'), {
+    confirmButtonText: t('confirm'),
+    cancelButtonText: t('cancel'),
     type: 'warning'
   }).then(() => {
     if (emailStore.contentData.delType === 'logic') {
       emailDelete(email.emailId).then(() => {
         ElMessage({
-          message: '删除成功',
+          message: t('delSuccessMsg'),
           type: 'success',
           plain: true,
         })
@@ -182,9 +183,9 @@ const handleDelete = () => {
       })
     } else  {
 
-      sysEmailDelete(email.emailId).then(() => {
+      allEmailDelete(email.emailId).then(() => {
         ElMessage({
-          message: '删除成功',
+          message: t('delSuccessMsg'),
           type: 'success',
           plain: true,
         })

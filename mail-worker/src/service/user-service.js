@@ -2,7 +2,7 @@ import BizError from '../error/biz-error';
 import accountService from './account-service';
 import orm from '../entity/orm';
 import user from '../entity/user';
-import { and, asc, count, desc, eq, inArray, like, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { emailConst, isDel, roleConst, userConst } from '../const/entity-const';
 import kvConst from '../const/kv-const';
 import KvConst from '../const/kv-const';
@@ -15,6 +15,7 @@ import roleService from './role-service';
 import emailUtils from '../utils/email-utils';
 import saltHashUtils from '../utils/crypto-utils';
 import constant from '../const/constant';
+import { t } from '../i18n/i18n'
 
 const userService = {
 
@@ -50,7 +51,7 @@ const userService = {
 		const { password } = params;
 
 		if (password < 6) {
-			throw new BizError('密码不能小于6位');
+			throw new BizError(t('pwdMinLengthLimit'));
 		}
 		const { salt, hash } = await cryptoUtils.hashPassword(password);
 		await orm(c).update(user).set({ password: hash, salt: salt }).where(eq(user.userId, userId)).run();
@@ -295,7 +296,7 @@ const userService = {
 		const roleRow = await roleService.selectById(c, type);
 
 		if (!roleRow) {
-			throw new BizError('身份不存在');
+			throw new BizError(t('roleNotExist'));
 		}
 
 		await orm(c)
@@ -327,27 +328,27 @@ const userService = {
 		const { email, type, password } = params;
 
 		if (!c.env.domain.includes(emailUtils.getDomain(email))) {
-			throw new BizError('非法邮箱域名');
+			throw new BizError(t('notEmailDomain'));
 		}
 
 		if (password.length < 6) {
-			throw new BizError('密码必须大于6位');
+			throw new BizError(t('pwdMinLengthLimit'));
 		}
 
 		const accountRow = await accountService.selectByEmailIncludeDel(c, email);
 
 		if (accountRow && accountRow.isDel === isDel.DELETE) {
-			throw new BizError('该邮箱已被注销');
+			throw new BizError(t('isDelUser'));
 		}
 
 		if (accountRow) {
-			throw new BizError('该邮箱已被注册');
+			throw new BizError(t('isRegAccount'));
 		}
 
 		const role = roleService.selectById(c, type);
 
 		if (!role) {
-			throw new BizError('权限身份不存在');
+			throw new BizError(t('roleNotExist'));
 		}
 
 		const { salt, hash } = await saltHashUtils.hashPassword(password);

@@ -1,12 +1,16 @@
 import axios from "axios";
 import router from "@/router";
+import i18n from "@/i18n/index.js";
+import {useSettingStore} from "@/store/setting.js";
 
 let http = axios.create({
     baseURL: import.meta.env.VITE_BASE_URL
 });
 
 http.interceptors.request.use(config => {
+    const { lang } = useSettingStore();
     config.headers.Authorization = `${localStorage.getItem('token')}`
+    config.headers['accept-language'] = lang
     return config
 })
 
@@ -62,7 +66,7 @@ http.interceptors.response.use((res) => {
             return Promise.reject(error)
         } else if (error.message.includes('Network Error')) {
             ElMessage({
-                message: '网络错误,请检查网络连接',
+                message: i18n.global.t('networkErrorMsg'),
                 type: 'error',
                 plain: true,
                 grouping: true,
@@ -70,7 +74,7 @@ http.interceptors.response.use((res) => {
             })
         } else if (error.code === 'ECONNABORTED') {
             ElMessage({
-                message: '请求超时,请稍后重试',
+                message: i18n.global.t('timeoutErrorMsg'),
                 type: 'error',
                 plain: true,
                 grouping: true
@@ -78,7 +82,7 @@ http.interceptors.response.use((res) => {
             ElMessage.error('')
         } else if (error.response) {
             ElMessage({
-                message: `服务器繁忙`,
+                message: i18n.global.t('serverBusyErrorMsg'),
                 type: 'error',
                 plain: true,
                 grouping: true,
@@ -86,7 +90,7 @@ http.interceptors.response.use((res) => {
             })
         } else {
             ElMessage({
-                message: '请求失败,请稍后再试',
+                message: i18n.global.t('reqFailErrorMsg'),
                 type: 'error',
                 plain: true,
                 grouping: true,

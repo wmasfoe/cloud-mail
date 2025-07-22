@@ -5,6 +5,8 @@ import roleService from './role-service';
 import BizError from '../error/biz-error';
 import { formatDetailDate, toUtc } from '../utils/date-uitil';
 import userService from './user-service';
+import { t } from '../i18n/i18n.js';
+
 const regKeyService = {
 
 	async add(c, params, userId) {
@@ -12,26 +14,26 @@ const regKeyService = {
 		let {code,roleId,count,expireTime} = params;
 
 		if (!code) {
-			throw new BizError('注册码不能为空');
+			throw new BizError(t('emptyRegKey'));
 		}
 
 		if (!count) {
-			throw new BizError('使用次数不能为空');
+			throw new BizError(t('emptyRegKey'));
 		}
 
 		if (!expireTime) {
-			throw new BizError('有效时间不能为空');
+			throw new BizError(t('emptyRegKeyExpire'));
 		}
 
 		const regKeyRow = await orm(c).select().from(regKey).where(eq(regKey.code, code)).get();
 
 		if (regKeyRow) {
-			throw new BizError('注册码已存在');
+			throw new BizError(t('isExistRegKye'));
 		}
 
 		const roleRow = roleService.selectById(c, roleId);
 		if (!roleRow) {
-			throw new BizError('权限身份不存在');
+			throw new BizError(t('roleNotExist'));
 		}
 
 		expireTime = formatDetailDate(expireTime)

@@ -66,8 +66,8 @@ export async function email(message, env, ctx) {
 						if (banEmailType === roleConst.banEmailType.ALL) return
 
 						if (banEmailType === roleConst.banEmailType.CONTENT) {
-							email.html = '邮件内容已被移除'
-							email.text = '邮件内容已被移除'
+							email.html = 'removed'
+							email.text = 'removed'
 							email.attachments = []
 						}
 
@@ -80,8 +80,8 @@ export async function email(message, env, ctx) {
 						if (banEmailType === roleConst.banEmailType.ALL) return
 
 						if (banEmailType === roleConst.banEmailType.CONTENT) {
-							email.html = '邮件内容已被移除'
-							email.text = '邮件内容已被移除'
+							email.html = 'removed'
+							email.text = 'removed'
 							email.attachments = []
 						}
 
@@ -114,11 +114,6 @@ export async function email(message, env, ctx) {
 			isDel: isDel.DELETE,
 			status: emailConst.status.SAVING
 		};
-
-		let headers = message.headers
-
-		console.log(headers.get('X-Cf-Spamh-Score'))
-		console.log(email)
 
 		const attachments = [];
 		const cidAttachments = [];

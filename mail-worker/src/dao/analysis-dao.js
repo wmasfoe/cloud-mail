@@ -46,53 +46,53 @@ const analysisDao = {
 		return results[0];
 	},
 
-	async userDayCount(c) {
+	async userDayCount(c, diffHours) {
 		const { results } = await c.env.db.prepare(`
             SELECT
-                DATE(create_time,'+8 hours') AS date,
+                DATE(create_time,'+${diffHours} hours') AS date,
                 COUNT(*) AS total
             FROM
                 user
             WHERE
-                DATE(create_time,'+8 hours') BETWEEN DATE('now', '-15 days', '+8 hours') AND DATE('now','-1 day','+8 hours')
+                DATE(create_time,'+${diffHours} hours') BETWEEN DATE('now', '-15 days', '+${diffHours} hours') AND DATE('now','-1 day','+${diffHours} hours')
             GROUP BY
-                DATE(create_time,'+8 hours')
+                DATE(create_time,'+${diffHours} hours')
             ORDER BY
                 date ASC
         `).all();
 		return results;
 	},
 
-	async receiveDayCount(c) {
+	async receiveDayCount(c, diffHours) {
 		const { results } = await c.env.db.prepare(`
             SELECT
-                DATE(create_time,'+8 hours') AS date,
+                DATE(create_time,'+${diffHours} hours') AS date,
                 COUNT(*) AS total
             FROM
                 email
             WHERE
-			  				DATE(create_time,'+8 hours') BETWEEN DATE('now', '-15 days', '+8 hours') AND DATE('now','-1 day','+8 hours')
+			  				DATE(create_time,'+${diffHours} hours') BETWEEN DATE('now', '-15 days', '+${diffHours} hours') AND DATE('now','-1 day','+${diffHours} hours')
                 AND type = 0
             GROUP BY
-                DATE(create_time,'+8 hours')
+                DATE(create_time,'+${diffHours} hours')
             ORDER BY
                 date ASC
         `).all();
 		return results;
 	},
 
-	async sendDayCount(c) {
+	async sendDayCount(c, diffHours) {
 		const { results } = await c.env.db.prepare(`
             SELECT
-                DATE(create_time,'+8 hours') AS date,
+                DATE(create_time,'+${diffHours} hours') AS date,
                 COUNT(*) AS total
             FROM
                 email
             WHERE
-			  				DATE(create_time,'+8 hours') BETWEEN DATE('now', '-15 days', '+8 hours') AND DATE('now','-1 day','+8 hours')
+			  				DATE(create_time,'+${diffHours} hours') BETWEEN DATE('now', '-15 days', '+${diffHours} hours') AND DATE('now','-1 day','+${diffHours} hours')
                 AND type = 1
             GROUP BY
-                DATE(create_time,'+8 hours')
+                DATE(create_time,'+${diffHours} hours')
             ORDER BY
                 date ASC
         `).all();

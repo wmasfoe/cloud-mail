@@ -11,16 +11,16 @@
     <div class="form-wrapper">
         <div class="container">
           <span class="form-title">{{settingStore.settings.title}}</span>
-          <span class="form-desc" v-if="show === 'login'">请输入账号信息以开始使用邮箱系统</span>
-          <span class="form-desc" v-else>请输入账号密码以开始注册邮箱系统</span>
+          <span class="form-desc" v-if="show === 'login'">{{$t('loginTitle')}}</span>
+          <span class="form-desc" v-else>{{$t('regTitle')}}</span>
           <div v-if="show === 'login'">
-            <el-input class="email-input" v-model="form.email" type="text" placeholder="邮箱" autocomplete="off">
+            <el-input class="email-input" v-model="form.email" type="text" :placeholder="$t('emailAccount')" autocomplete="off">
               <template #append>
                 <div @click.stop="openSelect">
                   <el-select
                       ref="mySelect"
                       v-model="suffix"
-                      placeholder="请选择"
+                      :placeholder="$t('select')"
                       class="select"
                   >
                     <el-option
@@ -37,20 +37,20 @@
                 </div>
               </template>
             </el-input>
-            <el-input v-model="form.password" placeholder="密码" type="password" autocomplete="off">
+            <el-input v-model="form.password" :placeholder="$t('password')" type="password" autocomplete="off">
             </el-input>
             <el-button class="btn" type="primary" @click="submit" :loading="loginLoading"
-            >登录
+            >{{$t('loginBtn')}}
             </el-button>
           </div>
           <div v-else>
-            <el-input class="email-input" v-model="registerForm.email" type="text" placeholder="邮箱" autocomplete="off">
+            <el-input class="email-input" v-model="registerForm.email" type="text" :placeholder="$t('emailAccount')" autocomplete="off">
               <template #append>
                 <div @click.stop="openSelect">
                   <el-select
                       ref="mySelect"
                       v-model="suffix"
-                      placeholder="请选择"
+                      :placeholder="$t('select')"
                       class="select"
                   >
                     <el-option
@@ -67,22 +67,22 @@
                 </div>
               </template>
             </el-input>
-            <el-input v-model="registerForm.password" placeholder="密码" type="password" autocomplete="off" />
-            <el-input v-model="registerForm.confirmPassword" placeholder="确认密码" type="password" autocomplete="off" />
-            <el-input v-if="settingStore.settings.regKey === 0" v-model="registerForm.code" placeholder="注册码" type="text" autocomplete="off" />
-            <el-input v-if="settingStore.settings.regKey === 2" v-model="registerForm.code" placeholder="注册码（可选）" type="text" autocomplete="off" />
+            <el-input v-model="registerForm.password" :placeholder="$t('password')" type="password" autocomplete="off" />
+            <el-input v-model="registerForm.confirmPassword" :placeholder="$t('confirmPwd')" type="password" autocomplete="off" />
+            <el-input v-if="settingStore.settings.regKey === 0" v-model="registerForm.code" :placeholder="$t('regKey')" type="text" autocomplete="off" />
+            <el-input v-if="settingStore.settings.regKey === 2" v-model="registerForm.code" :placeholder="$t('regKeyOptional')" type="text" autocomplete="off" />
             <div v-show="verifyShow"
                 class="register-turnstile"
                 :data-sitekey="settingStore.settings.siteKey"
                 data-callback="onTurnstileSuccess"
             ></div>
             <el-button class="btn" type="primary" @click="submitRegister" :loading="registerLoading"
-            >注册
+            >{{$t('regBtn')}}
             </el-button>
           </div>
           <template v-if="settingStore.settings.register === 0">
-            <div class="switch" @click="show = 'register'" v-if="show === 'login'">还没有账号? <span>创建账号</span></div>
-            <div class="switch" @click="show = 'login'" v-else>已有账号? <span>去登录</span></div>
+            <div class="switch" @click="show = 'register'" v-if="show === 'login'">{{$t('noAccount')}} <span>{{$t('regSwitch')}}</span></div>
+            <div class="switch" @click="show = 'login'" v-else>{{$t('hasAccount')}} <span>{{$t('loginSwitch')}}</span></div>
           </template>
         </div>
     </div>
@@ -101,8 +101,10 @@ import {useUserStore} from "@/store/user.js";
 import {Icon} from "@iconify/vue";
 import {cvtR2Url} from "@/utils/convert.js";
 import {loginUserInfo} from "@/request/my.js";
-import {permsToRouter} from "@/utils/perm.js";
+import {permsToRouter} from "@/perm/perm.js";
+import {useI18n} from "vue-i18n";
 
+const { t } = useI18n();
 const accountStore = useAccountStore();
 const userStore = useUserStore();
 const settingStore = useSettingStore();
@@ -161,7 +163,7 @@ const submit = () => {
 
   if (!form.email) {
     ElMessage({
-      message: '邮箱不能为空',
+      message: t('emptyEmailMsg'),
       type: 'error',
       plain: true,
     })
@@ -170,7 +172,7 @@ const submit = () => {
 
   if (!isEmail(form.email + suffix.value)) {
     ElMessage({
-      message: '输入的邮箱不合法',
+      message: t('notEmailMsg'),
       type: 'error',
       plain: true,
     })
@@ -179,7 +181,7 @@ const submit = () => {
 
   if (!form.password) {
     ElMessage({
-      message: '密码不能为空',
+      message: t('emptyPwdMsg'),
       type: 'error',
       plain: true,
     })
@@ -207,7 +209,7 @@ function submitRegister() {
 
   if (!registerForm.email) {
     ElMessage({
-      message: '邮箱不能为空',
+      message: t('emptyEmailMsg'),
       type: 'error',
       plain: true,
     })
@@ -216,7 +218,7 @@ function submitRegister() {
 
   if (!isEmail(registerForm.email + suffix.value)) {
     ElMessage({
-      message: '输入的邮箱不合法',
+      message: t('notEmailMsg'),
       type: 'error',
       plain: true,
     })
@@ -225,7 +227,7 @@ function submitRegister() {
 
   if (!registerForm.password) {
     ElMessage({
-      message: '密码不能为空',
+      message: t('emptyPwdMsg'),
       type: 'error',
       plain: true,
     })
@@ -234,7 +236,7 @@ function submitRegister() {
 
   if (registerForm.password.length < 6) {
     ElMessage({
-      message: '密码最少六位',
+      message: t('pwdLengthMsg'),
       type: 'error',
       plain: true,
     })
@@ -244,7 +246,7 @@ function submitRegister() {
   if (registerForm.password !== registerForm.confirmPassword) {
 
     ElMessage({
-      message: '两次密码输入不一致',
+      message: t('confirmPwdFailMsg'),
       type: 'error',
       plain: true,
     })
@@ -256,7 +258,7 @@ function submitRegister() {
     if (!registerForm.code) {
 
       ElMessage({
-        message: '注册码不能为空',
+        message: t('emptyRegKeyMsg'),
         type: 'error',
         plain: true,
       })
@@ -298,7 +300,7 @@ function submitRegister() {
     turnstileId = null
     verifyToken = ''
     ElMessage({
-      message: '注册成功',
+      message: t('regSuccessMsg'),
       type: 'success',
       plain: true,
     })

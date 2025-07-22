@@ -14,10 +14,10 @@
                :type="'draft'"
   >
     <template #name="props">
-      <span class="send-email" >{{props.email.receiveEmail.join(',') || '(无收件人)'}}</span>
+      <span class="send-email" >{{props.email.receiveEmail.join(',') || '('+$t('noRecipient')+')'}}</span>
     </template>
     <template #subject="props" >
-      {{props.email.subject || '(无标题)'}}
+      {{props.email.subject || '('+$t('noSubject')+')'}}
     </template>
   </emailScroll>
 </template>

@@ -1,10 +1,10 @@
-import { useUserStore } from "@/store/user.js";
-import { useSettingStore } from "@/store/setting.js";
-import { useAccountStore } from "@/store/account.js";
-import { loginUserInfo } from "@/request/my.js";
-import { permsToRouter } from "@/utils/perm.js";
+import {useUserStore} from "@/store/user.js";
+import {useSettingStore} from "@/store/setting.js";
+import {useAccountStore} from "@/store/account.js";
+import {loginUserInfo} from "@/request/my.js";
+import {permsToRouter} from "@/perm/perm.js";
 import router from "@/router";
-import { websiteConfig } from "@/request/setting.js";
+import {websiteConfig} from "@/request/setting.js";
 import {cvtR2Url} from "@/utils/convert.js";
 
 export async function init() {
@@ -15,6 +15,12 @@ export async function init() {
     const accountStore = useAccountStore();
 
     const token = localStorage.getItem('token');
+
+    console.log(settingStore.lang)
+
+    if (!settingStore.lang) {
+        settingStore.lang = navigator.language.split('-')[0]
+    }
 
     let setting = null;
 

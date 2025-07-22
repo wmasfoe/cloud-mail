@@ -89,6 +89,10 @@ button, input, select, textarea {
     max-height: 220px !important;
 }
 
+.el-message {
+    white-space: nowrap !important;
+}
+
 :root {
     --el-color-primary: #1890ff;
     --el-color-primary-dark-2: #1064c0;

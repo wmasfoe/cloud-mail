@@ -7,8 +7,8 @@ import perm from '../entity/perm';
 import { permConst, roleConst } from '../const/entity-const';
 import userService from './user-service';
 import user from '../entity/user';
-import emailUtils from '../utils/email-utils';
 import verifyUtils from '../utils/verify-utils';
+import { t } from '../i18n/i18n.js';
 
 const roleService = {
 
@@ -17,19 +17,19 @@ const roleService = {
 		let { name, permIds, banEmail } = params;
 
 		if (!name) {
-			throw new BizError('身份名不能为空');
+			throw new BizError(t('emptyRoleName'));
 		}
 
 		let roleRow = await orm(c).select().from(role).where(eq(role.name, name)).get();
 
 		if (roleRow) {
-			throw new BizError('身份名已存在');
+			throw new BizError(t('roleNameExist'));
 		}
 
 		const notEmailIndex = banEmail.findIndex(item => !verifyUtils.isEmail(item))
 
 		if (notEmailIndex > -1) {
-			throw new BizError('非法邮箱');
+			throw new BizError(t('notEmail'));
 		}
 
 		banEmail = banEmail.join(',')
@@ -67,7 +67,7 @@ const roleService = {
 		let { name, permIds, roleId, banEmail } = params;
 
 		if (!name) {
-			throw new BizError('名字不能为空');
+			throw new BizError(t('emptyRoleName'));
 		}
 
 		delete params.isDefault
@@ -75,7 +75,7 @@ const roleService = {
 		const notEmailIndex = banEmail.findIndex(item => !verifyUtils.isEmail(item))
 
 		if (notEmailIndex > -1) {
-			throw new BizError('非法邮箱');
+			throw new BizError(t('notEmail'));
 		}
 
 		banEmail = banEmail.join(',')
@@ -97,11 +97,11 @@ const roleService = {
 		const roleRow = await orm(c).select().from(role).where(eq(role.roleId, roleId)).get();
 
 		if (!roleRow) {
-			throw new BizError('身份不存在');
+			throw new BizError(t('notExist'));
 		}
 
 		if (roleRow.isDefault) {
-			throw new BizError('默认身份不能删除');
+			throw new BizError(t('delDefRole'));
 		}
 
 		const defRoleRow = await orm(c).select().from(role).where(eq(role.isDefault, roleConst.isDefault.OPEN)).get();
@@ -124,7 +124,7 @@ const roleService = {
 	async setDefault(c, params) {
 		const roleRow = await orm(c).select().from(role).where(eq(role.roleId, params.roleId)).get();
 		if (!roleRow) {
-			throw new BizError('身份不存在');
+			throw new BizError(t('roleNotExist'));
 		}
 		await orm(c).update(role).set({ isDefault: 0 }).run();
 		await orm(c).update(role).set({ isDefault: 1 }).where(eq(role.roleId, params.roleId)).run();

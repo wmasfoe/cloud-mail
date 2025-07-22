@@ -13,7 +13,7 @@ import '../api/resend-api';
 import '../api/user-api';
 import '../api/my-api';
 import '../api/role-api'
-import '../api/sys-email-api'
+import '../api/all-email-api'
 import '../api/init-api'
 import '../api/analysis-api'
 import '../api/reg-key-api'

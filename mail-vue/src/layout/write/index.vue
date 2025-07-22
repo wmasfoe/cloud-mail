@@ -6,7 +6,7 @@
           <span class="title-text">
             <Icon icon="hugeicons:quill-write-01" width="28" height="28" />
           </span>
-          <span class="sender">发件人:</span>
+          <span class="sender">{{$t('sender')}}:</span>
           <span class="sender-name">{{form.name}}</span>
           <span class="send-email"><{{form.sendEmail}}></span>
         </div>
@@ -15,17 +15,17 @@
         </div>
       </div>
       <div class="container">
-        <el-input-tag @add-tag="addTagChange" tag-type="primary" size="default" v-model="form.receiveEmail" placeholder="多个邮箱用, 分开 example1.com,example2.com" >
+        <el-input-tag @add-tag="addTagChange" tag-type="primary" size="default" v-model="form.receiveEmail" :placeholder="$t('ruleEmailsInputDesc')" >
           <template #prefix>
-            <div class="item-title">收件人 </div>
+            <div class="item-title">{{$t('recipient')}} </div>
           </template>
           <template #suffix>
-            <span class="distribute" :class="form.manyType ? 'checked' : ''" @click.stop="checkDistribute" >分别发送</span>
+            <span class="distribute" :class="form.manyType ? 'checked' : ''" @click.stop="checkDistribute" >{{$t('sendSeparately')}}</span>
           </template>
         </el-input-tag>
-        <el-input v-model="form.subject" placeholder="请输入邮件主题">
+        <el-input v-model="form.subject" :placeholder="$t('subjectInputDesc')">
           <template #prefix>
-            <div class="item-title">主题 </div>
+            <div class="item-title">{{$t('subject')}} </div>
           </template>
         </el-input>
         <tinyEditor :def-value="defValue" ref="editor" @change="change"/>
@@ -46,8 +46,8 @@
             </div>
           </div>
           <div>
-            <el-button type="primary" @click="sendEmail" v-if="form.sendType === 'reply'">回复</el-button>
-            <el-button type="primary" @click="sendEmail" v-else >发送</el-button>
+            <el-button type="primary" @click="sendEmail" v-if="form.sendType === 'reply'">{{$t('reply')}}</el-button>
+            <el-button type="primary" @click="sendEmail" v-else >{{$t('send')}}</el-button>
           </div>
         </div>
       </div>
@@ -66,11 +66,12 @@ import {useEmailStore} from "@/store/email.js";
 import {fileToBase64, formatBytes} from "@/utils/file-utils.js";
 import {getIconByName} from "@/utils/icon-utils.js";
 import sendPercent from "@/components/send-percent/index.vue"
-import {formatDetailDate, fromNow} from "@/utils/day.js";
+import {formatDetailDate} from "@/utils/day.js";
 import {useSettingStore} from "@/store/setting.js";
 import {userDraftStore} from "@/store/draft.js";
 import db from "@/db/db.js";
 import dayjs from "dayjs";
+import {useI18n} from "vue-i18n";
 
 defineExpose({
   open,
@@ -78,6 +79,7 @@ defineExpose({
   openDraft
 })
 
+const { t } = useI18n()
 const draftStore = userDraftStore()
 const settingStore = useSettingStore()
 const emailStore = useEmailStore();
@@ -131,9 +133,9 @@ function checkDistribute() {
 }
 
 function clearContent() {
-  ElMessageBox.confirm('确定要清空邮件吗?', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('clearContentConfirm'), {
+    confirmButtonText: t('confirm'),
+    cancelButtonText: t('cancel'),
     type: 'warning'
   }).then(() => {
     resetForm()
@@ -159,7 +161,7 @@ function chooseFile() {
     const TotalSize = form.attachments.reduce((acc, item) => acc + item.size, 0);
     if ((TotalSize + size) > 29360128) {
       ElMessage({
-        message: '附件文件大小限制28mb',
+        message: t('attLimitMsg'),
         type: 'error',
         plain: true,
       })
@@ -174,7 +176,7 @@ async function sendEmail() {
 
   if (form.receiveEmail.length === 0) {
     ElMessage({
-      message: '收件人邮箱地址不能为空',
+      message: t('emptyRecipientMsg'),
       type: 'error',
       plain: true,
     })
@@ -183,7 +185,7 @@ async function sendEmail() {
 
   if (!form.subject) {
     ElMessage({
-      message: '主题不能为空',
+      message: t('emptySubjectMsg'),
       type: 'error',
       plain: true,
     })
@@ -192,7 +194,7 @@ async function sendEmail() {
 
   if (!form.content) {
     ElMessage({
-      message: '正文不能为空',
+      message: t('emptyContentMsg'),
       type: 'error',
       plain: true,
     })
@@ -201,7 +203,7 @@ async function sendEmail() {
 
   if (form.manyType === 'divide' && form.attachments.length > 0) {
     ElMessage({
-      message: '分别发送暂时不支持附件',
+      message: t('noSeparateSendMsg'),
       type: 'error',
       plain: true,
     })
@@ -210,7 +212,7 @@ async function sendEmail() {
 
   if (sending) {
     ElMessage({
-      message: '邮件正在发送中',
+      message: t('sendingErrorMsg'),
       type: 'error',
       plain: true,
     })
@@ -218,7 +220,7 @@ async function sendEmail() {
   }
 
   percentMessage =  ElMessage({
-    message: () => h(sendPercent, { value: percent.value }),
+    message: () => h(sendPercent, { value: percent.value,desc: t('sending') }),
     dangerouslyUseHTMLString: true,
     plain: true,
     duration: 0,
@@ -238,7 +240,7 @@ async function sendEmail() {
     })
 
     ElNotification({
-      title: '邮件已发送',
+      title: t('sendSuccessMsg'),
       type: "success",
       message: h('span', { style: 'color: teal' }, email.subject),
       position: 'bottom-right'
@@ -257,7 +259,7 @@ async function sendEmail() {
     show.value = false
   }).catch((e) => {
     ElNotification({
-      title: '发送失败',
+      title: t('sendFailMsg'),
       type: e.code === 403 ? 'warning' : 'error',
       message: h('span', { style: 'color: teal' }, e.message),
       position: 'bottom-right'
@@ -310,7 +312,7 @@ function openReply(email) {
     <div></div>
     <div>
     <br>
-        ${ formatDetailDate(email.createTime) }，${email.name} &lt${email.sendEmail}&gt 来信:
+        ${ formatDetailDate(email.createTime) } ${email.name} &lt${email.sendEmail}&gt ${t('wrote')}:
     </div>
     <blockquote class="mceNonEditable" style="margin: 0 0 0 0.8ex;border-left: 1px solid rgb(204,204,204);padding-left: 1ex;">
       <articl>
@@ -397,9 +399,9 @@ function close() {
     }
   }
 
-  ElMessageBox.confirm('是否保存草稿?', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('saveDraftConfirm'), {
+    confirmButtonText: t('confirm'),
+    cancelButtonText: t('cancel'),
     type: 'warning',
     distinguishCancelAndClose: true
   }).then( async () => {

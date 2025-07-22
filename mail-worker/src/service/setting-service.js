@@ -9,6 +9,7 @@ import accountService from './account-service';
 import userService from './user-service';
 import constant from '../const/constant';
 import BizError from '../error/biz-error';
+import { t } from '../i18n/i18n'
 
 const settingService = {
 
@@ -22,7 +23,7 @@ const settingService = {
 		const setting = await c.env.kv.get(KvConst.SETTING, { type: 'json' });
 		let domainList = c.env.domain;
 		if (typeof domainList === 'string') {
-			throw new BizError('环境变量domain必须是JSON类型');
+			throw new BizError(t('notJsonDomain'));
 		}
 		domainList = domainList.map(item => '@' + item);
 		setting.domainList = domainList;
@@ -70,11 +71,11 @@ const settingService = {
 
 
 		if (!c.env.r2) {
-			throw new BizError('r2对象存储未配置不能上传背景');
+			throw new BizError(t('noOsUpBack'));
 		}
 
 		if (!settingRow.r2Domain) {
-			throw new BizError('r2域名未配置不上传背景');
+			throw new BizError(t('noOsDomainUpBack'));
 		}
 
 		const { background } = params;

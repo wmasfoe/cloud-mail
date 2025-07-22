@@ -6,17 +6,17 @@ import { and, desc, eq, lt, sql, inArray } from 'drizzle-orm';
 import email from '../entity/email';
 import { isDel } from '../const/entity-const';
 import attService from "./att-service";
-
+import { t } from '../i18n/i18n'
 const starService = {
 
 	async add(c, params, userId) {
 		const { emailId } = params;
 		const email = await emailService.selectById(c, emailId);
 		if (!email) {
-			throw new BizError('星标的邮件不存在');
+			throw new BizError(t('starNotExistEmail'));
 		}
 		if (!email.userId === userId) {
-			throw new BizError('星标的邮件非当前用户所有');
+			throw new BizError(t('starNotExistEmail'));
 		}
 		const exist = await orm(c).select().from(star).where(
 			and(

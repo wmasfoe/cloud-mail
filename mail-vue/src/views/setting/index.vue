@@ -1,70 +1,95 @@
 <template>
   <div class="box">
-    <div class="pass">
-      <div class="title">账户与密码</div>
-      <div class="pass-item">
-        <div>用户名</div>
+    <div class="container">
+      <div class="title">{{$t('profile')}}</div>
+      <div class="item">
+        <div>{{$t('username')}}</div>
         <div>
           <span v-if="setNameShow" class="edit-name-input">
             <el-input v-model="accountName"  ></el-input>
             <span class="edit-name" @click="setName">
-             保存
+             {{$t('save')}}
             </span>
           </span>
           <span v-else class="user-name">
             <span >{{ userStore.user.name }}</span>
             <span class="edit-name" @click="showSetName">
-             修改
+             {{$t('change')}}
             </span>
           </span>
         </div>
       </div>
-      <div class="pass-item">
-        <div>邮箱</div>
+      <div class="item">
+        <div>{{$t('emailAccount')}}</div>
         <div>{{ userStore.user.email }}</div>
       </div>
-      <div class="pass-item">
-        <div>密码</div>
+      <div class="item">
+        <div>{{$t('password')}}</div>
         <div>
-          <el-button type="primary" @click="pwdShow = true">修改密码</el-button>
+          <el-button type="primary" @click="pwdShow = true">{{$t('changePwdBtn')}}</el-button>
         </div>
       </div>
     </div>
-    <div class="del-email" v-perm="'my:delete'">
-      <div class="title">删除账户</div>
-      <div style="color: #585d69;">
-        此操作将永久删除您的账户及其所有数据，无法恢复
-      </div>
+    <div class="container lang">
+      <div class="title">{{$t('language')}}</div>
       <div>
-        <el-button type="primary" @click="deleteConfirm">删除账户</el-button>
+          <el-select v-model="lang" placeholder="Select" style="width: 100px">
+          <el-option
+              key="zh"
+              label="简体中文"
+              value="zh"/>
+          <el-option
+              key="en"
+              label="English"
+              value="en"/>
+        </el-select>
       </div>
     </div>
-    <el-dialog v-model="pwdShow" title="修改密码" width="340">
+    <div class="del-email" v-perm="'my:delete'">
+      <div class="title">{{$t('deleteUser')}}</div>
+      <div style="color: #585d69;">
+        {{$t('delAccountMsg')}}
+      </div>
+      <div>
+        <el-button type="primary" @click="deleteConfirm">{{$t('deleteUserBtn')}}</el-button>
+      </div>
+    </div>
+    <el-dialog v-model="pwdShow" :title="$t('changePassword')" width="340">
       <div class="update-pwd">
-        <el-input type="password" placeholder="新的密码" v-model="form.password"/>
-        <el-input type="password" placeholder="确认密码" v-model="form.newPwd"/>
-        <el-button type="primary" :loading="setPwdLoading" @click="submitPwd">保存</el-button>
+        <el-input type="password" :placeholder="$t('newPassword')" v-model="form.password"/>
+        <el-input type="password" :placeholder="$t('confirmPassword')" v-model="form.newPwd"/>
+        <el-button type="primary" :loading="setPwdLoading" @click="submitPwd">{{$t('save')}}</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 <script setup>
-import {defineOptions} from "vue";
-import {reactive, ref} from 'vue'
+import {reactive, ref, defineOptions, watch} from 'vue'
 import {resetPassword, userDelete} from "@/request/my.js";
 import {useUserStore} from "@/store/user.js";
 import router from "@/router/index.js";
+import { storeToRefs } from 'pinia'
 import {accountSetName} from "@/request/account.js";
 import {useAccountStore} from "@/store/account.js";
+import {useI18n} from "vue-i18n";
+import {useSettingStore} from "@/store/setting.js";
+import dayjs from "dayjs";
 
+const { t, locale } = useI18n()
+const settingStore = useSettingStore()
 const accountStore = useAccountStore()
 const userStore = useUserStore();
 const setPwdLoading = ref(false)
 const setNameShow = ref(false)
 const accountName = ref(null)
+const { lang } = storeToRefs(settingStore)
 
 defineOptions({
   name: 'setting'
+})
+
+watch(() => lang.value,() => {
+  window.location.reload()
 })
 
 function showSetName() {
@@ -76,7 +101,7 @@ function setName() {
 
   if (!accountName.value) {
     ElMessage({
-      message: '用户名不能为空',
+      message: t('emptyUserNameMsg'),
       type: 'error',
       plain: true,
     })
@@ -94,7 +119,7 @@ function setName() {
 
   accountSetName(userStore.user.accountId,name).then(() => {
     ElMessage({
-      message: '修改成功',
+      message: t('changSuccessMsg'),
       type: 'success',
       plain: true,
     })
@@ -113,16 +138,16 @@ const form = reactive({
 })
 
 const deleteConfirm = () => {
-  ElMessageBox.confirm('确认删除当前账号及所有数据吗?', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('delAccountConfirm'), {
+    confirmButtonText: t('confirm'),
+    cancelButtonText: t('cancel'),
     type: 'warning'
   }).then(() => {
     userDelete().then(() => {
       localStorage.removeItem('token');
       router.replace('/login');
       ElMessage({
-        message: '删除成功',
+        message: t('delSuccessMsg'),
         type: 'success',
         plain: true,
       })
@@ -135,7 +160,7 @@ function submitPwd() {
 
   if (!form.password) {
     ElMessage({
-      message: '密码不能为空',
+      message: t('emptyPwdMsg'),
       type: 'error',
       plain: true,
     })
@@ -144,7 +169,7 @@ function submitPwd() {
 
   if (form.password.length < 6) {
     ElMessage({
-      message: '密码不能小于6位',
+      message: t('pwdLengthMsg'),
       type: 'error',
       plain: true,
     })
@@ -153,7 +178,7 @@ function submitPwd() {
 
   if (form.password !== form.newPwd) {
     ElMessage({
-      message: '两次密码输入不一致',
+      message: t('confirmPwdFailMsg'),
       type: 'error',
       plain: true,
     })
@@ -163,7 +188,7 @@ function submitPwd() {
   setPwdLoading.value = true
   resetPassword(form.password).then(() => {
     ElMessage({
-      message: '修改成功',
+      message: t('changSuccessMsg'),
       type: 'success',
       plain: true,
     })
@@ -197,13 +222,13 @@ function submitPwd() {
     font-weight: bold;
   }
 
-  .pass {
+  .container {
     font-size: 14px;
     display: grid;
     gap: 20px;
     margin-bottom: 40px;
 
-    .pass-item {
+    .item {
       display: grid;
       grid-template-columns: 50px 1fr;
       gap: 140px;

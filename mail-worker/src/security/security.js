@@ -5,6 +5,7 @@ import KvConst from '../const/kv-const';
 import dayjs from 'dayjs';
 import userService from '../service/user-service';
 import permService from '../service/perm-service';
+import { t } from '../i18n/i18n'
 import app from '../hono/hono';
 
 const exclude = [
@@ -29,8 +30,8 @@ const requirePerms = [
 	'/role/tree',
 	'/role/set',
 	'/role/setDefault',
-	'/sysEmail/list',
-	'/sysEmail/delete',
+	'/allEmail/list',
+	'/allEmail/delete',
 	'/setting/physicsDeleteAll',
 	'/setting/setBackground',
 	'/setting/set',
@@ -67,8 +68,8 @@ const premKey = {
 	'user:set-status': ['/user/setStatus'],
 	'user:set-type': ['/user/setType'],
 	'user:delete': ['/user/delete'],
-	'sys-email:query': ['/sysEmail/list'],
-	'sys-email:delete': ['/sysEmail/delete'],
+	'all-email:query': ['/allEmail/list'],
+	'all-email:delete': ['/allEmail/delete'],
 	'setting:query': ['/setting/query'],
 	'setting:set': ['/setting/set', '/setting/setBackground'],
 	'setting:clean': ['/setting/physicsDeleteAll'],
@@ -100,18 +101,18 @@ app.use('*', async (c, next) => {
 	const result = await jwtUtils.verifyToken(c, jwt);
 
 	if (!result) {
-		throw new BizError('身份认证失效,请重新登录', 401);
+		throw new BizError(t('authExpired'), 401);
 	}
 
 	const { userId, token } = result;
 	const authInfo = await c.env.kv.get(KvConst.AUTH_INFO + userId, { type: 'json' });
 
 	if (!authInfo) {
-		throw new BizError('身份认证失效,请重新登录', 401);
+		throw new BizError(t('authExpired'), 401);
 	}
 
 	if (!authInfo.tokens.includes(token)) {
-		throw new BizError('身份认证失效,请重新登录', 401);
+		throw new BizError(t('authExpired'), 401);
 	}
 
 	const permIndex = requirePerms.findIndex(item => {
@@ -129,7 +130,7 @@ app.use('*', async (c, next) => {
 		});
 
 		if (userPermIndex === -1 && authInfo.user.email !== c.env.admin) {
-			throw new BizError('权限不足', 403);
+			throw new BizError(t('unauthorized'), 403);
 		}
 
 	}

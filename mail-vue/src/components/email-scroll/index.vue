@@ -18,7 +18,7 @@
       </div>
 
       <div class="header-right">
-        <span class="email-count" v-if="total">共 {{ total }} 封</span>
+        <span class="email-count" v-if="total">{{$t('emailCount', {total: total})}}</span>
         <Icon v-if="showAccountIcon" class="more-icon icon" width="16" height="16" icon="akar-icons:dot-grid-fill"
               @click="changeAccountShow"/>
       </div>
@@ -33,7 +33,7 @@
                  :data-checked="item.checked"
                  @click="jumpDetails(item)"
             >
-              <el-checkbox :class=" props.type === 'sys-email' ? 'sys-email-checkbox' : 'checkbox'" v-model="item.checked" @click.stop></el-checkbox>
+              <el-checkbox :class=" props.type === 'all-email' ? 'all-email-checkbox' : 'checkbox'" v-model="item.checked" @click.stop></el-checkbox>
               <div @click.stop="starChange(item)" class="pc-star" v-if="showStar">
                 <Icon v-if="item.isStar" icon="fluent-color:star-16" width="20" height="20"/>
                 <Icon v-else icon="solar:star-line-duotone" width="18" height="18"/>
@@ -45,7 +45,7 @@
                   <div class="email-status" v-if="showStatus">
                     <el-tooltip v-if="item.status ===  0"
                                 effect="dark"
-                                content="已接收"
+                                :content="$t('received')"
                     >
                       <Icon icon="ic:round-mark-email-read" style="color: #67C23A" width="20" height="20"/>
                       />
@@ -53,7 +53,7 @@
                     </el-tooltip>
                     <el-tooltip v-if="item.status ===  1"
                                 effect="dark"
-                                content="已发送"
+                                :content="$t('sent')"
                     >
                       <Icon icon="bi:send-arrow-up-fill" style="color: #67C23A" width="20" height="20"
                       />
@@ -61,7 +61,7 @@
                     </el-tooltip>
                     <el-tooltip v-if="item.status ===  2"
                                 effect="dark"
-                                content="发送成功"
+                                :content="$t('delivered')"
                     >
                       <Icon icon="bi:send-check-fill" style="color: #67C23A" width="20"
                             height="20"/>
@@ -69,7 +69,7 @@
                     </el-tooltip>
                     <el-tooltip v-if="item.status ===  3"
                                 effect="dark"
-                                content="发送失败"
+                                :content="$t('bounced')"
                     >
                       <Icon icon="bi:send-x-fill" style="color: #F56C6C" width="20"
                             height="20"/>
@@ -77,7 +77,7 @@
                     </el-tooltip>
                     <el-tooltip v-if="item.status ===  4"
                                 effect="dark"
-                                content="被标记垃圾邮件"
+                                :content="$t('complained')"
                     >
                       <Icon icon="bi:send-exclamation-fill" style="color:#FBBD08" width="20"
                             height="20"/>
@@ -85,7 +85,7 @@
                     </el-tooltip>
                     <el-tooltip v-if="item.status ===  5"
                                 effect="dark"
-                                content="发送延迟"
+                                :content="$t('delayed')"
                     >
                       <Icon icon="bi:send-arrow-up-fill" style="color:#FBBD08" width="20"
                             height="20"/>
@@ -93,7 +93,7 @@
                     </el-tooltip>
                     <el-tooltip v-if="item.status ===  7"
                                 effect="dark"
-                                content="无人收件"
+                                :content="$t('NoRecipient')"
                     >
                       <Icon icon="ic:round-mark-email-read" style="color:#FBBD08" width="20"
                             height="20"/>
@@ -134,7 +134,7 @@
                       <span>{{ item.type === 0 ? item.toEmail : item.sendEmail }}</span>
                     </div>
                     <div class="del-status" v-if="item.isDel">
-                      <el-tag type="danger" size="small">已删除</el-tag>
+                      <el-tag type="danger" size="small">{{$t('deleted')}}</el-tag>
                     </div>
                   </div>
                 </div>
@@ -151,10 +151,10 @@
             <Loading/>
           </div>
           <div class="noLoading" v-if="noLoading && emailList.length > 0">
-            <div>没有更多数据了</div>
+            <div>{{$t('noMoreData')}}</div>
           </div>
           <div class="empty" v-if="noLoading && emailList.length === 0">
-            <el-empty :image-size="isMobile ? 120 : 0" description="没有任何邮件"/>
+            <el-empty :image-size="isMobile ? 120 : 0" :description="$t('noMessagesFound')"/>
           </div>
         </div>
       </el-scrollbar>
@@ -172,6 +172,7 @@ import {useEmailStore} from "@/store/email.js";
 import {useUiStore} from "@/store/ui.js";
 import {useSettingStore} from "@/store/setting.js";
 import {fromNow} from "@/utils/day.js";
+import {useI18n} from "vue-i18n";
 
 const props = defineProps({
   getEmailList: Function,
@@ -216,7 +217,7 @@ const props = defineProps({
 
 
 const emit = defineEmits(['jump', 'refresh-before', 'delete-draft'])
-
+const { t } = useI18n()
 const settingStore = useSettingStore()
 const uiStore = useUiStore();
 const emailStore = useEmailStore();
@@ -260,7 +261,6 @@ onBeforeRouteLeave(() => {
   scrollTop = scroll.value.scrollTop
 })
 
-
 watch(
     () => emailList.map(item => item.checked),
     () => {
@@ -282,7 +282,6 @@ watch(() => emailStore.cancelStarEmailId, () => {
   emailList.forEach(email => {
     if (email.emailId === emailStore.cancelStarEmailId) {
       email.isStar = 0
-      console.log('取消')
     }
   })
 })
@@ -366,9 +365,9 @@ function changeAccountShow() {
 }
 
 const handleDelete = () => {
-  ElMessageBox.confirm('确认批量删除这些邮件吗?', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('delEmailsConfirm'), {
+    confirmButtonText: t('confirm'),
+    cancelButtonText: t('cancel'),
     type: 'warning'
   }).then(() => {
 
@@ -381,7 +380,7 @@ const handleDelete = () => {
     const emailIds = getSelectedMailsIds();
     props.emailDelete(emailIds).then(() => {
       ElMessage({
-        message: '删除成功',
+        message: t('delSuccessMsg'),
         type: 'success',
         plain: true
       })
@@ -651,7 +650,7 @@ function loadData() {
     justify-content: center;
   }
 
-  .sys-email-checkbox {
+  .all-email-checkbox {
     display: flex;
     padding-left: 15px;
     padding-right: 20px;

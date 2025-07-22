@@ -2,7 +2,7 @@
   <div class="email-list-box">
     <emailScroll ref="sysEmailScroll"
                  :get-emailList="getEmailList"
-                 :email-delete="sysEmailDelete"
+                 :email-delete="allEmailDelete"
                  :star-add="starAdd"
                  :star-cancel="starCancel"
                  :show-star="false"
@@ -12,13 +12,13 @@
                  :show-account-icon="false"
                  @jump="jumpContent"
                  @refresh-before="refreshBefore"
-                 :type="'sys-email'"
+                 :type="'all-email'"
 
     >
       <template #first>
         <el-input
             v-model="searchValue"
-            placeholder="输入内容查询"
+            :placeholder="$t('searchByContent')"
             class="search-input"
         >
           <template #prefix>
@@ -26,13 +26,13 @@
               <el-select
                   ref="mySelect"
                   v-model="params.searchType"
-                  placeholder="请选择"
+                  :placeholder="$t('select')"
                   class="select"
               >
-                <el-option key="3" label="发件人" :value="'name'"/>
-                <el-option key="4" label="主题" :value="'subject'"/>
-                <el-option key="1" label="用户" :value="'user'"/>
-                <el-option key="2" label="邮箱" :value="'account'"/>
+                <el-option key="3" :label="$t('sender')" :value="'name'"/>
+                <el-option key="4" :label="$t('subject')" :value="'subject'"/>
+                <el-option key="1" :label="$t('user')" :value="'user'"/>
+                <el-option key="2" :label="$t('selectEmail')" :value="'account'"/>
               </el-select>
               <div style="color: #333;display: flex;">
                 <span>{{ selectTitle }}</span>
@@ -42,11 +42,11 @@
           </template>
         </el-input>
         <el-select v-model="params.type" placeholder="Select" class="status-select">
-          <el-option key="1" label="全部" value="all"/>
-          <el-option key="3" label="已接收" value="receive"/>
-          <el-option key="2" label="已发送" value="send"/>
-          <el-option key="4" label="已删除" value="delete"/>
-          <el-option key="4" label="无人收件" value="noone"/>
+          <el-option key="1" :label="$t('all')" value="all"/>
+          <el-option key="3" :label="$t('received')" value="receive"/>
+          <el-option key="2" :label="$t('sent')" value="send"/>
+          <el-option key="4" :label="$t('deleted')" value="delete"/>
+          <el-option key="4" :label="$t('noRecipient')" value="noone"/>
         </el-select>
         <Icon class="icon" icon="iconoir:search" @click="search" width="20" height="20"/>
         <Icon class="icon" @click="changeTimeSort" icon="material-symbols-light:timer-arrow-down-outline"
@@ -64,16 +64,18 @@ import emailScroll from "@/components/email-scroll/index.vue"
 import {computed, defineOptions, reactive, ref, watch} from "vue";
 import {useEmailStore} from "@/store/email.js";
 import {
-  sysEmailList,
-  sysEmailDelete
-} from "@/request/sys-email.js";
+  allEmailList,
+  allEmailDelete
+} from "@/request/all-email.js";
 import {Icon} from "@iconify/vue";
 import router from "@/router/index.js";
+import { useI18n } from 'vue-i18n';
 
 defineOptions({
-  name: 'sys-email'
+  name: 'all-email'
 })
 
+const { t } = useI18n();
 const emailStore = useEmailStore();
 const sysEmailScroll = ref({})
 const searchValue = ref('')
@@ -95,13 +97,13 @@ const params = reactive({
 
 
 const selectTitle = computed(() => {
-  if (params.searchType === 'user') return '用户'
-  if (params.searchType === 'account') return '邮箱'
-  if (params.searchType === 'name') return '发件人'
-  if (params.searchType === 'subject') return '主题'
+  if (params.searchType === 'user') return t('user')
+  if (params.searchType === 'account') return t('selectEmail')
+  if (params.searchType === 'name') return t('sender')
+  if (params.searchType === 'subject') return t('subject')
 })
 
-const paramsStar = localStorage.getItem('sys-email-params')
+const paramsStar = localStorage.getItem('all-email-params')
 if (paramsStar) {
   const locaParams = JSON.parse(paramsStar)
   params.type = locaParams.type
@@ -111,7 +113,7 @@ if (paramsStar) {
 }
 
 watch(() => params, () => {
-  localStorage.setItem('sys-email-params',JSON.stringify(params))
+  localStorage.setItem('all-email-params',JSON.stringify(params))
 }, {
   deep: true
 })
@@ -163,12 +165,12 @@ function jumpContent(email) {
   emailStore.contentData.delType = 'physics'
   emailStore.contentData.showStar = false
   emailStore.contentData.showReply = false
-  router.push('/content')
+  router.push({name: 'content'})
 }
 
 
 function getEmailList(emailId, size) {
-  return sysEmailList({emailId, size, ...params})
+  return allEmailList({emailId, size, ...params})
 }
 </script>
 

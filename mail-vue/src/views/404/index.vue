@@ -1,7 +1,7 @@
 <template>
 <div class="box-404">
-  <el-empty :image-size="isPhone ? 120 : 0" class="empty" description="404错误, 找不到页面" >
-    <el-button  type="primary" @click="router.replace({name: 'layout'})">返回首页</el-button>
+  <el-empty :image-size="isPhone ? 120 : 0" class="empty" :description="$t('error404')" >
+    <el-button  type="primary" @click="router.replace({name: 'layout'})">{{$t('home')}}</el-button>
   </el-empty>
 </div>
 </template>

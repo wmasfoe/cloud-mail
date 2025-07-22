@@ -1,12 +1,13 @@
 import BizError from '../error/biz-error';
 import settingService from './setting-service';
+import { t } from '../i18n/i18n'
 
 const turnstileService = {
 
 	async verify(c, token) {
 
 		if (!token) {
-			throw new BizError('验证token不能为空');
+			throw new BizError(t('emptyBotToken'));
 		}
 
 		const settingRow = await settingService.query(c)
@@ -26,7 +27,7 @@ const turnstileService = {
 		const result = await res.json();
 
 		if (!result.success) {
-			throw new BizError('人机验证失败,请重试',400)
+			throw new BizError(t('botVerifyFail'),400)
 		}
 	}
 };

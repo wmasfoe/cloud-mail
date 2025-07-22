@@ -6,7 +6,7 @@
         <el-input
             v-model="params.code"
             class="search-input"
-            placeholder="输入注册码搜索"
+            :placeholder="$t('searchRegKeyDesc')"
         >
         </el-input>
       </div>
@@ -27,18 +27,18 @@
                 <span class="code" @click="copyCode(item.code)">{{item.code}}</span>
               </div>
               <div class="info-left-item">
-                <div>剩余次数：</div>
+                <div>{{$t('remainingUses')}}：</div>
                 <div v-if="item.count">{{item.count}}</div>
-                <el-tag v-else type="danger">已用尽</el-tag>
+                <el-tag v-else type="danger">{{$t('exhausted')}}</el-tag>
               </div>
               <div class="info-left-item">
-                <div>权限身份：</div>
+                <div>{{$t('roleDesc')}}：</div>
                 <el-tag>{{item.roleName}}</el-tag>
               </div>
               <div class="info-left-item">
-                <div>有效至期：</div>
+                <div>{{$t('validUntil')}}：</div>
                 <div v-if="item.expireTime">{{ formatExpireTime(item.expireTime)}}</div>
-                <el-tag v-else type="danger">已过期</el-tag>
+                <el-tag v-else type="danger">{{$t('expired')}}</el-tag>
               </div>
             </div>
             <div class="info-right">
@@ -46,9 +46,9 @@
                 <Icon icon="fluent:settings-24-filled" width="21" height="21" color="#909399" />
                 <template #dropdown >
                   <el-dropdown-menu>
-                    <el-dropdown-item @click="copyCode(item.code)">复制</el-dropdown-item>
-                    <el-dropdown-item @click="openHistory(item)">记录</el-dropdown-item>
-                    <el-dropdown-item @click="deleteRegKey(item)">删除</el-dropdown-item>
+                    <el-dropdown-item @click="copyCode(item.code)">{{$t('copy')}}</el-dropdown-item>
+                    <el-dropdown-item @click="openHistory(item)">{{$t('history')}}</el-dropdown-item>
+                    <el-dropdown-item @click="deleteRegKey(item)">{{$t('delete')}}</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -57,37 +57,37 @@
         </div>
       </div>
       <div class="empty" v-if="regKeyData.length === 0">
-        <el-empty v-if="!regKeyFirst" :image-size="isMobile ? 120 : 0" description="没有任何注册码"/>
+        <el-empty v-if="!regKeyFirst" :image-size="isMobile ? 120 : 0" :description="$t('noCodeFound')"/>
       </div>
     </el-scrollbar>
-    <el-dialog v-model="showAdd" title="添加注册码">
+    <el-dialog v-model="showAdd" :title="$t('addRegKey')">
       <div class="container">
-        <el-input v-model="addForm.code" placeholder="注册码">
+        <el-input v-model="addForm.code" :placeholder="$t('regKey')">
           <template #suffix>
             <Icon @click.stop="genCode" class="gen-code" icon="bitcoin-icons:refresh-filled" width="24" height="24" />
           </template>
         </el-input>
-        <el-select v-model="addForm.roleId" placeholder="身份类型">
+        <el-select v-model="addForm.roleId" :placeholder="$t('roleDesc')">
           <el-option v-for="item in roleList" :label="item.name" :value="item.roleId" :key="item.roleId"/>
         </el-select>
         <el-date-picker
             v-model="addForm.expireTime"
             type="date"
-            placeholder="有效至期"
+            :placeholder="$t('validUntil')"
         />
         <el-input-number v-model="addForm.count" :min="1" :max="99999"/>
         <el-button class="btn" type="primary" @click="submit" :loading="addLoading"
-        >添加
+        >{{$t('add')}}
         </el-button>
       </div>
     </el-dialog>
-    <el-dialog class="history-list" v-model="showRegKeyHistory" title="使用记录">
+    <el-dialog class="history-list" v-model="showRegKeyHistory" :title="$t('useHistory')">
       <div class="loading" :class="historyLoading ? 'loading-show' : 'loading-hide'">
         <loading />
       </div>
       <el-table v-if="!historyLoading" :data="historyList" :fit="true" style="height: 100%" >
-        <el-table-column :min-width="emailColumnWidth" property="email" label="用户" :show-overflow-tooltip="true" />
-        <el-table-column :width="createTimeColumnWidth" :formatter="formatUserCreateTime" property="createTime" label="时间" fixed="right" :show-overflow-tooltip="true" />
+        <el-table-column :min-width="emailColumnWidth" property="email" :label="$t('user')" :show-overflow-tooltip="true" />
+        <el-table-column :width="createTimeColumnWidth" :formatter="formatUserCreateTime" property="createTime" :label="$t('date')" fixed="right" :show-overflow-tooltip="true" />
       </el-table>
     </el-dialog>
   </div>
@@ -104,6 +104,7 @@ import {regKeyAdd, regKeyList, regKeyClearNotUse, regKeyDelete, regKeyHistory} f
 import { getTextWidth } from "@/utils/text.js";
 import dayjs from "dayjs";
 import {tzDayjs} from "@/utils/day.js";
+import {useI18n} from "vue-i18n";
 
 defineOptions({
   name: 'reg-key'
@@ -115,6 +116,7 @@ const params = reactive({
   code: '',
 })
 
+const { t } = useI18n()
 const roleList = reactive([])
 const addLoading = ref(false)
 const showAdd = ref(false)
@@ -185,25 +187,44 @@ function formatUserCreateTime(regKey) {
   const currentYear = dayjs().year();
   const expireYear = createTime.year();
 
-  if (expireYear === currentYear) {
-    return createTime.format('M月D日 HH:mm');
+  if(settingStore.lang === 'zh') {
+
+    if (expireYear === currentYear) {
+      return createTime.format('M月D日 HH:mm');
+    } else {
+      return createTime.format('YYYY年M月D日 HH:mm');
+    }
+
   } else {
-    return createTime.format('YYYY年M月D日 HH:mm');
+
+    if (createYear === currentYear) {
+      return createTime.format('MMM D, HH:mm');
+    } else {
+      return createTime.format('MMM D, YYYY HH:mm');
+    }
+
   }
+
 }
 
 function formatExpireTime(expireTime) {
-
-  expireTime = tzDayjs(expireTime);
+  const expireDate = tzDayjs(expireTime);
   const currentYear = dayjs().year();
-  const expireYear = expireTime.year();
+  const expireYear = expireDate.year();
 
-  if (expireYear === currentYear) {
-    return expireTime.format('M月D日');
+  if (settingStore.lang === 'zh') {
+
+    return expireYear === currentYear
+        ? expireDate.format('M月D日')
+        : expireDate.format('YYYY年M月D日');
   } else {
-    return expireTime.format('YYYY年M月D日');
+
+    return expireYear === currentYear
+        ? expireDate.format('MMM D')
+        : expireDate.format('MMM D, YYYY');
   }
 }
+
 function refresh() {
   params.code = null
   getList(true)
@@ -229,7 +250,7 @@ async function copyCode(code) {
   try {
     await navigator.clipboard.writeText(code);
     ElMessage({
-      message: '复制成功',
+      message: t('copySuccessMsg'),
       type: 'success',
       plain: true,
     })
@@ -257,14 +278,14 @@ function generateRandomCode(length = 8) {
 }
 
 function clearNotUse() {
-  ElMessageBox.confirm(`确认清除所有不可用的注册码?`, {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('clearRegKey'), {
+    confirmButtonText: t('confirm'),
+    cancelButtonText: t('cancel'),
     type: 'warning'
   }).then(() => {
     regKeyClearNotUse().then(() => {
       ElMessage({
-        message: '清除成功',
+        message: t('clearSuccess'),
         type: 'success',
         plain: true,
       })
@@ -277,7 +298,7 @@ function submit() {
 
   if (!addForm.code) {
     ElMessage({
-      message: "注册码不能为空",
+      message: $('emptyRegKeyMsg'),
       type: "error",
       plain: true
     })
@@ -286,7 +307,7 @@ function submit() {
 
   if (!addForm.roleId) {
     ElMessage({
-      message: "身份类型不能为空",
+      message: t('emptyRole'),
       type: "error",
       plain: true
     })
@@ -295,7 +316,7 @@ function submit() {
 
   if (!addForm.expireTime) {
     ElMessage({
-      message: "有效时间不能为空",
+      message: t('emptyTimeMsg'),
       type: "error",
       plain: true
     })
@@ -304,7 +325,7 @@ function submit() {
 
   if (!addForm.count) {
     ElMessage({
-      message: "使用次数不能为空",
+      message: t('emptyCountMsg'),
       type: "error",
       plain: true
     })
@@ -316,7 +337,7 @@ function submit() {
     showAdd.value = false
     resetForm()
     ElMessage({
-      message: "添加成功",
+      message: t('addSuccessMsg'),
       type: "success",
       plain: true
     })
@@ -327,15 +348,15 @@ function submit() {
 }
 
 function deleteRegKey(regKey){
-  ElMessageBox.confirm(`确认删除${regKey.code}吗?`, {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('delConfirm',{msg: regKey.code}), {
+    confirmButtonText: t('confirm'),
+    cancelButtonText: t('cancel'),
     type: 'warning'
   }).then(() => {
     regKeyDelete([regKey.regKeyId]).then(() => {
       getList()
       ElMessage({
-        message: "删除成功",
+        message: t('delSuccessMsg'),
         type: "success",
         plain: true
       })

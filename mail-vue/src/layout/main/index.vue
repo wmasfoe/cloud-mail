@@ -3,7 +3,7 @@
     <div :class="accountShow && hasPerm('account:query') ? 'block-show' : 'block-hide'" @click="uiStore.accountShow = false"></div>
     <account  :class="accountShow && hasPerm('account:query') ? 'show' : 'hide'" />
     <router-view class="main-view" v-slot="{ Component,route }">
-      <keep-alive :include="['email','sys-email','send','sys-setting','star','user','role','analysis','reg-key','draft']">
+      <keep-alive :include="['email','all-email','send','sys-setting','star','user','role','analysis','reg-key','draft']">
         <component :is="Component" :key="route.name"/>
       </keep-alive>
     </router-view>
@@ -15,7 +15,7 @@ import {useUiStore} from "@/store/ui.js";
 import {useSettingStore} from "@/store/setting.js";
 import {computed, onBeforeUnmount, onMounted} from "vue";
 import { useRoute } from 'vue-router'
-import hasPerm from "@/utils/perm.js";
+import { hasPerm } from "@/perm/perm.js"
 
 const props = defineProps({
   openSend: Function

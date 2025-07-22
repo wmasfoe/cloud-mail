@@ -16,8 +16,14 @@ const init = {
 		await this.v1_3DB(c);
 		await this.v1_3_1DB(c);
 		await this.v1_4DB(c);
+		await this.v1_5DB(c);
 		await settingService.refresh(c);
 		return c.text('初始化成功');
+	},
+
+	async v1_5DB(c) {
+		await c.env.db.prepare(`UPDATE perm SET perm_key = 'sys-email:list' WHERE perm_key = 'all-email:list'`).run();
+		await c.env.db.prepare(`UPDATE perm SET perm_key = 'sys-email:delete' WHERE perm_key = 'all-email:delete'`).run();
 	},
 
 	async v1_4DB(c) {

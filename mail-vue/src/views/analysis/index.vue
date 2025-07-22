@@ -8,7 +8,7 @@
         <div class="number-item">
           <div class="top">
             <div class="left">
-              <div>收件数量</div>
+              <div>{{$t('totalReceived')}}</div>
               <div>
                 <el-statistic :formatter="value => Math.round(value)" :value="receiveData"/>
               </div>
@@ -20,14 +20,14 @@
             </div>
           </div>
           <div class="delete-ratio">
-            <div>正常 <span class="normal">{{numberCount.normalReceiveTotal}}</span></div>
-            <div>删除 <span class="deleted">{{numberCount.delReceiveTotal}}</span></div>
+            <div>{{$t('active')}} <span class="normal">{{numberCount.normalReceiveTotal}}</span></div>
+            <div>{{$t('deleted')}} <span class="deleted">{{numberCount.delReceiveTotal}}</span></div>
           </div>
         </div>
         <div class="number-item">
           <div class="top">
             <div class="left">
-              <div>发件数量</div>
+              <div>{{$t('totalSent')}}</div>
               <div>
                 <el-statistic :formatter="value => Math.round(value)" :value="sendData"/>
               </div>
@@ -39,14 +39,14 @@
             </div>
           </div>
           <div class="delete-ratio">
-            <div>正常 <span class="normal">{{numberCount.normalSendTotal}}</span></div>
-            <div>删除 <span class="deleted">{{numberCount.delSendTotal}}</span></div>
+            <div>{{$t('active')}} <span class="normal">{{numberCount.normalSendTotal}}</span></div>
+            <div>{{$t('deleted')}} <span class="deleted">{{numberCount.delSendTotal}}</span></div>
           </div>
         </div>
         <div class="number-item">
           <div class="top">
             <div class="left">
-              <div>邮箱数量</div>
+              <div>{{$t('totalMailboxes')}}</div>
               <div>
                 <el-statistic :formatter="value => Math.round(value)" :value="accountData"/>
               </div>
@@ -58,14 +58,14 @@
             </div>
           </div>
           <div class="delete-ratio">
-            <div>正常 <span class="normal">{{numberCount.normalAccountTotal}}</span></div>
-            <div>删除 <span class="deleted">{{numberCount.delAccountTotal}}</span></div>
+            <div>{{$t('active')}} <span class="normal">{{numberCount.normalAccountTotal}}</span></div>
+            <div>{{$t('deleted')}} <span class="deleted">{{numberCount.delAccountTotal}}</span></div>
           </div>
         </div>
         <div class="number-item">
           <div class="top">
             <div class="left">
-              <div>用户数量</div>
+              <div>{{$t('totalUsers')}}</div>
               <div>
                 <el-statistic :formatter="value => Math.round(value)" :value="userData"/>
               </div>
@@ -77,15 +77,15 @@
             </div>
           </div>
           <div class="delete-ratio">
-            <div>正常 <span class="normal">{{numberCount.normalUserTotal}}</span></div>
-            <div>删除 <span class="deleted">{{numberCount.delUserTotal}}</span></div>
+            <div>{{$t('active')}} <span class="normal">{{numberCount.normalUserTotal}}</span></div>
+            <div>{{$t('deleted')}} <span class="deleted">{{numberCount.delUserTotal}}</span></div>
           </div>
         </div>
       </div>
       <div class="picture">
         <div class="picture-item">
           <div class="title" style="display: flex;justify-content: space-between;">
-            <span>邮件来源</span>
+            <span>{{$t('emailSource')}}</span>
             <span class="source-button" v-if="false">
               <el-radio-group v-model="checkedSourceType" >
                 <el-radio-button label="发件人" value="sender"  />
@@ -98,7 +98,7 @@
           </div>
         </div>
         <div class="picture-item">
-          <div class="title">用户增长</div>
+          <div class="title">{{$t('userGrowth')}}</div>
           <div class="increase-line">
 
           </div>
@@ -106,11 +106,11 @@
       </div>
       <div class="picture-cs">
         <div class="picture-cs-item">
-          <div class="title">邮件增长</div>
+          <div class="title">{{$t('emailGrowth')}}</div>
           <div class="email-column"></div>
         </div>
         <div class="picture-cs-item">
-          <div class="title">今日发件</div>
+          <div class="title">{{$t('sentToday')}}</div>
           <div class="send-count"></div>
         </div>
       </div>
@@ -129,11 +129,14 @@ import {useUiStore} from "@/store/ui.js";
 import {debounce} from "lodash-es";
 import loading from "@/components/loading/index.vue";
 import {useRoute} from "vue-router";
+import { useI18n } from 'vue-i18n';
+import {toUtc, tzDayjs} from "@/utils/day.js";
 
 defineOptions({
   name: 'analysis'
 })
 
+const { t } = useI18n();
 const route = useRoute();
 const uiStore = useUiStore()
 const checkedSourceType = ref('sender')
@@ -194,7 +197,9 @@ let boxKey = ref(0)
 let senderPieLeft = window.innerWidth < 500 ? `${window.innerWidth - 110}` : '72%'
 
 onMounted(() => {
-  analysisEcharts().then(data => {
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  analysisEcharts(timeZone).then(data => {
     receiveTotal.value = data.numberCount.receiveTotal
     sendTotal.value = data.numberCount.sendTotal
     accountTotal.value = data.numberCount.accountTotal
@@ -374,7 +379,7 @@ function createIncreaseLine() {
       formatter: function (params) {
         let result = ''
         params.forEach(item => {
-          result =  `${item.marker} 用户数: ${item.value}`;
+          result =  `${item.marker} ${t('growthTotalUsers')} ${item.value}`;
         });
         return result;
       },
@@ -507,7 +512,7 @@ function createEmailColumnChart() {
       }
     },
     legend: {
-      data: ['接收', '发送'],
+      data: [t('emailReceived'), t('emailSent')],
       top: '0'
     },
     grid: {
@@ -542,7 +547,7 @@ function createEmailColumnChart() {
     },
     series: [
       {
-        name: '接收',
+        name: t('emailReceived'),
         type: 'bar',
         stack: 'total', // 堆叠组标识（必须相同）
         barWidth: '60%',
@@ -559,7 +564,7 @@ function createEmailColumnChart() {
         }
       },
       {
-        name: '发送',
+        name: t('emailSent'),
         type: 'bar',
         stack: 'total', // 堆叠组标识（必须相同）
         emphasis: {
@@ -587,7 +592,7 @@ function createSendGauge() {
   let option = {
     tooltip: {},
     series: [{
-      name: '今日发件',
+      name: t('sentToday'),
       type: 'gauge',
       max: 100,
       // 进度条颜色（新增）
@@ -625,7 +630,7 @@ function createSendGauge() {
       },
       data: [{
         value: daySendTotal,
-        name: '次数',
+        name: t('total'),
         // 名称标签颜色（新增）
         title: {
           color: '#333' // 灰色标签

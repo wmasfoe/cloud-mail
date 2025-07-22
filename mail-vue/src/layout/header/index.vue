@@ -2,7 +2,7 @@
   <div class="header" :class="!hasPerm('email:send') ? 'not-send' : ''">
     <div class="header-btn">
       <hanburger @click="changeAside"></hanburger>
-      <span class="breadcrumb-item">{{ route.meta.title }}</span>
+      <span class="breadcrumb-item">{{ $t(route.meta.title) }}</span>
     </div>
     <div v-perm="'email:send'" class="writer-box" @click="openSend">
       <div class="writer" >
@@ -32,12 +32,12 @@
               {{ userStore.user.email }}
             </div>
             <div class="detail-user-type">
-              <el-tag >{{userStore.user.role.name}}</el-tag>
+              <el-tag >{{$t(userStore.user.role.name)}}</el-tag>
             </div>
             <div class="action-info">
               <div>
-                <span style="margin-right: 10px">邮件发送 :</span>
-                <span style="margin-right: 10px">邮箱添加 :</span>
+                <span style="margin-right: 10px">{{$t('sendCount')}}</span>
+                <span style="margin-right: 10px">{{$t('accountCount')}}</span>
               </div>
               <div>
                 <div>
@@ -46,22 +46,19 @@
                   <el-tag v-else >{{sendType}}</el-tag>
                 </div>
                 <div>
-                  <el-tag v-if="settingStore.settings.manyEmail || settingStore.settings.addEmail" >已关闭</el-tag>
-                  <span v-else-if="accountCount && hasPerm('account:add')" style="margin-right: 5px">{{  accountCount }}个</span>
-                  <el-tag v-else-if="!accountCount && hasPerm('account:add')" >无限制</el-tag>
-                  <el-tag v-else-if="!hasPerm('account:add')" >无权限</el-tag>
+                  <el-tag v-if="settingStore.settings.manyEmail || settingStore.settings.addEmail" >{{$t('disabled')}}</el-tag>
+                  <span v-else-if="accountCount && hasPerm('account:add')" style="margin-right: 5px">{{ $t('totalUserAccount',{msg: accountCount}) }}</span>
+                  <el-tag v-else-if="!accountCount && hasPerm('account:add')" >{{$t('noLimit')}}</el-tag>
+                  <el-tag v-else-if="!hasPerm('account:add')" >{{$t('blocked')}}</el-tag>
                 </div>
               </div>
             </div>
             <div class="logout">
-              <el-button type="primary" :loading="logoutLoading" @click="clickLogout">退出</el-button>
+              <el-button type="primary" :loading="logoutLoading" @click="clickLogout">{{$t('signOut')}}</el-button>
             </div>
           </div>
         </template>
       </el-dropdown>
-      <div class="full" @click="full">
-        <Icon icon="iconamoon:screen-full-light" width="22" height="22" />
-      </div>
     </div>
   </div>
 </template>
@@ -76,9 +73,10 @@ import {useUserStore} from "@/store/user.js";
 import { useRoute } from "vue-router";
 import {computed, ref} from "vue";
 import {useSettingStore} from "@/store/setting.js";
-import hasPerm from "@/utils/perm.js";
-import screenfull from "screenfull";
+import { hasPerm } from "@/perm/perm.js"
+import {useI18n} from "vue-i18n";
 
+const { t } = useI18n();
 const route = useRoute();
 const settingStore = useSettingStore();
 const userStore = useUserStore();
@@ -91,23 +89,27 @@ const accountCount = computed(() => {
 
 const sendType = computed(() => {
 
+  if (settingStore.settings.send === 1) {
+    return t('disabled')
+  }
+
   if (!hasPerm('email:send')) {
-    return '无权限'
+    return t('noPerm')
   }
 
   if (!userStore.user.role.sendCount) {
-    return '无限制'
+    return t('noLimit')
   }
 
   if (userStore.user.role.sendCount < 0) {
-    return '无次数'
+    return t('blocked')
   }
 
   if (userStore.user.role.sendType === 'day') {
-    return '每天'
+    return t('daily')
   }
   if (userStore.user.role.sendType === 'count') {
-    return '次数'
+    return t('total')
   }
 })
 
@@ -148,10 +150,6 @@ function clickLogout() {
 
 function formatName(email) {
   return email[0]?.toUpperCase() || ''
-}
-
-function full() {
-  screenfull.toggle();
 }
 
 </script>
@@ -339,11 +337,8 @@ function full() {
     .setting-icon {
       position: relative;
       top: 0;
-      margin-right: 5px;
+      margin-right: 10px;
       bottom: 10px;
-      @media (max-width: 1024px) {
-        margin-right: 10px;
-      }
     }
   }
 

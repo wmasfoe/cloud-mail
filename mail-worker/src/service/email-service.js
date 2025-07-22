@@ -16,6 +16,7 @@ import user from '../entity/user';
 import starService from './star-service';
 import dayjs from 'dayjs';
 import kvConst from '../const/kv-const';
+import { t } from '../i18n/i18n'
 
 const emailService = {
 
@@ -134,27 +135,27 @@ const emailService = {
 		let { attDataList, html } = await attService.toImageUrlHtml(c, content, r2Domain);
 
 		if (attDataList.length > 0 && !r2Domain) {
-			throw new BizError('r2域名未配置不能发送正文图片');
+			throw new BizError(t('noOsDomainSendPic'));
 		}
 
 		if (attDataList.length > 0 && !c.env.r2) {
-			throw new BizError('r2对象存储未配置不能发送正文图片');
+			throw new BizError(t('noOsSendPic'));
 		}
 
 		if (attachments.length > 0 && !r2Domain) {
-			throw new BizError('r2域名未配置不能发送附件');
+			throw new BizError(t('noOsDomainSendAtt'));
 		}
 
 		if (attachments.length > 0 && !c.env.r2) {
-			throw new BizError('r2对象存储未配置不能发送附件');
+			throw new BizError(t('noOsSendAtt'));
 		}
 
 		if (send === settingConst.send.CLOSE) {
-			throw new BizError('邮件发送功能已停用', 403);
+			throw new BizError(t('disabledSend'), 403);
 		}
 
 		if (attachments.length > 0 && manyType === 'divide') {
-			throw new BizError('分别发送暂时不支持附件');
+			throw new BizError(t('noSeparateSend'));
 		}
 
 
@@ -164,17 +165,17 @@ const emailService = {
 		if (c.env.admin !== userRow.email && roleRow.sendCount) {
 
 			if (roleRow.sendCount < 0) {
-				throw new BizError('用户无发送次数', 403);
+				throw new BizError(t('userNoSendTotal'), 403);
 			}
 
 			if (userRow.sendCount >= roleRow.sendCount) {
-				if (roleRow.sendType === 'day') throw new BizError('发送次数已到达每日限制', 403);
-				if (roleRow.sendType === 'count') throw new BizError('发送次数已到达限制', 403);
+				if (roleRow.sendType === 'day') throw new BizError(t('daySendLimit'), 403);
+				if (roleRow.sendType === 'count') throw new BizError(t('totalSendLimit'), 403);
 			}
 
 			if (userRow.sendCount + receiveEmail.length > roleRow.sendCount) {
-				if (roleRow.sendType === 'day') throw new BizError('当日剩余发送次数不足', 403);
-				if (roleRow.sendType === 'count') throw new BizError('剩余发送次数不足', 403);
+				if (roleRow.sendType === 'day') throw new BizError(t('daySendLack'), 403);
+				if (roleRow.sendType === 'count') throw new BizError(t('totalSendLack'), 403);
 			}
 
 		}
@@ -183,19 +184,19 @@ const emailService = {
 		const accountRow = await accountService.selectById(c, accountId);
 
 		if (!accountRow) {
-			throw new BizError('发件人邮箱不存在');
+			throw new BizError(t('senderAccountNotExist'));
 		}
 
 		const domain = emailUtils.getDomain(accountRow.email);
 		const resendToken = resendTokens[domain];
 
 		if (!resendToken) {
-			throw new BizError('resend密钥未配置');
+			throw new BizError(t('noResendToken'));
 		}
 
 
 		if (accountRow.userId !== userId) {
-			throw new BizError('发件人邮箱非当前用户所有');
+			throw new BizError(t('sendEmailNotCurUser'));
 		}
 
 		if (!name) {
@@ -211,7 +212,7 @@ const emailService = {
 			emailRow = await this.selectById(c, emailId);
 
 			if (!emailRow) {
-				throw new BizError('邮件不存在无法回复');
+				throw new BizError(t('notExistEmailReply'));
 			}
 
 		}

@@ -14,10 +14,11 @@
 		"wrangler": "^4.7.0"
 	},
 	"dependencies": {
-		"@cloudflare/vite-plugin": "^1.0.5",
+		"@cloudflare/vite-plugin": "1.6.0",
 		"dayjs": "^1.11.13",
 		"drizzle-orm": "^0.42.0",
 		"hono": "^4.7.5",
+		"i18next": "^25.3.2",
 		"linkedom": "^0.18.10",
 		"postal-mime": "^2.4.3",
 		"resend": "^4.5.1",

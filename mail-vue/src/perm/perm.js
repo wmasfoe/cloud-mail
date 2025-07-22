@@ -1,6 +1,26 @@
 import {useUserStore} from "@/store/user.js";
 
-export default function hasPerm(permKey) {
+export default {
+    mounted(el, binding) {
+        const userStore = useUserStore();
+        const permKeys = userStore.user.permKeys;
+        const value = binding.value;
+
+        if (permKeys.includes('*')) {
+            return;
+        }
+
+        const hasPermission = Array.isArray(value)
+            ? value.some(key => permKeys.includes(key))
+            : permKeys.includes(value);
+
+        if (!hasPermission) {
+            el.parentNode && el.parentNode.removeChild(el);
+        }
+    }
+}
+
+export  function hasPerm(permKey) {
     const {permKeys} = useUserStore().user;
     return permKeys.includes('*') || permKeys.includes(permKey);
 }
@@ -10,71 +30,71 @@ export function permsToRouter(permKeys) {
     const routerList = []
     Object.keys(routers).forEach(perm => {
         if (permKeys.includes(perm) || permKeys.includes('*')) {
-            routerList.push(routers[perm])
+            routerList.push(...routers[perm])
         }
     })
     return routerList;
 }
 
 const routers = {
-    'user:query': {
-        path: '/sys/user',
+    'user:query': [{
+        path: '/all-users',
         name: 'user',
         component: () => import('@/views/user/index.vue'),
         meta: {
-            title: '用户列表',
+            title: 'allUsers',
             name: 'user',
             menu: true
         }
-    },
-    'role:query': {
-        path: '/sys/role',
+    }],
+    'role:query': [{
+        path: '/role',
         name: 'role',
         component: () => import('@/views/role/index.vue'),
         meta: {
-            title: '权限控制',
+            title: 'permissions',
             name: 'role',
             menu: true
         }
-    },
-    'setting:query': {
-        path: '/sys/setting',
+    }],
+    'setting:query': [{
+        path: '/sys-setting',
         name: 'sys-setting',
         component: () => import('@/views/sys-setting/index.vue'),
         meta: {
-            title: '系统设置',
+            title: 'SystemSettings',
             name: 'sys-setting',
             menu: true
         }
-    },
-    'reg-key:query':             {
-        path: '/sys/reg-key',
+    }],
+    'reg-key:query': [{
+        path: '/invite-code',
         name: 'reg-key',
         component: () => import('@/views/reg-key/index.vue'),
         meta: {
-            title: '注册密钥',
+            title: 'inviteCode',
             name: 'reg-key',
             menu: true
         }
-    },
-    'sys-email:query': {
-        path: '/sys/email',
-        name: 'sys-email',
-        component: () => import('@/views/sys-email/index.vue'),
+    }],
+    'all-email:query': [{
+        path: '/all-mail',
+        name: 'all-email',
+        component: () => import('@/views/all-email/index.vue'),
         meta: {
-            title: '邮件列表',
-            name: 'sys-email',
+            title: 'allMail',
+            name: 'all-email',
             menu: true
         }
-    },
-    'analysis:query': {
+    }],
+    'analysis:query': [{
         path: '/analysis',
         name: 'analysis',
         component: () => import('@/views/analysis/index.vue'),
         meta: {
-            title: '分析页',
+            title: 'analytics',
             name: 'analysis',
             menu: true
         }
-    }
+    }]
 }

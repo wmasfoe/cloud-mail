@@ -21,8 +21,8 @@
                 <Icon icon="fluent:settings-24-filled"  width="21" height="21" color="#909399" />
                 <template #dropdown >
                   <el-dropdown-menu >
-                    <el-dropdown-item v-if="hasPerm('email:send')" @click="openSetName(item)">改名</el-dropdown-item>
-                    <el-dropdown-item v-if="item.accountId !== userStore.user.accountId && hasPerm('account:delete')" @click="remove(item)">删除</el-dropdown-item>
+                    <el-dropdown-item v-if="hasPerm('email:send')" @click="openSetName(item)">{{$t('rename')}}</el-dropdown-item>
+                    <el-dropdown-item v-if="item.accountId !== userStore.user.accountId && hasPerm('account:delete')" @click="remove(item)">{{$t('delete')}}</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -61,23 +61,23 @@
         </template>
 
         <div class="noLoading" v-if="noLoading && accounts.length > 0">
-          <div>没有更多数据了</div>
+          <div>{{$t('noMoreData')}}</div>
         </div>
         <div class="empty" v-if="noLoading && accounts.length === 0">
-          <el-empty description="没有任何邮件" />
+          <el-empty :description="$t('noMessagesFound')" />
         </div>
       </div>
 
     </el-scrollbar>
-    <el-dialog v-model="showAdd" title="添加邮箱" >
+    <el-dialog v-model="showAdd" :title="$t('addAccount')" >
         <div class="container">
-          <el-input v-model="addForm.email" ref="addRef" type="text" placeholder="邮箱" autocomplete="off">
+          <el-input v-model="addForm.email" ref="addRef" type="text" :placeholder="$t('emailAccount')" autocomplete="off">
             <template #append>
               <div  @click.stop="openSelect">
                 <el-select
                     ref="mySelect"
                     v-model="addForm.suffix"
-                    placeholder="请选择"
+                    :placeholder="$t('select')"
                     class="select"
                 >
                   <el-option
@@ -95,7 +95,7 @@
             </template>
           </el-input>
           <el-button class="btn" type="primary" @click="submit" :loading="addLoading"
-          >添加
+          >{{$t('add')}}
           </el-button>
         </div>
       <div
@@ -105,12 +105,12 @@
           data-callback="onTurnstileSuccess"
       ></div>
     </el-dialog>
-    <el-dialog v-model="setNameShow" title="修改用户名" >
+    <el-dialog v-model="setNameShow" :title="$t('changeUserName')" >
       <div class="container">
-        <el-input v-model="accountName" type="text" placeholder="名字" autocomplete="off">
+        <el-input v-model="accountName" type="text" :placeholder="$t('username')" autocomplete="off">
         </el-input>
         <el-button class="btn" type="primary" @click="setName" :loading="setNameLoading"
-        >保存
+        >{{$t('save')}}
         </el-button>
       </div>
     </el-dialog>
@@ -124,8 +124,10 @@ import {isEmail} from "@/utils/verify-utils.js";
 import {useSettingStore} from "@/store/setting.js";
 import {useAccountStore} from "@/store/account.js";
 import {useUserStore} from "@/store/user.js";
-import hasPerm from "@/utils/perm.js";
+import { hasPerm } from "@/perm/perm.js"
+import {useI18n} from "vue-i18n";
 
+const { t } = useI18n();
 const userStore = useUserStore();
 const accountStore = useAccountStore();
 const settingStore = useSettingStore();
@@ -186,7 +188,7 @@ function setName() {
 
   if (!name) {
     ElMessage({
-      message: '用户名不能为空',
+      message: t('emptyUserNameMsg'),
       type: 'error',
       plain: true,
     })
@@ -203,7 +205,7 @@ function setName() {
     }
 
     ElMessage({
-      message: "保存成功",
+      message: t('changSuccessMsg'),
       type: "success",
       plain: true
     })
@@ -227,9 +229,9 @@ function itemBg(accountId) {
 }
 
 function remove(account) {
-  ElMessageBox.confirm(`确认删除${account.email}吗?`, {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('delConfirm',{msg: account.email}), {
+    confirmButtonText: t('confirm'),
+    cancelButtonText: t('cancel'),
     type: 'warning'
   }).then(() => {
     accountDelete(account.accountId).then(() => {
@@ -239,7 +241,7 @@ function remove(account) {
         getAccountList()
       }
       ElMessage({
-        message: '删除成功',
+        message: t('delSuccessMsg'),
         type: 'success',
         plain: true,
       })
@@ -274,14 +276,14 @@ async function copyAccount(account) {
   try {
     await navigator.clipboard.writeText(account);
     ElMessage({
-      message: '复制成功',
+      message: t('copySuccessMsg'),
       type: 'success',
       plain: true,
     })
   } catch (err) {
-    console.error('复制失败:', err);
+    console.error(`${t('copyFailMsg')}:`, err);
     ElMessage({
-      message: '复制失败',
+      message: t('copyFailMsg'),
       type: 'error',
       plain: true,
     })
@@ -321,7 +323,7 @@ function submit()  {
 
   if (!addForm.email){
     ElMessage({
-      message: "邮箱不能为空",
+      message: t('emptyEmailMsg'),
       type: "error",
       plain: true
     })
@@ -330,7 +332,7 @@ function submit()  {
 
   if (!isEmail(addForm.email+addForm.suffix)) {
     ElMessage({
-      message: "非法邮箱",
+      message: t('notEmailMsg'),
       type: "error",
       plain: true
     })
@@ -356,7 +358,7 @@ function submit()  {
     accounts.push(account)
     verifyToken = ''
     ElMessage({
-      message: "添加成功",
+      message: t('addSuccessMsg'),
       type: "success",
       plain: true
     })

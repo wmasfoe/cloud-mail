@@ -6,6 +6,7 @@ export const useUiStore = defineStore('ui', {
         accountShow: false,
         backgroundLoading: true,
         writerRef: null,
+        key: 0,
         asideCount: {
             email: 0,
             send: 0,
