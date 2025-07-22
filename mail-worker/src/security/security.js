@@ -74,9 +74,9 @@ const premKey = {
 	'setting:set': ['/setting/set', '/setting/setBackground'],
 	'setting:clean': ['/setting/physicsDeleteAll'],
 	'analysis:query': ['/analysis/echarts'],
-	'role-key:add': ['/regKey/add'],
-	'role-key:query': ['/regKey/list','/regKey/history'],
-	'role-key:delete': ['/regKey/delete','/regKey/clearNotUse'],
+	'reg-key:add': ['/regKey/add'],
+	'reg-key:query': ['/regKey/list','/regKey/history'],
+	'reg-key:delete': ['/regKey/delete','/regKey/clearNotUse'],
 };
 
 app.use('*', async (c, next) => {
@@ -126,6 +126,7 @@ app.use('*', async (c, next) => {
 		const userPaths = permKeyToPaths(permKeys);
 
 		const userPermIndex = userPaths.findIndex(item => {
+			console.log(item)
 			return path.startsWith(item);
 		});
 

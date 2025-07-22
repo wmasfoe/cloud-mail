@@ -10,7 +10,7 @@
         >
         </el-input>
       </div>
-      <el-select v-model="params.status" placeholder="Select" class="status-select">
+      <el-select v-model="params.status" placeholder="Select" class="status-select" :style="`width: ${locale === 'en' ? 95 : 80 }px`">
         <el-option :key="-1" :label="$t('all')" :value="-1"/>
         <el-option :key="0" :label="$t('active')" :value="0"/>
         <el-option :key="1" :label="$t('banned')" :value="1"/>
@@ -507,11 +507,11 @@ function formatSendType(user) {
 function formatSendCount(user) {
 
   if (!user.sendAction.hasPerm) {
-    return t('noPerm')
+    return t('unauthorized')
   }
 
   if (!user.sendAction.sendCount) {
-    return t('noLimit');
+    return t('unlimited');
   }
 
   let count = user.sendCount + '/' + user.sendAction.sendCount
@@ -898,8 +898,6 @@ function adjustWidth() {
 }
 
 .status-select {
-  width: 95px;
-
   :deep(.el-select__wrapper) {
     min-height: 28px;
   }

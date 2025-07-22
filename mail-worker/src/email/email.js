@@ -66,8 +66,8 @@ export async function email(message, env, ctx) {
 						if (banEmailType === roleConst.banEmailType.ALL) return
 
 						if (banEmailType === roleConst.banEmailType.CONTENT) {
-							email.html = 'removed'
-							email.text = 'removed'
+							email.html = 'messageRemoved'
+							email.text = 'messageRemoved'
 							email.attachments = []
 						}
 
@@ -80,8 +80,8 @@ export async function email(message, env, ctx) {
 						if (banEmailType === roleConst.banEmailType.ALL) return
 
 						if (banEmailType === roleConst.banEmailType.CONTENT) {
-							email.html = 'removed'
-							email.text = 'removed'
+							email.html = 'messageRemoved'
+							email.text = 'messageRemoved'
 							email.attachments = []
 						}
 

@@ -237,8 +237,8 @@ const init = {
         (25, '用户添加', 'user:add', 6, 2, 1),
         (26, '发件重置', 'user:reset-send', 6, 2, 6),
         (27, '邮件列表', '', 0, 1, 4),
-        (28, '邮件查看', 'sys-email:query', 27, 2, 0),
-        (29, '邮件删除', 'sys-email:delete', 27, 2, 0),
+        (28, '邮件查看', 'all-email:query', 27, 2, 0),
+        (29, '邮件删除', 'all-email:delete', 27, 2, 0),
 				(30, '身份添加', 'role:add', 13, 2, -1)
       `).run();
 		}
@@ -385,7 +385,7 @@ const init = {
       INSERT INTO setting (
         register, receive, add_email, many_email, title, auto_refresh_time, register_verify, add_email_verify
       )
-      SELECT 0, 0, 0, 1, 'Cloud 邮箱', 0, 1, 1
+      SELECT 0, 0, 0, 1, 'Cloud Mail', 0, 1, 1
       WHERE NOT EXISTS (SELECT 1 FROM setting)
     `).run();
 	},

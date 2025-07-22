@@ -48,13 +48,13 @@
                 <div>
                   <el-tag v-if="settingStore.settings.manyEmail || settingStore.settings.addEmail" >{{$t('disabled')}}</el-tag>
                   <span v-else-if="accountCount && hasPerm('account:add')" style="margin-right: 5px">{{ $t('totalUserAccount',{msg: accountCount}) }}</span>
-                  <el-tag v-else-if="!accountCount && hasPerm('account:add')" >{{$t('noLimit')}}</el-tag>
-                  <el-tag v-else-if="!hasPerm('account:add')" >{{$t('blocked')}}</el-tag>
+                  <el-tag v-else-if="!accountCount && hasPerm('account:add')" >{{$t('unlimited')}}</el-tag>
+                  <el-tag v-else-if="!hasPerm('account:add')" >{{$t('unauthorized')}}</el-tag>
                 </div>
               </div>
             </div>
             <div class="logout">
-              <el-button type="primary" :loading="logoutLoading" @click="clickLogout">{{$t('signOut')}}</el-button>
+              <el-button type="primary" :loading="logoutLoading" @click="clickLogout">{{$t('logOut')}}</el-button>
             </div>
           </div>
         </template>
@@ -94,20 +94,21 @@ const sendType = computed(() => {
   }
 
   if (!hasPerm('email:send')) {
-    return t('noPerm')
+    return t('unauthorized')
+  }
+
+  if (userStore.user.role.sendType === 'ban') {
+    return t('sendBanned')
   }
 
   if (!userStore.user.role.sendCount) {
-    return t('noLimit')
-  }
-
-  if (userStore.user.role.sendCount < 0) {
-    return t('blocked')
+    return t('unlimited')
   }
 
   if (userStore.user.role.sendType === 'day') {
     return t('daily')
   }
+
   if (userStore.user.role.sendType === 'count') {
     return t('total')
   }
@@ -115,7 +116,12 @@ const sendType = computed(() => {
 
 const sendCount = computed(() => {
 
+
   if (!hasPerm('email:send')) {
+    return null
+  }
+
+  if (userStore.user.role.sendType === 'ban') {
     return null
   }
 
@@ -123,7 +129,7 @@ const sendCount = computed(() => {
     return null
   }
 
-  if (userStore.user.role.sendCount < 0) {
+  if (settingStore.settings.send === 1) {
     return null
   }
 

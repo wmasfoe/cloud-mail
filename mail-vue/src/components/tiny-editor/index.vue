@@ -9,6 +9,7 @@
 import {ref, onMounted, onBeforeUnmount, watch, nextTick, shallowRef, defineEmits} from 'vue';
 import loading from "@/components/loading/index.vue";
 import {compressImage} from "@/utils/file-utils.js";
+import { useI18n } from 'vue-i18n'
 defineExpose({
   clearEditor,
   focus,
@@ -27,6 +28,7 @@ const props = defineProps({
 });
 
 
+const { locale } = useI18n()
 const emit = defineEmits(['change']);
 const editor = shallowRef(null);
 const isInitialized = ref(false);
@@ -81,7 +83,7 @@ function initEditor() {
     },
     font_size_formats: '8px 10px 12px 14px 16px 18px 24px 36px',
     emoticons_search: false,
-    language: 'zh_CN',
+    language: locale.value === 'zh' ? 'zh_CN' : 'en',
     language_url: '/tinymce/langs/zh_CN.js',
     menubar: false,
     license_key: 'gpl',

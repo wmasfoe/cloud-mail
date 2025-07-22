@@ -16,8 +16,6 @@ export async function init() {
 
     const token = localStorage.getItem('token');
 
-    console.log(settingStore.lang)
-
     if (!settingStore.lang) {
         settingStore.lang = navigator.language.split('-')[0]
     }

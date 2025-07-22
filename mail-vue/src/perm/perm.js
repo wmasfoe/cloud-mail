@@ -20,7 +20,7 @@ export default {
     }
 }
 
-export  function hasPerm(permKey) {
+export function hasPerm(permKey) {
     const {permKeys} = useUserStore().user;
     return permKeys.includes('*') || permKeys.includes(permKey);
 }
@@ -37,6 +37,28 @@ export function permsToRouter(permKeys) {
 }
 
 const routers = {
+    'email:send': [
+        {
+            path: '/sent',
+            name: 'send',
+            component: () => import('@/views/send/index.vue'),
+            meta: {
+                title: 'sent',
+                name: 'send',
+                menu: true
+            }
+        },
+        {
+            path: '/drafts',
+            name: 'draft',
+            component: () => import('@/views/draft/index.vue'),
+            meta: {
+                title: 'drafts',
+                name: 'draft',
+                menu: true
+            }
+        }
+    ],
     'user:query': [{
         path: '/all-users',
         name: 'user',
@@ -58,7 +80,7 @@ const routers = {
         }
     }],
     'setting:query': [{
-        path: '/sys-setting',
+        path: '/system-setting',
         name: 'sys-setting',
         component: () => import('@/views/sys-setting/index.vue'),
         meta: {

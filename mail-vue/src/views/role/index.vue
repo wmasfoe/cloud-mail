@@ -14,7 +14,7 @@
             style="width: 100%;"
         >
           <el-table-column  width="10" />
-          <el-table-column :label="$t('roleName')" prop="name" :min-width="roleWidth">
+          <el-table-column :label="$t('role')" prop="name" :min-width="roleWidth">
             <template #default="props">
               <div class="role-name">
                 <span >{{props.row.name}}</span>
@@ -79,7 +79,7 @@
             <div>
               <span>{{node.label}}</span>
               <span class="send-num" v-if="data.permKey === 'email:send'" @click.stop>
-                <el-input-number  v-model="form.sendCount" controls-position="right" :max="99999" size="small" :placeholder="$t('total')" >
+                <el-input-number  v-model="form.sendCount" controls-position="right" :min="0" :max="99999" size="small" :placeholder="$t('total')" >
                 </el-input-number>
                   <el-select v-model="form.sendType" placeholder="Select" size="small" style="width: 65px;margin-left: 5px;">
                     <el-option :label="$t('total')" value="count" />

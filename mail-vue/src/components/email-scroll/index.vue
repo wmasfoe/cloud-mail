@@ -93,7 +93,7 @@
                     </el-tooltip>
                     <el-tooltip v-if="item.status ===  7"
                                 effect="dark"
-                                :content="$t('NoRecipient')"
+                                :content="$t('noRecipient')"
                     >
                       <Icon icon="ic:round-mark-email-read" style="color:#FBBD08" width="20"
                             height="20"/>

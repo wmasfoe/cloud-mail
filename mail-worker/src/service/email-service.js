@@ -134,6 +134,31 @@ const emailService = {
 
 		let { attDataList, html } = await attService.toImageUrlHtml(c, content, r2Domain);
 
+		if (send === settingConst.send.CLOSE) {
+			throw new BizError(t('disabledSend'), 403);
+		}
+
+		const userRow = await userService.selectById(c, userId);
+		const roleRow = await roleService.selectById(c, userRow.type);
+
+		if (roleRow.sendType === 'ban') {
+			throw new BizError(t('bannedSend'), 403);
+		}
+
+		if (c.env.admin !== userRow.email && roleRow.sendCount) {
+
+			if (userRow.sendCount >= roleRow.sendCount) {
+				if (roleRow.sendType === 'day') throw new BizError(t('daySendLimit'), 403);
+				if (roleRow.sendType === 'count') throw new BizError(t('totalSendLimit'), 403);
+			}
+
+			if (userRow.sendCount + receiveEmail.length > roleRow.sendCount) {
+				if (roleRow.sendType === 'day') throw new BizError(t('daySendLack'), 403);
+				if (roleRow.sendType === 'count') throw new BizError(t('totalSendLack'), 403);
+			}
+
+		}
+
 		if (attDataList.length > 0 && !r2Domain) {
 			throw new BizError(t('noOsDomainSendPic'));
 		}
@@ -150,34 +175,8 @@ const emailService = {
 			throw new BizError(t('noOsSendAtt'));
 		}
 
-		if (send === settingConst.send.CLOSE) {
-			throw new BizError(t('disabledSend'), 403);
-		}
-
 		if (attachments.length > 0 && manyType === 'divide') {
 			throw new BizError(t('noSeparateSend'));
-		}
-
-
-		const userRow = await userService.selectById(c, userId);
-		const roleRow = await roleService.selectById(c, userRow.type);
-
-		if (c.env.admin !== userRow.email && roleRow.sendCount) {
-
-			if (roleRow.sendCount < 0) {
-				throw new BizError(t('userNoSendTotal'), 403);
-			}
-
-			if (userRow.sendCount >= roleRow.sendCount) {
-				if (roleRow.sendType === 'day') throw new BizError(t('daySendLimit'), 403);
-				if (roleRow.sendType === 'count') throw new BizError(t('totalSendLimit'), 403);
-			}
-
-			if (userRow.sendCount + receiveEmail.length > roleRow.sendCount) {
-				if (roleRow.sendType === 'day') throw new BizError(t('daySendLack'), 403);
-				if (roleRow.sendType === 'count') throw new BizError(t('totalSendLack'), 403);
-			}
-
 		}
 
 
@@ -272,8 +271,7 @@ const emailService = {
 
 
 		if (error) {
-			console.error(error);
-			throw new BizError(error.message);
+			throw new BizError(error.error);
 		}
 
 		html = this.imgReplace(html, null, r2Domain);
