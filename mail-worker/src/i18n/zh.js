@@ -53,6 +53,7 @@ const zh = {
 	authExpired: '身份认证失效,请重新登录',
 	unauthorized: '权限不足',
 	bannedSend: '你已被禁止发送邮件',
+	initSuccess: 'Successfully initialized',
 	perms: {
 		"邮件": "邮件",
 		"邮件发送": "邮件发送",

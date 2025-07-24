@@ -1,13 +1,14 @@
 import settingService from '../service/setting-service';
 import emailUtils from '../utils/email-utils';
 import {emailConst} from "../const/entity-const";
+import { t } from '../i18n/i18n'
 const init = {
 	async init(c) {
 
 		const secret = c.req.param('secret');
 
 		if (secret !== c.env.jwt_secret) {
-			return c.text('secret不匹配');
+			return c.text(t('initSuccess'));
 		}
 
 		await this.intDB(c);

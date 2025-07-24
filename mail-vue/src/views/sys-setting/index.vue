@@ -267,20 +267,29 @@
             <div class="card-content">
               <div class="concerning-item">
                 <span>{{$t('version')}} :</span>
-                <span>v1.3.1</span>
+                <span>v1.5.0</span>
               </div>
               <div class="concerning-item">
                 <span>{{$t('community')}} : </span>
+                <el-button @click="jump('https://github.com/eoao/cloud-mail')">
+                  Github
+                  <template #icon>
+                    <Icon icon="codicon:github-inverted" width="22" height="22" />
+                  </template>
+                </el-button>
                 <el-button @click="jump('https://t.me/cloud_mail_tg')">
-                  telegram
+                  Telegram
                   <template #icon>
                     <Icon icon="logos:telegram" width="30" height="30"/>
                   </template>
                 </el-button>
-                <el-button @click="jump('https://github.com/eoao/cloud-mail')">
-                  github
+              </div>
+              <div class="concerning-item">
+                <span>{{$t('support')}} : </span>
+                <el-button @click="jump('https://afdian.com/a/eoao_')" >
+                  Afdian
                   <template #icon>
-                    <Icon icon="codicon:github-inverted" width="22" height="22" />
+                    <Icon color="#8261DB" icon="simple-icons:afdian" width="24" height="24" />
                   </template>
                 </el-button>
               </div>
@@ -505,9 +514,9 @@ const forwardEmail = ref([])
 const forwardStatus = ref(0)
 const emailColumnWidth = ref(0)
 const tokenColumnWidth = ref(0)
-
 const ruleType = ref(0)
 const ruleEmail = ref([])
+
 const resendList = computed(() => {
 
   let list = Object.keys(setting.value.resendTokens).map(key => {
@@ -519,22 +528,26 @@ const resendList = computed(() => {
 
   if (list.length > 0) {
 
-    const key = list.reduce((a, b) =>
-        a.key.length > b.key.length ? a : b
-    ).key;
+    const key = list.reduce((a, b) => compareByLengthAndUpperCase(a, b, 'key')).key;
+    emailColumnWidth.value = getTextWidth(key) + 30;
 
-    emailColumnWidth.value = getTextWidth(key) + 30
-
-    const value = list.reduce((a, b) =>
-        a.value.length > b.value.length ? a : b
-    ).value;
-
-    tokenColumnWidth.value = getTextWidth(value) + 30
+    const value = list.reduce((a, b) => compareByLengthAndUpperCase(a, b, 'value')).value;
+    tokenColumnWidth.value = getTextWidth(value) + 30;
 
   }
 
   return list;
 });
+
+const compareByLengthAndUpperCase = (a, b, key) => {
+  const getUpperCaseCount = (str) => (str.match(/[A-Z]/g) || []).length;
+  if (a[key].length === b[key].length) {
+    return getUpperCaseCount(a[key]) > getUpperCaseCount(b[key]) ? a : b;
+  }
+  return a[key].length > b[key].length ? a : b;
+};
+
+
 
 settingQuery().then(settingData => {
   setting.value = settingData

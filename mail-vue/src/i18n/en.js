@@ -245,7 +245,8 @@ const en = {
     language: 'Language',
     totalUserAccount: '{msg}',
     sendBanned: 'Banned',
-    wrote: 'wrote'
+    wrote: 'wrote',
+    support: 'Support'
 }
 
 export default en

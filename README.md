@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="doc/demo/logo.png" width="10%" />
+  <img src="doc/demo/logo.png" width="80px" />
 </p>
 
 <div align="center">
@@ -8,13 +8,13 @@
 <div align="center">
     <h4>使用Vue3开发的响应式简约邮箱服务，支持邮件发送附件收发，可以部署到Cloudflare云平台实现免费白嫖🎉</h4> 
 </div>
-
+<div align="center">
+    <span>简体中文 | <a href="/README-en.md" style="margin-left: 5px">English </a></span>
+</div>
 
 ## 项目简介
 
-只需要一个域名，就可以创建多个不同的邮箱，类似各大邮箱平台 QQ邮箱，谷歌邮箱等，本项目使用Cloud flare部署，Rsend推送邮件，无需服务器费用，搭建属于自己的邮箱服务
-
-
+只需要一个域名，就可以创建多个不同的邮箱，类似各大邮箱平台 QQ邮箱，谷歌邮箱等，本项目使用Cloud flare部署，Resend推送邮件，无需服务器费用，搭建属于自己的邮箱服务
 
 ## 项目展示 
 
@@ -94,7 +94,7 @@ Cloudflare 账号 (需要绑定域名)
 
 **克隆项目到本地**
 ``` shell
-git clone https://github.com/LaziestRen/cloud-mail #拉取代码
+git clone https://github.com/eoao/cloud-mail #拉取代码
 cd cloud-mail/mail-worker #进入worker目录
 ```
 
@@ -130,7 +130,7 @@ directory = "./dist"	        #前端vue项目打包的静态资源存放位置,�
 [vars]
 orm_log = false
 domain = []			#邮件域名可以配置多个示例: ["example1.com","example2.com"]
-admin = ""		        #管理员的邮箱 示例: admin@example.com
+admin = ""		        #管理员的邮箱 示例: "admin@example.com"
 jwt_secret = ""			#登录身份令牌的密钥,随便填一串字符串
 
 ```
@@ -140,7 +140,7 @@ jwt_secret = ""			#登录身份令牌的密钥,随便填一串字符串
 **远程部署**
 
 1. 在 Cloudflare 控制台创建KV，D1数据库，R2对象存储
-2. 在项目目录 mail-worker/wrangler.toml 配置文件中配置对应环境变量，以及创建的数据库id和名称
+2. 在项目目录 `mail-worker/wrangler.toml` 配置文件中配置对应环境变量，以及创建的数据库id和名称
 3. 执行远程部署命令
 
     ```shell
@@ -149,7 +149,7 @@ jwt_secret = ""			#登录身份令牌的密钥,随便填一串字符串
 
 4. 在Cloudflare→账户主页→你的域名→电子邮件→电子邮件路由→路由规则→Catch-all地址，编辑发送到worker
 
-5. 浏览器输入  https://你的项目域名/api/init/你的jwt_secret   初始化或更新 d1和kv数据库
+5. 浏览器输入  `https://你的项目域名/api/init/你的jwt_secret`   初始化或更新 d1和kv数据库
 
 6. 部署完成登录网站，使用管理员账号可以在设置页面添加配置 R2域名 Turnstile密钥 等
 
@@ -158,63 +158,40 @@ jwt_secret = ""			#登录身份令牌的密钥,随便填一串字符串
 
 **本地运行**
 
-1. 本地运行，数据库，对象存储会自动安装，无需创建，数据库数据保存在 mail-worker/.wrangler文件夹
+1. 本地运行，数据库，对象存储会自动安装，无需创建，数据库数据保存在 `mail-worker/.wrangler` 文件夹
 
     ```shell
     npm run dev 
     ```
-2. 浏览器输入   http://127.0.0.1:8787/api/init/你的jwt_secret   初始化d1和kv数据库
+2. 浏览器输入   `http://127.0.0.1:8787/api/init/你的jwt_secret`   初始化d1和kv数据库
 
-3. 本地运行项目设置页面r2域名可设置为  http://127.0.0.1:8787/api/file
+3. 本地运行项目设置页面r2域名可设置为  `http://127.0.0.1:8787/api/file`
 
 **邮件发送**
 
 1. 在 resend 官网注册后，点击左侧 Domains 添加并验证你的域名，等待验证完成
 2. 点击左侧 Api Keys 创建立api key， 复制token回到项目网站设置页面添加 resend token
 
-3. 点击左侧 Webhooks 添加回调地址  https://你的项目域名/api/webhooks 
+3. 点击左侧 Webhooks 添加回调地址  `https://你的项目域名/api/webhooks` 
 
    勾选✅ (email.bounced email.complained email.delivered email.delivery_delayed)
 
-## 目录结构
+**项目更新**
 
-```
-cloud-mail
-├── mail-worker				#worker后端项目
-│   ├── src                  
-│   │   ├── api	 			#接口层			
-│   │   ├── const  			#常量
-│   │   ├── email			#邮件接收
-│   │   ├── entity			#数据库实体层
-│   │   ├── error			#自定义异常
-│   │   ├── hono			#web框架配置 拦截器等
-│   │   ├── init			#数据库缓存初始化
-│   │   ├── model			#响应体数据封装
-│   │   ├── security			#身份认证层
-│   │   ├── service			#服务层
-│   │   ├── utils			#工具类
-│   │   └── index.js			#入口文件
-│   ├── pageckge.json			#项目依赖
-│   └── wrangler.toml			#项目配置
-└── mail-vue				#vue前端项目
-    ├── src
-    │   ├── assets			#静态资源字体等
-    │   ├── axios 			#axios配置
-    │   ├── components			#自定义组件
-    │   ├── layout			#主体布局组件
-    │   ├── request			#api接口
-    │   ├── router			#路由配置
-    │   ├── store			#全局状态管理
-    │   ├── utils			#工具类
-    │   ├── views			#页面组件
-    │   ├── app.vue			#根组件
-    │   ├── main.js			#入口js
-    │   └── style.css			#全局css
-    ├── package.json			#项目依赖
-    └── env.dev				#项目配置
-```
+更新后需要执行 `https://你的项目域名/api/init/你的jwt_secret` 来同步数据库结构
+
+## 赞助
+
+**请我喝一杯奶茶**
+
+<a href="https://afdian.com/a/eoao_"><img width="150" src="https://pic1.afdiancdn.com/static/img/welcome/button-sponsorme.png" alt=""></a>
 
 
+**特别赞助商**
+
+[DartNode](https://dartnode.com)：提供云计算服务资源支持
+
+[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
 
 ## 许可证
 

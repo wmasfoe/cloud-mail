@@ -245,6 +245,7 @@ const zh = {
     language: '网站语言',
     totalUserAccount: '{msg} 个',
     sendBanned: '已禁用',
-    wrote: '来信'
+    wrote: '来信',
+    support: '赞助'
 }
 export default zh

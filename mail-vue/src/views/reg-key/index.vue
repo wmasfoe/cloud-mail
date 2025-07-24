@@ -159,20 +159,18 @@ function openHistory(regKey) {
   regKeyHistory(regKey.regKeyId).then(list => {
 
     historyList.push(...list)
-
     if (list.length > 0) {
 
       const email = list.reduce((a, b) =>
-          a.email.length > b.email.length ? a : b
+          compareByLengthAndUpperCase(a, b, 'email')
       ).email;
 
       emailColumnWidth.value = getTextWidth(email) + 30
       emailColumnWidth.value = emailColumnWidth.value < 300 ? emailColumnWidth.value : 300
-
       const createTime = list.reduce((a, b) =>
-          a.createTime.length > b.email.createTime ? a : b
-      );
-      createTimeColumnWidth.value = getTextWidth(createTime) + 30
+          compareByLengthAndUpperCase(a, b, 'createTime')
+      ).createTime;
+      createTimeColumnWidth.value = getTextWidth(createTime)
     }
 
   }).finally(() => {
@@ -181,6 +179,14 @@ function openHistory(regKey) {
 
   showRegKeyHistory.value = true
 }
+
+const compareByLengthAndUpperCase = (a, b, key) => {
+  const getUpperCaseCount = (str) => (str.match(/[A-Z]/g) || []).length;
+  if (a[key].length === b[key].length) {
+    return getUpperCaseCount(a[key]) > getUpperCaseCount(b[key]) ? a : b;
+  }
+  return a[key].length > b[key].length ? a : b;
+};
 
 function formatUserCreateTime(regKey) {
   const createTime = tzDayjs(regKey.createTime);
@@ -197,7 +203,7 @@ function formatUserCreateTime(regKey) {
 
   } else {
 
-    if (createYear === currentYear) {
+    if (expireYear === currentYear) {
       return createTime.format('MMM D, HH:mm');
     } else {
       return createTime.format('MMM D, YYYY HH:mm');
