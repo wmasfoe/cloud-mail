@@ -54,6 +54,11 @@ const en = {
 	unauthorized: 'Unauthorized',
 	bannedSend: 'You are banned from sending emails',
 	initSuccess: 'Successfully initialized',
+	noDomainPermAdd: "No permission to add this domain email",
+	noDomainPermReg: "No permission to register this domain email",
+	noDomainPermRegKey: "Registration code not valid for this domain",
+	noDomainPermSend: "No permission to send from this domain email",
+	JWTMismatch: 'JWT secret mismatch',
 	perms: {
 		"邮件": "Email",
 		"邮件发送": "Send email",

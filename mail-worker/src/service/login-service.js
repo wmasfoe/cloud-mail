@@ -25,7 +25,11 @@ const loginService = {
 
 		const { email, password, token, code } = params;
 
-		const {regKey, register} = await settingService.query(c)
+		const {regKey, register, registerVerify} = await settingService.query(c)
+
+		if (registerVerify === settingConst.registerVerify.OPEN) {
+			await turnstileService.verify(c,token)
+		}
 
 		if (register === settingConst.register.CLOSE) {
 			throw new BizError(t('regDisabled'));
@@ -76,10 +80,6 @@ const loginService = {
 			throw new BizError(t('isRegAccount'));
 		}
 
-		if (await settingService.isRegisterVerify(c)) {
-			await turnstileService.verify(c,token)
-		}
-
 		const { salt, hash } = await saltHashUtils.hashPassword(password);
 
 		let defType = null
@@ -87,6 +87,21 @@ const loginService = {
 		if (!type) {
 			const roleRow = await roleService.selectDefaultRole(c);
 			defType = roleRow.roleId
+		}
+
+
+		const roleRow = await roleService.selectById(c, type || defType);
+
+		if(!roleService.hasAvailDomainPerm(roleRow.availDomain, email)) {
+
+			if (type) {
+				throw new BizError(t('noDomainPermRegKey'),403)
+			}
+
+			if (defType) {
+				throw new BizError(t('noDomainPermReg'),403)
+			}
+
 		}
 
 		const userId = await userService.insert(c, { email, regKeyId,password: hash, salt, type: type || defType });

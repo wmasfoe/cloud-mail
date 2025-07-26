@@ -40,11 +40,11 @@ export function fromNow(date) {
             if (diffSeconds < 60) return `Just now`;
             if (diffMinutes < 60) return `${diffMinutes} min ago`;
             if (diffHours < 2) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-            return d.format('HH:mm');
+            return d.format('hh:mm A');
         }
 
         if (now.subtract(1, 'day').isSame(d, 'day')) {
-            return d.format('hh:mm A');
+            return d.format('MMM D');
         }
 
         return d.year() === now.year()

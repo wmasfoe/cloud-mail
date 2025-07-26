@@ -14,13 +14,18 @@ export function formatBytes(bytes) {
     return `${size} ${units[i]}`;
 }
 
-export function fileToBase64(file) {
+export function fileToBase64(file, type = false) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => {
-            const base64 = reader.result.split(',')[1];
-            resolve(base64);
+            if (type) {
+                const base64 = reader.result;
+                resolve(base64);
+            } else {
+                const base64 = reader.result.split(',')[1];
+                resolve(base64);
+            }
         };
         reader.onerror = reject;
     });

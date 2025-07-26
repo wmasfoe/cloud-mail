@@ -2,8 +2,6 @@ import {createApp} from 'vue';
 import App from './App.vue';
 import router from './router';
 import './style.css';
-import VueCropper from 'vue-cropper';
-import 'vue-cropper/dist/index.css'
 import { init } from '@/init/init.js';
 import { createPinia } from 'pinia';
 import piniaPersistedState from 'pinia-plugin-persistedstate';
@@ -12,7 +10,7 @@ const pinia = createPinia().use(piniaPersistedState)
 import i18n from "@/i18n/index.js";
 const app = createApp(App).use(pinia)
 await init()
-app.use(router).use(VueCropper).use(i18n).directive('perm',perm)
+app.use(router).use(i18n).directive('perm',perm)
 app.config.devtools = true;
 
 app.mount('#app');

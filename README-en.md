@@ -161,9 +161,9 @@ After the update, run `https://your-project-domain/api/init/your-jwt-secret` to 
 
 ## Support
 
-**Buy me a cup of milk tea**
-
-<a href="https://afdian.com/a/eoao_"><img width="150" src="https://pic1.afdiancdn.com/static/img/welcome/button-sponsorme.png" alt=""></a>
+<a href="https://support.skymail.ink">
+<img width="170px" src="./doc/images/support.png" alt="">
+</a><br><br>
 
 
 **Special Sponsors**

@@ -73,9 +73,8 @@ import {accountSetName} from "@/request/account.js";
 import {useAccountStore} from "@/store/account.js";
 import {useI18n} from "vue-i18n";
 import {useSettingStore} from "@/store/setting.js";
-import dayjs from "dayjs";
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const settingStore = useSettingStore()
 const accountStore = useAccountStore()
 const userStore = useUserStore();

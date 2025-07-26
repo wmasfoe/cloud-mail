@@ -644,7 +644,6 @@ function setType() {
 function resetUserForm() {
   userForm.password = null
   userForm.userId = 0
-  userForm.type = 0
 }
 
 function search() {

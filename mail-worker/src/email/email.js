@@ -8,11 +8,12 @@ import fileUtils from '../utils/file-utils';
 import { emailConst, isDel, roleConst, settingConst } from '../const/entity-const';
 import emailUtils from '../utils/email-utils';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc'
-import timezone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import roleService from '../service/role-service';
-dayjs.extend(utc)
-dayjs.extend(timezone)
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export async function email(message, env, ctx) {
 
@@ -50,25 +51,29 @@ export async function email(message, env, ctx) {
 
 		if (account && account.email !== env.admin) {
 
-			let { banEmail, banEmailType } = await roleService.selectByUserId({ env: env}, account.userId);
+			let { banEmail, banEmailType, availDomain } = await roleService.selectByUserId({ env: env }, account.userId);
 
-			banEmail = banEmail.split(",").filter(item => item !== "")
+			if(!roleService.hasAvailDomainPerm(availDomain, message.to)) {
+				return;
+			}
+
+			banEmail = banEmail.split(',').filter(item => item !== '');
 
 			for (const item of banEmail) {
 
 				if (item.startsWith('*@')) {
 
-					const banDomain = emailUtils.getDomain(item.toLowerCase())
-					const receiveDomain = emailUtils.getDomain(email.from.address.toLowerCase())
+					const banDomain = emailUtils.getDomain(item.toLowerCase());
+					const receiveDomain = emailUtils.getDomain(email.from.address.toLowerCase());
 
 					if (banDomain === receiveDomain) {
 
-						if (banEmailType === roleConst.banEmailType.ALL) return
+						if (banEmailType === roleConst.banEmailType.ALL) return;
 
 						if (banEmailType === roleConst.banEmailType.CONTENT) {
-							email.html = 'messageRemoved'
-							email.text = 'messageRemoved'
-							email.attachments = []
+							email.html = 'The content has been deleted';
+							email.text = 'The content has been deleted';
+							email.attachments = [];
 						}
 
 					}
@@ -77,12 +82,12 @@ export async function email(message, env, ctx) {
 
 					if (item.toLowerCase() === email.from.address.toLowerCase()) {
 
-						if (banEmailType === roleConst.banEmailType.ALL) return
+						if (banEmailType === roleConst.banEmailType.ALL) return;
 
 						if (banEmailType === roleConst.banEmailType.CONTENT) {
-							email.html = 'messageRemoved'
-							email.text = 'messageRemoved'
-							email.attachments = []
+							email.html = 'The content has been deleted';
+							email.text = 'The content has been deleted';
+							email.attachments = [];
 						}
 
 					}

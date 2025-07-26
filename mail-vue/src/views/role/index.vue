@@ -47,15 +47,52 @@
         </el-table>
       </div>
     </el-scrollbar>
-    <el-dialog top="5vh" class="dialog" v-model="roleFormShow" :title="dialogType.title" @closed="resetForm">
+    <el-dialog top="5vh" class="dialog" v-model="roleFormShow" @closed="resetForm">
+      <template #header>
+        <span style="font-size: 18px">{{dialogType.title}}</span>
+        <el-popover
+            width	="340"
+            :title="t('featDesc')"
+            placement="bottom"
+        >
+          <template #reference>
+            <Icon class="warning" icon="fe:warning" width="18" height="18"/>
+          </template>
+          <div style="font-weight: bold;margin-bottom: 2px;">{{t('emailInterception')}}</div>
+          <div>{{t('emailInterceptionDesc')}}</div>
+          <div style="font-weight: bold;margin-top: 10px;margin-bottom: 2px;">{{t('availableDomains')}}</div>
+          <div>
+            {{t('availableDomainsDesc')}}
+          </div>
+        </el-popover>
+      </template>
       <div class="dialog-box">
         <el-input class="dialog-input" v-model="form.name" type="text" :maxlength="12" :placeholder="$t('roleName')" autocomplete="off" />
         <el-input class="dialog-input" v-model="form.description" :maxlength="30" type="text" :placeholder="$t('description')" autocomplete="off" />
-        <el-input-tag class="dialog-input-tag" tag-type="warning" :class="form.banEmail.length === 0 ? 'dialog-input' : '' " v-model="form.banEmail" @add-tag="banEmailAddTag"  type="text" :placeholder="$t('emailBlock')" autocomplete="off" />
+        <el-input-tag class="dialog-input-tag" tag-type="warning" :class="form.banEmail.length === 0 ? 'dialog-input' : '' " v-model="form.banEmail" @add-tag="banEmailAddTag"  type="text" :placeholder="$t('emailInterception')" autocomplete="off" />
         <el-radio-group class="dialog-radio" v-model="form.banEmailType" v-if="form.banEmail.length > 0">
           <el-radio :label="$t('removeAll')" :value="0" />
           <el-radio :label="$t('removeBody')" :value="1" />
         </el-radio-group>
+        <el-select
+            class="dialog-input"
+            v-model="form.availDomain"
+            multiple
+            filterable
+            allow-create
+            default-first-option
+            :reserve-keyword="false"
+            tag-type="success"
+            :placeholder="$t('availableDomains')"
+            @change="availDomainChange"
+        >
+          <el-option
+              v-for="item in domainOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+          />
+        </el-select>
         <div class="dialog-input">
           <el-input-number :placeholder="$t('order')" :min="0" :max="9999" v-model.number="form.sort" controls-position="right" autocomplete="off" />
         </div>
@@ -108,6 +145,7 @@ import {roleAdd, roleDelete, rolePermTree, roleRoleList, roleSet, roleSetDef} fr
 import loading from '@/components/loading/index.vue';
 import {useRoleStore} from "@/store/role.js";
 import {useUserStore} from "@/store/user.js";
+import {useSettingStore} from "@/store/setting.js";
 import {isEmail} from "@/utils/verify-utils.js";
 import {useI18n} from "vue-i18n";
 
@@ -115,6 +153,7 @@ defineOptions({
   name: 'role'
 })
 
+const { domainList } = useSettingStore();
 const { t, locale } = useI18n();
 const userStore = useUserStore();
 const roleStore = useRoleStore();
@@ -144,7 +183,10 @@ const form = reactive({
   accountCount: 0,
   sort: 0,
   isDefault: 0,
+  availDomain: []
 })
+
+let domainOptions = []
 
 const expand = ref(false)
 
@@ -155,6 +197,18 @@ refresh()
 rolePermTree().then(tree => {
   treeList.push(...tree)
 })
+
+domainOptions = domainList.map(domain => ({label: domain,value: domain}))
+
+
+function availDomainChange() {
+  const index = form.availDomain.findIndex(domain => {
+    return !domainOptions.map(option => option.value).includes(domain)
+  })
+  if (index > -1) {
+    form.availDomain.splice(index,1)
+  }
+}
 
 function banEmailAddTag(val) {
   const emails = Array.from(new Set(
@@ -270,6 +324,7 @@ function resetForm() {
   form.accountCount = 0
   form.banEmail = []
   form.banEmailType = 0
+  form.availDomain = []
   tree.value.setCheckedKeys([])
 }
 
@@ -285,6 +340,7 @@ function openRoleSet(role) {
   form.sendCount = role.sendCount
   form.accountCount = role.accountCount
   form.banEmail = role.banEmail
+  form.availDomain = role.availDomain
   nextTick(() => {
     tree.value.setCheckedKeys(role.permIds)
   })
@@ -394,7 +450,7 @@ window.onresize = () => {
 .warning {
   position: relative;
   left: 5px;
-  top: 5px;
+  top: 2px;
   color: gray;
   cursor: pointer;
 }

@@ -69,30 +69,41 @@ const settingService = {
 
 		const settingRow = await this.query(c);
 
+		let { background } = params
 
-		if (!c.env.r2) {
-			throw new BizError(t('noOsUpBack'));
+		if (!background.startsWith('http')) {
+
+			if (!c.env.r2) {
+				throw new BizError(t('noOsUpBack'));
+			}
+
+			if (!settingRow.r2Domain) {
+				throw new BizError(t('noOsDomainUpBack'));
+			}
+
+			const file = fileUtils.base64ToFile(background)
+
+			const arrayBuffer = await file.arrayBuffer();
+			background = constant.BACKGROUND_PREFIX + await fileUtils.getBuffHash(arrayBuffer) + fileUtils.getExtFileName(file.name);
+
+
+			await r2Service.putObj(c, background, arrayBuffer, {
+				contentType: file.type
+			});
+
 		}
-
-		if (!settingRow.r2Domain) {
-			throw new BizError(t('noOsDomainUpBack'));
-		}
-
-		const { background } = params;
-		const file = fileUtils.base64ToFile(background);
-		const arrayBuffer = await file.arrayBuffer();
-		const key = constant.BACKGROUND_PREFIX + await fileUtils.getBuffHash(arrayBuffer) + fileUtils.getExtFileName(file.name);
-		await r2Service.putObj(c, key, file, {
-			contentType: file.type
-		});
 
 		if (settingRow.background) {
-			await r2Service.delete(c, settingRow.background);
+			try {
+				await r2Service.delete(c, settingRow.background);
+			} catch (e) {
+				console.error(e)
+			}
 		}
 
-		await orm(c).update(setting).set({ background: key }).run();
+		await orm(c).update(setting).set({ background }).run();
 		await this.refresh(c);
-		return key;
+		return background;
 	},
 
 	async physicsDeleteAll(c) {

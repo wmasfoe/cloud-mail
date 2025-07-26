@@ -9,12 +9,13 @@ import userService from './user-service';
 import user from '../entity/user';
 import verifyUtils from '../utils/verify-utils';
 import { t } from '../i18n/i18n.js';
+import emailUtils from '../utils/email-utils';
 
 const roleService = {
 
 	async add(c, params, userId) {
 
-		let { name, permIds, banEmail } = params;
+		let { name, permIds, banEmail, availDomain } = params;
 
 		if (!name) {
 			throw new BizError(t('emptyRoleName'));
@@ -32,9 +33,11 @@ const roleService = {
 			throw new BizError(t('notEmail'));
 		}
 
-		banEmail = banEmail.join(',')
+		banEmail = banEmail.join(',');
 
-		roleRow = await orm(c).insert(role).values({...params, banEmail, userId}).returning().get();
+		availDomain = availDomain.join(',');
+
+		roleRow = await orm(c).insert(role).values({...params, banEmail, availDomain, userId}).returning().get();
 
 		if (permIds.length === 0) {
 			return;
@@ -55,7 +58,8 @@ const roleService = {
 			.where(eq(perm.type, permConst.type.BUTTON)).all();
 
 		roleList.forEach(role => {
-			role.banEmail = role.banEmail.split(",").filter(item => item !== "")
+			role.banEmail = role.banEmail.split(",").filter(item => item !== "");
+			role.availDomain = role.availDomain.split(",").filter(item => item !== "");
 			role.permIds = permList.filter(perm => perm.roleId === role.roleId).map(perm => perm.permId);
 		});
 
@@ -64,7 +68,7 @@ const roleService = {
 
 	async setRole(c, params) {
 
-		let { name, permIds, roleId, banEmail } = params;
+		let { name, permIds, roleId, banEmail, availDomain } = params;
 
 		if (!name) {
 			throw new BizError(t('emptyRoleName'));
@@ -80,7 +84,9 @@ const roleService = {
 
 		banEmail = banEmail.join(',')
 
-		await orm(c).update(role).set({...params, banEmail}).where(eq(role.roleId, roleId)).run();
+		availDomain = availDomain.join(',')
+
+		await orm(c).update(role).set({...params, banEmail, availDomain}).where(eq(role.roleId, roleId)).run();
 		await orm(c).delete(rolePerm).where(eq(rolePerm.roleId, roleId)).run();
 
 		if (permIds.length > 0) {
@@ -150,6 +156,24 @@ const roleService = {
 
 	selectByUserId(c, userId) {
 		return orm(c).select(role).from(user).leftJoin(role, eq(role.roleId, user.type)).where(eq(user.userId, userId)).get();
+	},
+
+	hasAvailDomainPerm(availDomain, email) {
+
+		availDomain = availDomain.split(',').filter(item => item !== '');
+
+		if (availDomain.length === 0) {
+			return true
+		}
+
+		const availIndex = availDomain.findIndex(item => {
+			const domain = emailUtils.getDomain(email.toLowerCase());
+			const availDomainItem = emailUtils.getDomain(item.toLowerCase());
+			console.log(domain,availDomainItem)
+			return domain === availDomainItem
+		})
+
+		return availIndex > -1
 	}
 };
 

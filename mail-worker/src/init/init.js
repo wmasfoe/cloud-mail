@@ -8,7 +8,7 @@ const init = {
 		const secret = c.req.param('secret');
 
 		if (secret !== c.env.jwt_secret) {
-			return c.text(t('initSuccess'));
+			return c.text('jwt_secret 不匹配');
 		}
 
 		await this.intDB(c);
@@ -19,12 +19,17 @@ const init = {
 		await this.v1_4DB(c);
 		await this.v1_5DB(c);
 		await settingService.refresh(c);
-		return c.text('初始化成功');
+		return c.text(t('initSuccess'));
 	},
 
 	async v1_5DB(c) {
 		await c.env.db.prepare(`UPDATE perm SET perm_key = 'sys-email:list' WHERE perm_key = 'all-email:list'`).run();
 		await c.env.db.prepare(`UPDATE perm SET perm_key = 'sys-email:delete' WHERE perm_key = 'all-email:delete'`).run();
+		try {
+			await c.env.db.prepare(`ALTER TABLE role ADD COLUMN avail_domain TEXT NOT NULL DEFAULT ''`).run();
+		} catch (e) {
+			console.warn(`跳过字段添加，原因：${e.message}`);
+		}
 	},
 
 	async v1_4DB(c) {

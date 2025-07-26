@@ -126,7 +126,6 @@ app.use('*', async (c, next) => {
 		const userPaths = permKeyToPaths(permKeys);
 
 		const userPermIndex = userPaths.findIndex(item => {
-			console.log(item)
 			return path.startsWith(item);
 		});
 

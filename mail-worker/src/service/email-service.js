@@ -159,6 +159,7 @@ const emailService = {
 
 		}
 
+
 		if (attDataList.length > 0 && !r2Domain) {
 			throw new BizError(t('noOsDomainSendPic'));
 		}
@@ -186,6 +187,18 @@ const emailService = {
 			throw new BizError(t('senderAccountNotExist'));
 		}
 
+		if (accountRow.userId !== userId) {
+			throw new BizError(t('sendEmailNotCurUser'));
+		}
+
+		if (c.env.admin !== userRow.email) {
+
+			if(!roleService.hasAvailDomainPerm(roleRow.availDomain, accountRow.email)) {
+				throw new BizError(t('noDomainPermSend'),403)
+			}
+
+		}
+
 		const domain = emailUtils.getDomain(accountRow.email);
 		const resendToken = resendTokens[domain];
 
@@ -193,10 +206,6 @@ const emailService = {
 			throw new BizError(t('noResendToken'));
 		}
 
-
-		if (accountRow.userId !== userId) {
-			throw new BizError(t('sendEmailNotCurUser'));
-		}
 
 		if (!name) {
 			name = emailUtils.getName(accountRow.email);

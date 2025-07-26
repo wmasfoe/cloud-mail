@@ -96,7 +96,6 @@ const en = {
     expand: 'Expand',
     collapse: 'Collapse',
     daily: 'Daily',
-    emailBlock: '*Intercept all incoming emails to ＠example.com',
     searchRegKeyDesc: 'Enter invite code to search',
     remainingUses: 'Remaining uses',
     exhausted: 'Exhausted',
@@ -168,11 +167,11 @@ const en = {
     addOsDomain: 'Add domain',
     domainDesc: 'Domain',
     addTurnstileSecret: 'Add turnstile secret',
-    backgroundCropping: 'Background cropping',
+    backgroundTitle: 'Change background',
     tgBotDesc: 'Forward received emails to a Telegram bot',
     tgBotToken: 'Bot token',
     toBotTokenDesc: 'Multiple user chat_ids, separated by commas',
-    otherEmailDec: 'emails can be forwarded to external email, but must be verified via cloudflare.',
+    otherEmailDesc: 'emails can be forwarded to external email, but must be verified via cloudflare.',
     otherEmailInputDesc: 'Separate multiple email addresses with commas.',
     forwardingRulesDesc: 'Rule-based forwarding only forwards emails received by the specified address.',
     ruleEmailsInputDesc: 'Separate multiple email addresses with commas.',
@@ -246,7 +245,17 @@ const en = {
     totalUserAccount: '{msg}',
     sendBanned: 'Banned',
     wrote: 'wrote',
-    support: 'Support'
+    support: 'Support',
+    supportDesc: 'Buy me tea',
+    featDesc: 'Feature Description',
+    emailInterception: 'Email Interception',
+    emailInterceptionDesc: '*Intercept emails by blocking entire domain using ＠example.com to prevent users from receiving emails from certain websites.',
+    availableDomains: 'Available domains',
+    availableDomainsDesc: 'Restrict users to email domains specified. Domains not on the approved list will be blocked from registration, adding email addresses, and sending/receiving emails. If left blank, all domains will be allowed by default.',
+    backgroundUrlDesc: 'Image URL',
+    localUpload: ' Local upload',
+    imageLink: 'Image URL',
+    backgroundWarning: 'Image file size affects website load speed.'
 }
 
 export default en
