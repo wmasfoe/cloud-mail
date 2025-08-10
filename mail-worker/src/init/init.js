@@ -26,7 +26,7 @@ const init = {
 	},
 
 	async v1_7DB(c) {
-		c.env.db.prepare(`ALTER TABLE setting ADD COLUMN login_domain INTEGER NOT NULL DEFAULT 0;`).run();
+		 await c.env.db.prepare(`ALTER TABLE setting ADD COLUMN login_domain INTEGER NOT NULL DEFAULT 0;`).run();
 	},
 
 	async v1_6DB(c) {
