@@ -347,18 +347,20 @@
               </div>
               <div class="concerning-item">
                 <span>{{ $t('community') }} : </span>
-                <el-button @click="jump('https://github.com/eoao/cloud-mail')">
-                  Github
-                  <template #icon>
-                    <Icon icon="codicon:github-inverted" width="22" height="22"/>
-                  </template>
-                </el-button>
-                <el-button @click="jump('https://t.me/cloud_mail_tg')">
-                  Telegram
-                  <template #icon>
-                    <Icon icon="logos:telegram" width="30" height="30"/>
-                  </template>
-                </el-button>
+                  <div class="community">
+                      <el-button @click="jump('https://github.com/eoao/cloud-mail')">
+                          Github
+                          <template #icon>
+                              <Icon icon="codicon:github-inverted" width="22" height="22"/>
+                          </template>
+                      </el-button>
+                      <el-button @click="jump('https://t.me/cloud_mail_tg')">
+                          Telegram
+                          <template #icon>
+                              <Icon icon="logos:telegram" width="30" height="30"/>
+                          </template>
+                      </el-button>
+                  </div>
               </div>
               <div class="concerning-item">
                 <span>{{ $t('support') }} : </span>
@@ -1499,10 +1501,14 @@ function editSetting(settingForm, refreshStatus = true) {
   display: flex;
   align-items: center;
 
+  .community {
+    display: flex;
+    row-gap: 10px;
+    flex-wrap: wrap;
+  }
   :deep(.el-button) {
     padding: 0 10px;
     font-weight: normal;
-
     i {
       font-size: 22px;
     }
@@ -1511,6 +1517,7 @@ function editSetting(settingForm, refreshStatus = true) {
   > span:first-child {
     font-weight: normal;
     padding-right: 20px;
+    white-space: nowrap;
   }
 }
 

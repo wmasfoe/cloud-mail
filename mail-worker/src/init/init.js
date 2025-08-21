@@ -95,8 +95,8 @@ const init = {
 	},
 
 	async v1_5DB(c) {
-		await c.env.db.prepare(`UPDATE perm SET perm_key = 'sys-email:list' WHERE perm_key = 'all-email:list'`).run();
-		await c.env.db.prepare(`UPDATE perm SET perm_key = 'sys-email:delete' WHERE perm_key = 'all-email:delete'`).run();
+		await c.env.db.prepare(`UPDATE perm SET perm_key = 'all-email:query' WHERE perm_key = 'sys-email:query'`).run();
+		await c.env.db.prepare(`UPDATE perm SET perm_key = 'all-email:delete' WHERE perm_key = 'sys-email:delete'`).run();
 		try {
 			await c.env.db.prepare(`ALTER TABLE role ADD COLUMN avail_domain TEXT NOT NULL DEFAULT ''`).run();
 		} catch (e) {
