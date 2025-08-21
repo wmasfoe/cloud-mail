@@ -143,15 +143,15 @@ const route = useRoute();
 
 
 :deep(.el-scrollbar__wrap--hidden-default ) {
-  background: #001529 !important;
+  background: var(--aside-backgound) !important;
 }
 
 :deep(.el-menu-item) {
-  background: #001529;
+  background: var(--aside-backgound);
 }
 
 :deep(.el-menu) {
-  background: #001529;
+  background: var(--aside-backgound);
 }
 
 .el-menu {
@@ -163,22 +163,11 @@ const route = useRoute();
 }
 
 :deep(.el-divider__text) {
-  background: #001529;
+  background: var(--aside-backgound);
   color: #FFFFFF;
 }
 
 .scroll {
 
-}
-
-.github {
-  position: absolute;
-  width: 100%;
-  bottom: 10px;
-  display: flex;
-  justify-content: center;
-  a{
-    color: #fff;
-  }
 }
 </style>
