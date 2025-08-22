@@ -8,31 +8,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
-<body>
-<div id="loading-first">
-  <div class="loading-icon">
-    <svg class="circular" viewBox="0 0 20 20">
-      <g class="loading-path">
-        <circle r="3.375" class="dot1" rx="0" ry="0"/>
-        <circle r="3.375" class="dot2" rx="0" ry="0"/>
-        <circle r="3.375" class="dot4" rx="0" ry="0"/>
-        <circle r="3.375" class="dot3" rx="0" ry="0"/>
-      </g>
-    </svg>
-  </div>
-</div>
-<div id="app"></div>
-<script>
-  const uiStoreStr =  localStorage.getItem('ui')
-  if (uiStoreStr) {
-    const uiStore =  JSON.parse(uiStoreStr)
-    const doc = document.querySelector('#loading-first')
-    doc.style.background = uiStore.dark ? '#141414' : '#FFFFFF'
-  }
-</script>
-<script type="module" src="/src/main.js"></script>
-</body>
-</html>
 <style>
 
   #loading-first {
@@ -58,6 +33,7 @@
     height: 30px;
     width: 30px;
     animation: loading-rotate 1s linear infinite;
+    fill: transparent !important;
   }
 
   .loading-path .dot1 {
@@ -103,3 +79,28 @@
     }
   }
 </style>
+<body>
+<div id="loading-first">
+  <div class="loading-icon">
+    <svg class="circular" viewBox="0 0 20 20">
+      <g class="loading-path">
+        <circle r="3.375" class="dot1" rx="0" ry="0"/>
+        <circle r="3.375" class="dot2" rx="0" ry="0"/>
+        <circle r="3.375" class="dot4" rx="0" ry="0"/>
+        <circle r="3.375" class="dot3" rx="0" ry="0"/>
+      </g>
+    </svg>
+  </div>
+</div>
+<div id="app"></div>
+<script>
+  const uiStoreStr =  localStorage.getItem('ui')
+  if (uiStoreStr) {
+    const uiStore =  JSON.parse(uiStoreStr)
+    const doc = document.querySelector('#loading-first')
+    doc.style.background = uiStore.dark ? '#141414' : '#FFFFFF'
+  }
+</script>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
