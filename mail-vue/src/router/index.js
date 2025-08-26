@@ -1,4 +1,5 @@
 import {createRouter, createWebHistory} from 'vue-router'
+import NProgress from 'nprogress';
 import {useUiStore} from "@/store/ui.js";
 
 const routes = [
@@ -74,7 +75,24 @@ const router = createRouter({
     routes
 })
 
+NProgress.configure({
+    showSpinner: false,   // 不显示旋转图标
+    trickleSpeed: 50,    // 自动递增速度
+    minimum: 0.1          // 最小百分比
+});
+
+let timer
+
 router.beforeEach(async (to, from, next) => {
+
+    if (timer) {
+        clearTimeout(timer)
+    }
+
+    // 延迟 50ms 才启动进度条
+    timer = setTimeout(() => {
+        NProgress.start()
+    }, 50)
 
     const token = localStorage.getItem('token')
 
@@ -98,6 +116,9 @@ router.beforeEach(async (to, from, next) => {
 })
 
 router.afterEach((to) => {
+
+    clearTimeout(timer)
+    NProgress.done();
 
     const uiStore = useUiStore()
     if (to.meta.menu) {

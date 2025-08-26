@@ -55,24 +55,33 @@ export async function init() {
         document.title = setting.title;
     }
 
-    const loading = document.getElementById('loading-first');
-
     if (!setting.background) {
-        loading.remove();
+        removeLoading();
         return;
     }
 
     const img = new Image();
     img.src = cvtR2Url(setting.background);
     img.onload = () => {
-        loading.remove();
+        removeLoading();
     };
 
     img.onerror = () => {
 
         console.warn('背景图片加载失败:', img.src);
-        loading.remove();
+        removeLoading();
 
     };
+}
+
+function removeLoading() {
+    if (window.innerWidth < 1025) {
+        document.documentElement.style.setProperty('--loading-hide-transition', 'none')
+    }
+    const doc = document.getElementById('loading-first');
+    doc.classList.add('loading-hide')
+    setTimeout(() => {
+        doc.remove()
+    },1000)
 }
 
