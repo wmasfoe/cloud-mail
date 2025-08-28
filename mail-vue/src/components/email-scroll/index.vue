@@ -911,7 +911,7 @@ function loadData() {
 }
 
 .del-status {
-  color: var(--el-color-danger);
+  color: var(--el-color-info);
   display: flex;
   align-items: center;
   justify-content: center;
