@@ -1,6 +1,6 @@
 <template>
   <div class="settings-container">
-    <div class="loading" :class="firstLoading ? 'loading-show' : 'loading-hide'" >
+    <div class="loading" :class="firstLoading ? 'loading-show' : 'loading-hide'">
       <loading/>
     </div>
     <el-scrollbar class="scroll" v-if="!firstLoading">
@@ -209,6 +209,14 @@
                   </el-button>
                 </div>
               </div>
+              <div class="setting-item">
+                <div><span>{{ $t('S3配置') }}</span></div>
+                <div class="r2domain">
+                  <el-button class="opt-button" size="small" type="primary" @click="ossConfigShow = true">
+                    <Icon icon="fluent:settings-48-regular" width="18" height="18"/>
+                  </el-button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -347,20 +355,20 @@
               </div>
               <div class="concerning-item">
                 <span>{{ $t('community') }} : </span>
-                  <div class="community">
-                      <el-button @click="jump('https://github.com/eoao/cloud-mail')">
-                          Github
-                          <template #icon>
-                              <Icon icon="codicon:github-inverted" width="22" height="22"/>
-                          </template>
-                      </el-button>
-                      <el-button @click="jump('https://t.me/cloud_mail_tg')">
-                          Telegram
-                          <template #icon>
-                              <Icon icon="logos:telegram" width="30" height="30"/>
-                          </template>
-                      </el-button>
-                  </div>
+                <div class="community">
+                  <el-button @click="jump('https://github.com/eoao/cloud-mail')">
+                    Github
+                    <template #icon>
+                      <Icon icon="codicon:github-inverted" width="22" height="22"/>
+                    </template>
+                  </el-button>
+                  <el-button @click="jump('https://t.me/cloud_mail_tg')">
+                    Telegram
+                    <template #icon>
+                      <Icon icon="logos:telegram" width="30" height="30"/>
+                    </template>
+                  </el-button>
+                </div>
               </div>
               <div class="concerning-item">
                 <span>{{ $t('support') }} : </span>
@@ -672,6 +680,7 @@ const userStore = useUserStore();
 const editTitleShow = ref(false)
 const resendTokenFormShow = ref(false)
 const r2DomainShow = ref(false)
+const ossConfigShow = ref(false)
 const turnstileShow = ref(false)
 const tgSettingShow = ref(false)
 const noticePopupShow = ref(false)
@@ -1173,6 +1182,7 @@ function editSetting(settingForm, refreshStatus = true) {
   overflow: hidden;
   background: var(--extra-light-fill) !important;
   position: relative;
+
   .loading {
     display: flex;
     align-items: center;
@@ -1522,9 +1532,11 @@ function editSetting(settingForm, refreshStatus = true) {
     row-gap: 10px;
     flex-wrap: wrap;
   }
+
   :deep(.el-button) {
     padding: 0 10px;
     font-weight: normal;
+
     i {
       font-size: 22px;
     }
