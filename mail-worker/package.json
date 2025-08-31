@@ -5,8 +5,9 @@
 	"scripts": {
 		"dev": "wrangler dev --config wrangler-dev.toml",
 		"test": "wrangler deploy --config wrangler-test.toml",
-		"deploy": "wrangler deploy",
-		"start": "wrangler dev"
+		"deploy": "npm --prefix ../mail-vue run build && wrangler deploy",
+		"start": "wrangler dev",
+		"build": "npm --prefix ../mail-vue run build"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.7.5",
@@ -14,6 +15,7 @@
 		"wrangler": "^4.7.0"
 	},
 	"dependencies": {
+		"@aws-sdk/client-s3": "^3.879.0",
 		"@cloudflare/vite-plugin": "1.6.0",
 		"dayjs": "^1.11.13",
 		"drizzle-orm": "^0.42.0",

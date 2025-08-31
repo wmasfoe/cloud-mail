@@ -55,7 +55,9 @@ http.interceptors.response.use((res) => {
                 })
                 reject(data)
             }
-            resolve(data.data)
+            setTimeout(() => {
+                resolve(data.data)
+            },300)
         })
     },
     (error) => {

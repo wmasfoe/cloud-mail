@@ -17,6 +17,7 @@ import starService from './star-service';
 import dayjs from 'dayjs';
 import kvConst from '../const/kv-const';
 import { t } from '../i18n/i18n'
+import r2Service from './r2-service';
 
 const emailService = {
 
@@ -128,7 +129,18 @@ const emailService = {
 
 	async send(c, params, userId) {
 
-		let { accountId, name, sendType, emailId, receiveEmail, manyType, text, content, subject, attachments } = params;
+		let {
+			accountId,
+			name,
+			sendType,
+			emailId,
+			receiveEmail,
+			manyType,
+			text,
+			content,
+			subject,
+			attachments
+		} = params;
 
 		const { resendTokens, r2Domain, send } = await settingService.query(c);
 
@@ -164,7 +176,7 @@ const emailService = {
 			throw new BizError(t('noOsDomainSendPic'));
 		}
 
-		if (attDataList.length > 0 && !c.env.r2) {
+		if (attDataList.length > 0 && !await r2Service.hasOSS(c)) {
 			throw new BizError(t('noOsSendPic'));
 		}
 
@@ -172,7 +184,7 @@ const emailService = {
 			throw new BizError(t('noOsDomainSendAtt'));
 		}
 
-		if (attachments.length > 0 && !c.env.r2) {
+		if (attachments.length > 0 && !await r2Service.hasOSS(c)) {
 			throw new BizError(t('noOsSendAtt'));
 		}
 
@@ -342,7 +354,7 @@ const emailService = {
 					await attService.saveArticleAtt(c, attDataList, userId, accountId, emailRow.emailId);
 				}
 
-				if (attachments?.length > 0 && c.env.r2) {
+				if (attachments?.length > 0 && await r2Service.hasOSS(c)) {
 					await attService.saveSendAtt(c, attachments, userId, accountId, emailRow.emailId);
 				}
 
@@ -443,32 +455,12 @@ const emailService = {
 		return list;
 	},
 
-
-	async physicsDeleteAll(c) {
-		const emailIdsRow = await orm(c).select({ emailId: email.emailId }).from(email).where(eq(email.isDel, isDel.DELETE)).limit(99);
-		if (emailIdsRow.length === 0) {
-			return;
-		}
-		const emailIds = emailIdsRow.map(row => row.emailId);
-		await attService.removeByEmailIds(c, emailIds);
-		await starService.removeByEmailIds(c, emailIds);
-		await orm(c).delete(email).where(inArray(email.emailId, emailIds)).run();
-		if (emailIdsRow.length === 99) {
-			await this.physicsDeleteAll(c);
-		}
-	},
-
 	async physicsDelete(c, params) {
 		let { emailIds } = params;
 		emailIds = emailIds.split(',').map(Number);
 		await attService.removeByEmailIds(c, emailIds);
 		await starService.removeByEmailIds(c, emailIds);
 		await orm(c).delete(email).where(inArray(email.emailId, emailIds)).run();
-	},
-
-	async physicsDeleteAccountIds(c, accountIds) {
-		await attService.removeByAccountIds(c, accountIds);
-		await orm(c).delete(email).where(inArray(email.accountId, accountIds)).run();
 	},
 
 	async physicsDeleteUserIds(c, userIds) {
@@ -657,7 +649,7 @@ const emailService = {
 			return;
 		}
 
-		await attService.deleteByEmailIds(c, emailIds);
+		await attService.removeByEmailIds(c, emailIds);
 
 		await orm(c).delete(email).where(conditions.length > 1 ? and(...conditions) : conditions[0]).run();
 	}

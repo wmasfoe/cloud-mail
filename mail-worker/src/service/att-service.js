@@ -117,63 +117,45 @@ const attService = {
 	},
 
 	async removeByUserIds(c, userIds) {
-		await this.removeAttByField(c, att.userId, userIds);
+		await this.removeAttByField(c, 'user_id', userIds);
 	},
 
 	async removeByEmailIds(c, emailIds) {
-		await this.removeAttByField(c, att.emailId, emailIds);
-	},
-
-	async removeByAccountIds(c, accountIds) {
-		await this.removeAttByField(c, att.accountId, accountIds);
-	},
-
-	async removeAttByField(c, fieldName, fieldValues) {
-
-		const condition = inArray(fieldName, fieldValues);
-		const attList = await orm(c).select().from(att).where(condition).limit(99);
-
-		if (attList.length === 0) {
-			return;
-		}
-
-		const attIds = attList.map(attRow => attRow.attId);
-		const keys = attList.map(attRow => attRow.key);
-		await orm(c).delete(att).where(inArray(att.attId, attIds)).run();
-
-		const existAttRows = await orm(c).select().from(att).where(inArray(att.key, keys)).all();
-		const existKeys = existAttRows.map(attRow => attRow.key);
-		const delKeyList = keys.filter(key => !existKeys.includes(key));
-		if (delKeyList.length > 0) {
-			await c.env.r2.delete(delKeyList);
-		}
-
-		if (attList.length >= 99) {
-			await this.removeAttByField(c, fieldName, fieldValues);
-		}
+		await this.removeAttByField(c, 'email_id', emailIds);
 	},
 
 	selectByEmailIds(c, emailIds) {
 		return orm(c).select().from(att).where(
 			and(
-				inArray(att.emailId,emailIds),
+				inArray(att.emailId, emailIds),
 				eq(att.type, attConst.type.ATT)
 			))
 			.all();
 	},
 
-	async deleteByEmailIds(c, emailIds) {
+	async removeAttByField(c, fieldName, fieldValues) {
 
-		const queryAttSql = emailIds.map(emailId => c.env.db.prepare(`SELECT key,att_id FROM attachments WHERE email_id = ${emailId} GROUP BY key HAVING COUNT(*) = 1;`))
+		const queryAttSql = fieldValues.map(value =>
+			c.env.db.prepare(`SELECT a.key, a.att_id
+						FROM attachments a
+							   JOIN (SELECT key
+									 FROM attachments
+									 GROUP BY key
+									 HAVING COUNT (*) = 1) t
+									ON a.key = t.key
+						WHERE a.${fieldName} = ?;`).bind(value));
+
 		const attListResult = await c.env.db.batch(queryAttSql);
 
 		const delKeyList = attListResult.flatMap(r => r.results.map(row => row.key));
 
 		if (delKeyList.length > 0) {
-			await this.batchDelete(c, delKeyList)
+			await this.batchDelete(c, delKeyList);
 		}
 
-		const delAttSql = emailIds.map(emailId => c.env.db.prepare(`DELETE FROM attachments WHERE email_id = ${emailId}`))
+		const delAttSql = fieldValues.map(value => c.env.db.prepare(`DELETE
+																 FROM attachments
+																 WHERE ${fieldName} = ?`).bind(value));
 		await c.env.db.batch(delAttSql);
 	},
 

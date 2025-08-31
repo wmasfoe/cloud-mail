@@ -136,8 +136,6 @@ const zh = {
     loginDomain: '登录框域名',
     multipleEmail: '多号模式',
     multipleEmailDesc: '开启后账号栏出现一个用户可以添加多个邮箱',
-    physicallyWipeData: '物理清空数据',
-    physicallyWipeDataDesc: '该操作会物理清空所有已被删除的数据',
     customization: '个性化设置',
     websiteTitle: '网站标题',
     loginBoxOpacity: '登录透明',
@@ -147,8 +145,8 @@ const zh = {
     autoRefresh: '自动刷新',
     autoRefreshDesc: '轮询请求服务器获取最新邮件',
     sendEmail: '邮件发送',
-    resendToken: '添加 Resend Token',
-    R2OS: 'R2 对象存储',
+    resendToken: 'Resend Token',
+    oss: '对象存储',
     osDomain: '访问域名',
     emailPush: '邮件推送',
     tgBot: 'Telegram 机器人',
@@ -211,7 +209,7 @@ const zh = {
     addRoleTitle: '添加身份',
     emptyUserNameMsg: '用户名不能为空',
     delAccountConfirm: '确认删除当前账号及所有数据吗?',
-    clearAllDelConfirm: '此操作不可逆转, 输入 <b style="font-weight: bold">确认删除</b> 继续操作',
+    clearAllDelConfirm: '此操作不可逆转, 输入 <b style="font-weight: bold;">确认删除</b> 继续操作',
     warning: '警告',
     delInputPattern: '确认删除',
     inputErrorMessage: '请输入确认删除',
@@ -290,7 +288,8 @@ const zh = {
     to: '至',
     clear: '清除',
     include: '包含',
-    delAllEmailConfirm: '确定要删除吗？'
+    delAllEmailConfirm: '确定要删除吗？',
+    s3Configuration: 'S3 配置'
 
 }
 export default zh

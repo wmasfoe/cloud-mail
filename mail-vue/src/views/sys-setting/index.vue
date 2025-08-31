@@ -61,20 +61,7 @@
                              v-model="setting.manyEmail"/>
                 </div>
               </div>
-              <div class="setting-item">
-                <div>
-                  <span>{{ $t('physicallyWipeData') }}</span>
-                  <el-tooltip effect="dark" :content="$t('physicallyWipeDataDesc')">
-                    <Icon class="warning" icon="fe:warning" width="18" height="18"/>
-                  </el-tooltip>
-                </div>
-                <div>
-                  <el-button class="opt-button" style="margin-top: 0" @click="physicsDeleteAllData" size="small"
-                             type="primary">
-                    <Icon icon="material-symbols:delete-outline-rounded" width="16" height="16"/>
-                  </el-button>
-                </div>
-              </div>
+
             </div>
           </div>
 
@@ -196,9 +183,9 @@
             </div>
           </div>
 
-          <!-- R2 Object Storage Card -->
+          <!-- Object Storage Card -->
           <div class="settings-card">
-            <div class="card-title">{{ $t('R2OS') }}</div>
+            <div class="card-title">{{ $t('oss') }}</div>
             <div class="card-content">
               <div class="setting-item">
                 <div><span>{{ $t('osDomain') }}</span></div>
@@ -210,10 +197,12 @@
                 </div>
               </div>
               <div class="setting-item">
-                <div><span>{{ $t('S3配置') }}</span></div>
+                <div><span>{{ $t('s3Configuration') }}</span></div>
                 <div class="r2domain">
-                  <el-button class="opt-button" size="small" type="primary" @click="ossConfigShow = true">
-                    <Icon icon="fluent:settings-48-regular" width="18" height="18"/>
+                  <el-button @mouseenter="s3IsDisabled = true"
+                             @mouseleave="s3IsDisabled = false"
+                             :disabled="setting.hasR2 && s3IsDisabled" class="opt-button" size="small" type="primary" @click="addS3Show = true">
+                    <Icon icon="fluent:settings-48-regular" width="16" height="16"/>
                   </el-button>
                 </div>
               </div>
@@ -642,6 +631,20 @@
           </div>
         </template>
       </el-dialog>
+      <el-dialog v-model="addS3Show" :title="t('s3Configuration')" width="340" @closed="resetAddS3Form">
+        <form>
+          <el-input class="dialog-input" type="text" placeholder="Bucket" v-model="s3.bucket"/>
+          <el-input class="dialog-input" type="text" placeholder="Endpoint" v-model="s3.endpoint"/>
+          <el-input class="dialog-input" type="text" placeholder="Region" v-model="s3.region"/>
+          <el-input class="dialog-input" type="text" :placeholder="setting.s3AccessKey || 'Access Key'"
+                    v-model="s3.s3AccessKey"/>
+          <el-input type="text" :placeholder="setting.s3SecretKey || 'Secret Key'" v-model="s3.s3SecretKey"/>
+          <div class="s3-button">
+            <el-button :loading="clearS3Loading" @click="clearS3">{{ t('clear') }}</el-button>
+            <el-button type="primary" :loading="settingLoading && !clearS3Loading" @click="saveS3">{{ t('save') }}</el-button>
+          </div>
+        </form>
+      </el-dialog>
     </el-scrollbar>
   </div>
 </template>
@@ -680,7 +683,6 @@ const userStore = useUserStore();
 const editTitleShow = ref(false)
 const resendTokenFormShow = ref(false)
 const r2DomainShow = ref(false)
-const ossConfigShow = ref(false)
 const turnstileShow = ref(false)
 const tgSettingShow = ref(false)
 const noticePopupShow = ref(false)
@@ -692,14 +694,17 @@ const uiStore = useUiStore();
 const {settings: setting} = storeToRefs(settingStore);
 const editTitle = ref('')
 const settingLoading = ref(false)
+const clearS3Loading = ref(false)
 const r2DomainInput = ref('')
 const loginOpacity = ref(0)
 const backgroundUrl = ref('')
 let backgroundFile = {}
+const s3IsDisabled = ref(false)
 const showSetBackground = ref(false)
 let regVerifyCount = ref(1)
 let addVerifyCount = ref(1)
 let backup = '{}'
+const addS3Show = ref(false)
 const addVerifyCountShow = ref(false)
 const regVerifyCountShow = ref(false)
 const resendTokenForm = reactive({
@@ -709,6 +714,14 @@ const resendTokenForm = reactive({
 const turnstileForm = reactive({
   siteKey: '',
   secretKey: ''
+})
+
+const s3 = reactive({
+  bucket: '',
+  endpoint: '',
+  region: '',
+  s3AccessKey: '',
+  s3SecretKey: ''
 })
 
 const noticeForm = reactive({
@@ -763,14 +776,8 @@ function getSettings() {
     r2DomainInput.value = setting.value.r2Domain
     addVerifyCount.value = setting.value.addVerifyCount
     regVerifyCount.value = setting.value.regVerifyCount
-    noticeForm.notice = setting.value.notice
-    noticeForm.noticeContent = setting.value.noticeContent
-    noticeForm.noticeDuration = setting.value.noticeDuration
-    noticeForm.noticeTitle = setting.value.noticeTitle
-    noticeForm.noticePosition = setting.value.noticePosition
-    noticeForm.noticeType = setting.value.noticeType
-    noticeForm.noticeOffset = setting.value.noticeOffset
-    noticeForm.noticeWidth = setting.value.noticeWidth
+    resetNoticeForm()
+    resetAddS3Form()
   })
 }
 
@@ -787,6 +794,14 @@ function openAddVerifyCount() {
 function openRegVerifyCount() {
   if (settingLoading.value) return
   regVerifyCountShow.value = true
+}
+
+function resetAddS3Form() {
+  s3.bucket = setting.value.bucket
+  s3.endpoint = setting.value.endpoint
+  s3.region = setting.value.region
+  s3.s3AccessKey = ''
+  s3.s3SecretKey = ''
 }
 
 const resendList = computed(() => {
@@ -958,6 +973,33 @@ function addChatTag(val) {
   })
 }
 
+function clearS3() {
+
+  const form = {
+    bucket: '',
+    endpoint: '',
+    region: '',
+    s3AccessKey: '',
+    s3SecretKey: ''
+  }
+  clearS3Loading.value = true
+  editSetting(form)
+}
+
+function saveS3() {
+
+  const form = {
+    bucket: s3.bucket,
+    endpoint: s3.endpoint,
+    region: s3.region
+  }
+
+  if (s3.s3AccessKey) form.s3AccessKey = s3.s3AccessKey
+  if (s3.s3SecretKey) form.s3SecretKey = s3.s3SecretKey
+
+  editSetting(form)
+}
+
 function tgBotSave() {
   const form = {
     tgBotToken: tgBotToken.value,
@@ -1125,6 +1167,8 @@ function change(e) {
   const settingForm = {...setting.value}
   delete settingForm.siteKey
   delete settingForm.secretKey
+  delete settingForm.s3AccessKey
+  delete settingForm.s3SecretKey
   delete settingForm.resendTokens
   editSetting(settingForm, false)
 }
@@ -1167,11 +1211,13 @@ function editSetting(settingForm, refreshStatus = true) {
     addVerifyCountShow.value = false
     regVerifyCountShow.value = false
     noticePopupShow.value = false
+    addS3Show.value = false
   }).catch((e) => {
     loginOpacity.value = setting.value.loginOpacity
     setting.value = {...setting.value, ...JSON.parse(backup)}
   }).finally(() => {
     settingLoading.value = false
+    clearS3Loading.value = false
   })
 }
 </script>
@@ -1492,6 +1538,16 @@ function editSetting(settingForm, refreshStatus = true) {
   width: fit-content !important;
 }
 
+.s3-button {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 15px;
+
+  .el-button {
+    margin-left: 0;
+  }
+}
+
 .r2domain {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -1521,6 +1577,10 @@ function editSetting(settingForm, refreshStatus = true) {
       margin-top: 0;
     }
   }
+}
+
+.dialog-input {
+  margin-bottom: 15px;
 }
 
 .concerning-item {
