@@ -17,9 +17,8 @@ export default defineConfig(({mode}) => {
         base: env.VITE_STATIC_URL || '/',
         plugins: [vue(),
             VitePWA({
-                registerType: 'autoUpdate',
-
-                includeAssets: ['favicon.svg', 'robots.txt'],
+                registerType: 'autoUpdate',  // 配置 service worker 的注册方式
+                includeAssets: ['favicon.svg', 'robots.txt'],  // 指定需要包含的静态资源
                 manifest: {
                     name: 'Cloud Mail',
                     short_name: 'Cloud Mail',
@@ -27,27 +26,10 @@ export default defineConfig(({mode}) => {
                     theme_color: '#FFFFFF',
                     icons: [
                         {
-                            src: 'mail-192.png',
+                            src: 'mail-pwa.png',//像素尺寸一定要对应
                             sizes: '192x192',
                             type: 'image/png',
-                        },
-                        {
-                            src: 'mail-512.png',
-                            sizes: '512x512',
-                            type: 'image/png'
-                        },
-                        {
-                            src: 'mail-512.png',
-                            sizes: '512x512',
-                            type: 'image/png',
-                            purpose: 'any'
-                        },
-                        {
-                            src: 'mail-512.png',
-                            sizes: '512x512',
-                            type: 'image/png',
-                            purpose: 'maskable'
-                        },
+                        }
                     ],
                 },
             }),

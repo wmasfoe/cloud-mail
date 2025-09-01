@@ -5,9 +5,8 @@
 	"scripts": {
 		"dev": "wrangler dev --config wrangler-dev.toml",
 		"test": "wrangler deploy --config wrangler-test.toml",
-		"deploy": "npm --prefix ../mail-vue run build && wrangler deploy",
-		"start": "wrangler dev",
-		"build": "npm --prefix ../mail-vue run build"
+		"deploy": "wrangler deploy",
+		"start": "wrangler dev"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.7.5",

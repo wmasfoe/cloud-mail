@@ -40,7 +40,7 @@
           </div>
           <div class="att-list">
             <div class="att-item" v-for="(item,index) in form.attachments" :key="index">
-              <Icon :icon="getIconByName(item.filename)" width="20" height="20"/>
+              <Icon v-bind="getIconByName(item.filename)"/>
               <span class="att-filename">{{ item.filename }}</span>
               <span class="att-size">{{ formatBytes(item.size) }}</span>
               <Icon style="cursor: pointer;" icon="material-symbols-light:close-rounded" @click="delAtt(index)"
@@ -560,10 +560,9 @@ function close() {
             gap: 5px;
             height: 32px;
             font-size: 14px;
-            border: 1px solid var(--el-border-color-light);
-            padding: 5px 5px;
+            padding: 4px 5px;
+            background: var(--light-ill);
             border-radius: 4px;
-
             .att-filename {
               white-space: nowrap;
               text-overflow: ellipsis;

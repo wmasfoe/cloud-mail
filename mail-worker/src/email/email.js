@@ -65,6 +65,11 @@ export async function email(message, env, ctx) {
 
 			banEmail = banEmail.split(',').filter(item => item !== '');
 
+
+			if (banEmail.includes('*')) {
+				return;
+			}
+
 			for (const item of banEmail) {
 
 				if (verifyUtils.isDomain(item)) {

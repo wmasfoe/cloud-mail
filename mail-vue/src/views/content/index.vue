@@ -4,10 +4,10 @@
       <Icon class="icon" icon="material-symbols-light:arrow-back-ios-new" width="20" height="20" @click="handleBack"/>
       <Icon v-perm="'email:delete'" class="icon" icon="uiw:delete" width="16" height="16" @click="handleDelete"/>
       <span class="star" v-if="emailStore.contentData.showStar">
-        <Icon class="icon" @click="changeStar" v-if="email.isStar" icon="fluent-color:star-16" width="21" height="20"/>
-        <Icon class="icon" @click="changeStar" v-else icon="solar:star-line-duotone" width="19" height="19"/>
+        <Icon class="icon" @click="changeStar" v-if="email.isStar" icon="fluent-color:star-16" width="20" height="20"/>
+        <Icon class="icon" @click="changeStar" v-else icon="solar:star-line-duotone" width="18" height="18"/>
       </span>
-      <Icon class="icon" v-if="emailStore.contentData.showReply" v-perm="'email:send'"  @click="openReply" icon="carbon:reply" width="20" height="20" />
+      <Icon class="icon" v-if="emailStore.contentData.showReply" v-perm="'email:send'"  @click="openReply" icon="la:reply" width="20" height="20" />
     </div>
     <div></div>
     <el-scrollbar class="scrollbar">
@@ -46,7 +46,7 @@
 
               <div class="att-item" v-for="att in email.attList" :key="att.attId">
                 <div class="att-icon" @click="showImage(att.key)">
-                  <Icon :icon="getIconByName(att.filename)" width="20" height="20"/>
+                  <Icon v-bind="getIconByName(att.filename)" />
                 </div>
                 <div class="att-name" @click="showImage(att.key)">
                   {{ att.filename }}
@@ -213,6 +213,7 @@ const handleDelete = () => {
   .star {
     display: flex;
     align-items: center;
+    justify-content: center;
     min-width: 21px;
   }
   .icon {
@@ -252,19 +253,20 @@ const handleDelete = () => {
     .att {
       margin-top: 30px;
       margin-bottom: 30px;
-      border: 1px solid var(--el-border-color);
-      padding: 10px;
-      border-radius: 4px;
+      border: 1px solid var(--light-border-color);
+      padding: 14px;
+      border-radius: 6px;
       width: fit-content;
       .att-box {
         min-width: min(410px,calc(100vw - 53px));
+        max-width: 600px;
         display: grid;
-        gap: 10px;
+        gap: 12px;
         grid-template-rows: 1fr;
       }
 
       .att-title {
-        margin-bottom: 5px;
+        margin-bottom: 8px;
         display: flex;
         justify-content: space-between;
         span:first-child {
@@ -277,15 +279,12 @@ const handleDelete = () => {
         div {
           align-self: center;
         }
-
-        padding: 5px 8px;
+        background: var(--light-ill);
+        padding: 5px 7px;
         border-radius: 4px;
         align-self: start;
-        border: 1px solid var(--base-border-color);
         display: grid;
         grid-template-columns: auto 1fr auto auto;
-        gap: 10px;
-
         .att-icon {
           display: grid;
         }
@@ -295,7 +294,8 @@ const handleDelete = () => {
         }
 
         .att-name {
-          margin-right: 10px;
+          margin-left: 8px;
+          margin-right: 8px;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -309,6 +309,7 @@ const handleDelete = () => {
         }
 
         .opt-icon {
+          padding-left: 10px;
           color: var(--secondary-text-color);
           align-items: center;
           display: flex;

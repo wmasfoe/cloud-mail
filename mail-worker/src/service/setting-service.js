@@ -23,7 +23,7 @@ const settingService = {
 
 	async query(c) {
 
-		if (c.get('setting')) {
+		if (c.get?.('setting')) {
 			return c.get('setting')
 		}
 
@@ -45,7 +45,7 @@ const settingService = {
 
 		domainList = domainList.map(item => '@' + item);
 		setting.domainList = domainList;
-		c.set('setting', setting);
+		c.set?.('setting', setting);
 		return setting;
 	},
 

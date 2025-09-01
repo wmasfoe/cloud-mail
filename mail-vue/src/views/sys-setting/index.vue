@@ -1285,8 +1285,8 @@ function editSetting(settingForm, refreshStatus = true) {
 }
 
 .background {
-  width: 250px;
-  height: 140px;
+  width: 230px;
+  height: 120px;
   border-radius: 4px;
   border: 1px solid var(--light-border);
   @media (max-width: 500px) {
