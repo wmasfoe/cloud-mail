@@ -84,7 +84,7 @@ import {useAccountStore} from "@/store/account.js";
 import {formatDetailDate} from "@/utils/day.js";
 import {starAdd, starCancel} from "@/request/star.js";
 import {getExtName, formatBytes} from "@/utils/file-utils.js";
-import {cvtR2Url} from "@/utils/convert.js";
+import {cvtR2Url,toOssDomain} from "@/utils/convert.js";
 import {getIconByName} from "@/utils/icon-utils.js";
 import {useSettingStore} from "@/store/setting.js";
 import {allEmailDelete} from "@/request/all-email.js";
@@ -116,7 +116,8 @@ function toMessage(message) {
 function formatImage(content) {
   content = content || '';
   const domain = settingStore.settings.r2Domain;
-  return  content.replace(/{{domain}}/g, domain + '/');
+  console.log(domain)
+  return  content.replace(/{{domain}}/g, toOssDomain(domain) + '/');
 }
 
 function showImage(key) {
@@ -258,7 +259,7 @@ const handleDelete = () => {
       border-radius: 6px;
       width: fit-content;
       .att-box {
-        min-width: min(410px,calc(100vw - 53px));
+        min-width: min(410px,calc(100vw - 60px));
         max-width: 600px;
         display: grid;
         gap: 12px;

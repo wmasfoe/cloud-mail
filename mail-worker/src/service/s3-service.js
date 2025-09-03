@@ -9,9 +9,23 @@ const s3Service = {
 
 		const { bucket } = await settingService.query(c);
 
-		await client.send(
-			new PutObjectCommand({ Bucket: bucket, Key: key, Body: content, ...metadata })
-		)
+		let obj = { Bucket: bucket, Key: key, Body: content,
+			CacheControl: metadata.cacheControl
+		}
+
+		if (metadata.cacheControl) {
+			obj.CacheControl = metadata.cacheControl
+		}
+
+		if (metadata.contentDisposition) {
+			obj.ContentDisposition = metadata.contentDisposition
+		}
+
+		if (metadata.contentType) {
+			obj.ContentType = metadata.contentType
+		}
+
+		await client.send(new PutObjectCommand(obj))
 	},
 
 	async deleteObj(c,keys) {

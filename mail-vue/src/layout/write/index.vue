@@ -440,7 +440,7 @@ function close() {
 
   .write-box {
     background: var(--el-bg-color);
-    width: min(1200px, calc(100% - 80px));
+    width: min(1367px, calc(100% - 80px));
     box-shadow: var(--el-box-shadow-light);
     border: 1px solid var(--el-border-color-light);
     transition: var(--el-transition-duration);
@@ -453,6 +453,7 @@ function close() {
       width: 100%;
       height: 100%;
       border-radius: 0;
+      border: 0;
       padding-top: 10px;
     }
 

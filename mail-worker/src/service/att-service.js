@@ -1,21 +1,31 @@
 import orm from '../entity/orm';
 import { att } from '../entity/att';
-import { and, eq, isNull, inArray, notInArray } from 'drizzle-orm';
+import { and, eq, isNull, inArray } from 'drizzle-orm';
 import r2Service from './r2-service';
 import constant from '../const/constant';
 import fileUtils from '../utils/file-utils';
 import { attConst } from '../const/entity-const';
 import { parseHTML } from 'linkedom';
+import domainUtils from '../utils/domain-uitls';
 
 const attService = {
 
 	async addAtt(c, attachments) {
 
 		for (let attachment of attachments) {
-			await r2Service.putObj(c, attachment.key, attachment.content, {
+
+			let metadate = {
 				contentType: attachment.mimeType,
-				contentDisposition: `attachment; filename="${attachment.filename}"`
-			});
+			}
+
+			if (!attachment.contentId) {
+				metadate.contentDisposition = `attachment; filename="${attachment.filename}"`
+			} else {
+				metadate.contentDisposition = `inline; filename="${attachment.filename}"`
+				metadate.cacheControl = `max-age=604800`
+			}
+
+			await r2Service.putObj(c, attachment.key, attachment.content, metadate);
 		}
 
 		await orm(c).insert(att).values(attachments).run();
@@ -49,7 +59,7 @@ const attService = {
 				const file = fileUtils.base64ToFile(src);
 				const buff = await file.arrayBuffer();
 				const key = constant.ATTACHMENT_PREFIX + await fileUtils.getBuffHash(buff) + fileUtils.getExtFileName(file.name);
-				img.setAttribute('src', r2Domain + '/' + key);
+				img.setAttribute('src', domainUtils.toOssDomain(r2Domain) + '/' + key);
 
 				const attData = {};
 				attData.key = key;
@@ -108,7 +118,9 @@ const attService = {
 			attData.accountId = accountId;
 			attData.type = attConst.type.EMBED;
 			await r2Service.putObj(c, attData.key, attData.buff, {
-				contentType: attData.mimeType
+				contentType: attData.mimeType,
+				cacheControl: `max-age=604800`,
+				contentDisposition: `inline; filename="${attData.filename}"`
 			});
 		}
 
@@ -153,9 +165,7 @@ const attService = {
 			await this.batchDelete(c, delKeyList);
 		}
 
-		const delAttSql = fieldValues.map(value => c.env.db.prepare(`DELETE
-																 FROM attachments
-																 WHERE ${fieldName} = ?`).bind(value));
+		const delAttSql = fieldValues.map(value => c.env.db.prepare(`DELETE FROM attachments WHERE ${fieldName} = ?`).bind(value));
 		await c.env.db.batch(delAttSql);
 	},
 

@@ -18,9 +18,10 @@ database_id = "REDACTED-D1-DATABASE-ID"
 binding = "kv"
 id = "REDACTED-KV-NAMESPACE-ID"
 
-[[r2_buckets]]
-binding = "r2"
-bucket_name = "email"
+#[[r2_buckets]]
+#binding = "r2"
+#bucket_name = "email"
+
 
 [vars]
 orm_log = false

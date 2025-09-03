@@ -20,8 +20,8 @@ export default defineConfig(({mode}) => {
                 registerType: 'autoUpdate',  // 配置 service worker 的注册方式
                 includeAssets: ['favicon.svg', 'robots.txt'],  // 指定需要包含的静态资源
                 manifest: {
-                    name: 'Cloud Mail',
-                    short_name: 'Cloud Mail',
+                    name: env.VITE_PWA_NAME,
+                    short_name: env.VITE_PWA_NAME,
                     background_color: '#FFFFFF',
                     theme_color: '#FFFFFF',
                     icons: [
@@ -32,6 +32,9 @@ export default defineConfig(({mode}) => {
                         }
                     ],
                 },
+                workbox: {
+                    navigateFallbackDenylist: [/^\/api\/init/]
+                }
             }),
             AutoImport({
                 resolvers: [ElementPlusResolver()],

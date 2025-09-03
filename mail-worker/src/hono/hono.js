@@ -14,15 +14,15 @@ app.onError((err, c) => {
 	}
 
 	if (err.message === `Cannot read properties of undefined (reading 'get')`) {
-		return c.text('初始化失败:KV数据库未绑定或变量名错误 Initialization failed: KV database not bound or invalid variable name');
+		return c.json(result.fail('初始化失败:KV数据库未绑定或变量名错误'));
 	}
 
 	if (err.message === `Cannot read properties of undefined (reading 'put')`) {
-		return c.text('初始化失败:KV数据库未绑定或变量名错误 Initialization failed: KV database not bound or invalid variable name');
+		return c.json(result.fail('初始化失败:KV数据库未绑定或变量名错误'));
 	}
 
 	if (err.message === `Cannot read properties of undefined (reading 'prepare')`) {
-		return c.text('初始化失败:D1数据库未绑定或变量名错误 Initialization failed: D1 database not bound or invalid variable name');
+		return c.json(result.fail('初始化失败:D1数据库未绑定或变量名错误'));
 	}
 
 	return c.json(result.fail(err.message, err.code));

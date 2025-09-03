@@ -21,7 +21,6 @@ const init = {
 		await this.v1_5DB(c);
 		await this.v1_6DB(c);
 		await this.v1_7DB(c);
-		await this.v1_7DB(c);
 		await this.v2DB(c);
 		await settingService.refresh(c);
 		return c.text(t('initSuccess'));
@@ -34,7 +33,8 @@ const init = {
 				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN region TEXT NOT NULL DEFAULT '';`),
 				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN endpoint TEXT NOT NULL DEFAULT '';`),
 				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN s3_access_key TEXT NOT NULL DEFAULT '';`),
-				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN s3_secret_key TEXT NOT NULL DEFAULT '';`)
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN s3_secret_key TEXT NOT NULL DEFAULT '';`),
+				c.env.db.prepare(`DELETE FROM perm WHERE perm_key = 'setting:clean'`)
 			]);
 		} catch (e) {
 			console.error(e.message)

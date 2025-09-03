@@ -12,6 +12,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import roleService from '../service/role-service';
 import verifyUtils from '../utils/verify-utils';
+import r2Service from '../service/r2-service';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -152,7 +153,7 @@ export async function email(message, env, ctx) {
 			attachment.accountId = emailRow.accountId;
 		});
 
-		if (attachments.length > 0 && env.r2) {
+		if (attachments.length > 0 && await r2Service.hasOSS({env})) {
 			await attService.addAtt({ env }, attachments);
 		}
 

@@ -119,7 +119,9 @@ const settingService = {
 
 
 			await r2Service.putObj(c, background, arrayBuffer, {
-				contentType: file.type
+				contentType: file.type,
+				cacheControl: `public, max-age=31536000, immutable`,
+				contentDisposition: `inline; filename="${file.name}"`
 			});
 
 		}

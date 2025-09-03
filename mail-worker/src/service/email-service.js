@@ -18,6 +18,7 @@ import dayjs from 'dayjs';
 import kvConst from '../const/kv-const';
 import { t } from '../i18n/i18n'
 import r2Service from './r2-service';
+import domainUtils from '../utils/domain-uitls';
 
 const emailService = {
 
@@ -406,6 +407,8 @@ const emailService = {
 				}
 
 			}
+
+			r2domain = domainUtils.toOssDomain(r2domain)
 
 			if (src && src.startsWith(r2domain + '/')) {
 				img.setAttribute('src', src.replace(r2domain + '/', '{{domain}}'));

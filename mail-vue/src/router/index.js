@@ -94,7 +94,7 @@ router.beforeEach((to, from, next) => {
     // 延迟 50ms 才启动进度条
     timer = setTimeout(() => {
         NProgress.start()
-    }, 50)
+    }, 100)
 
     const token = localStorage.getItem('token')
 
@@ -116,7 +116,7 @@ router.beforeEach((to, from, next) => {
 })
 
 function loadBackground(next) {
-    console.log(131231)
+
     const settingStore = useSettingStore();
     const src = cvtR2Url(settingStore.settings.background);
 
@@ -150,6 +150,7 @@ router.afterEach((to) => {
     if (window.innerWidth < 1025) {
         uiStore.asideShow = false
     }
+
 })
 
 export default router
