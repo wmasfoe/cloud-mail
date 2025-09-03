@@ -33,7 +33,12 @@ export default defineConfig(({mode}) => {
                     ],
                 },
                 workbox: {
-                    navigateFallbackDenylist: [/^\/api\/init/]
+                    navigateFallbackDenylist: [/^\/api\/init/],
+                    disableDevLogs: true,
+                    globPatterns: [],
+                    runtimeCaching: [],
+                    navigateFallback: null,
+                    cleanupOutdatedCaches: true,
                 }
             }),
             AutoImport({
