@@ -22,7 +22,7 @@ const attService = {
 				metadate.contentDisposition = `attachment; filename="${attachment.filename}"`
 			} else {
 				metadate.contentDisposition = `inline; filename="${attachment.filename}"`
-				metadate.cacheControl = `max-age=604800`
+				metadate.cacheControl = `max-age=259200`
 			}
 
 			await r2Service.putObj(c, attachment.key, attachment.content, metadate);
@@ -119,7 +119,7 @@ const attService = {
 			attData.type = attConst.type.EMBED;
 			await r2Service.putObj(c, attData.key, attData.buff, {
 				contentType: attData.mimeType,
-				cacheControl: `max-age=604800`,
+				cacheControl: `max-age=259200`,
 				contentDisposition: `inline; filename="${attData.filename}"`
 			});
 		}

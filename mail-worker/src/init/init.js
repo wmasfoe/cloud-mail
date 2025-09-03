@@ -264,7 +264,7 @@ const init = {
 			`ALTER TABLE setting ADD COLUMN site_key TEXT;`,
 			`ALTER TABLE setting ADD COLUMN secret_key TEXT;`,
 			`ALTER TABLE setting ADD COLUMN background TEXT;`,
-			`ALTER TABLE setting ADD COLUMN login_opacity INTEGER NOT NULL DEFAULT 0.80;`,
+			`ALTER TABLE setting ADD COLUMN login_opacity INTEGER NOT NULL DEFAULT 0.88;`,
 
 			`ALTER TABLE user ADD COLUMN create_ip TEXT;`,
 			`ALTER TABLE user ADD COLUMN active_ip TEXT;`,

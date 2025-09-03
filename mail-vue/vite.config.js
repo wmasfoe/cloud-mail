@@ -33,7 +33,6 @@ export default defineConfig(({mode}) => {
                     ],
                 },
                 workbox: {
-                    navigateFallbackDenylist: [/^\/api\/init/],
                     disableDevLogs: true,
                     globPatterns: [],
                     runtimeCaching: [],

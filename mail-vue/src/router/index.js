@@ -84,6 +84,7 @@ NProgress.configure({
 });
 
 let timer
+let first = true
 
 router.beforeEach((to, from, next) => {
 
@@ -91,10 +92,9 @@ router.beforeEach((to, from, next) => {
         clearTimeout(timer)
     }
 
-    // 延迟 50ms 才启动进度条
     timer = setTimeout(() => {
         NProgress.start()
-    }, 100)
+    }, first ? 200 : 100)
 
     const token = localStorage.getItem('token')
 
@@ -118,19 +118,28 @@ router.beforeEach((to, from, next) => {
 function loadBackground(next) {
 
     const settingStore = useSettingStore();
-    const src = cvtR2Url(settingStore.settings.background);
 
-    const img = new Image();
-    img.src = src;
+    if (settingStore.settings.background) {
 
-    img.onload = () => {
+        const src = cvtR2Url(settingStore.settings.background);
+
+        const img = new Image();
+        img.src = src;
+
+        img.onload = () => {
+            next()
+        };
+
+        img.onerror = () => {
+            console.warn("背景图片加载失败:", img.src);
+            next()
+        };
+
+    } else {
         next()
-    };
+    }
 
-    img.onerror = () => {
-        console.warn("背景图片加载失败:", img.src);
-        next()
-    };
+
 }
 
 router.afterEach((to) => {
@@ -151,6 +160,7 @@ router.afterEach((to) => {
         uiStore.asideShow = false
     }
 
+    first = false
 })
 
 export default router
