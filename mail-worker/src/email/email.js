@@ -35,6 +35,7 @@ export async function email(message, env, ctx) {
 		} = await settingService.query({ env });
 
 		if (receive === settingConst.receive.CLOSE) {
+			message.setReject('Service suspended');
 			return;
 		}
 
@@ -53,6 +54,7 @@ export async function email(message, env, ctx) {
 		const account = await accountService.selectByEmailIncludeDel({ env: env }, message.to);
 
 		if (!account && noRecipient === settingConst.noRecipient.CLOSE) {
+			message.setReject('Recipient not found');
 			return;
 		}
 
@@ -61,6 +63,7 @@ export async function email(message, env, ctx) {
 			let { banEmail, banEmailType, availDomain } = await roleService.selectByUserId({ env: env }, account.userId);
 
 			if(!roleService.hasAvailDomainPerm(availDomain, message.to)) {
+				message.setReject('Mailbox disabled');
 				return;
 			}
 
@@ -68,7 +71,9 @@ export async function email(message, env, ctx) {
 
 
 			if (banEmail.includes('*')) {
-				return;
+
+				 if (!banEmailHandler(banEmailType,message,email)) return
+
 			}
 
 			for (const item of banEmail) {
@@ -80,13 +85,7 @@ export async function email(message, env, ctx) {
 
 					if (banDomain === receiveDomain) {
 
-						if (banEmailType === roleConst.banEmailType.ALL) return;
-
-						if (banEmailType === roleConst.banEmailType.CONTENT) {
-							email.html = 'The content has been deleted';
-							email.text = 'The content has been deleted';
-							email.attachments = [];
-						}
+						if (!banEmailHandler(banEmailType,message,email)) return
 
 					}
 
@@ -94,13 +93,7 @@ export async function email(message, env, ctx) {
 
 					if (item.toLowerCase() === email.from.address.toLowerCase()) {
 
-						if (banEmailType === roleConst.banEmailType.ALL) return;
-
-						if (banEmailType === roleConst.banEmailType.CONTENT) {
-							email.html = 'The content has been deleted';
-							email.text = 'The content has been deleted';
-							email.attachments = [];
-						}
+						if (!banEmailHandler(banEmailType,message,email)) return
 
 					}
 
@@ -226,4 +219,21 @@ ${params.text || emailUtils.htmlToText(params.content) || ''}
 
 		console.error('邮件接收异常: ', e);
 	}
+}
+
+function banEmailHandler(banEmailType,message,email) {
+
+	if (banEmailType === roleConst.banEmailType.ALL) {
+		message.setReject('Mailbox disabled');
+		return false
+	}
+
+	if (banEmailType === roleConst.banEmailType.CONTENT) {
+		email.html = 'The content has been deleted';
+		email.text = 'The content has been deleted';
+		email.attachments = [];
+	}
+
+	return true
+
 }
