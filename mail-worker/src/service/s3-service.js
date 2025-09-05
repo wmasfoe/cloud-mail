@@ -61,6 +61,7 @@ const s3Service = {
 				accessKeyId: s3AccessKey,
 				secretAccessKey: s3SecretKey,
 			},
+			forcePathStyle: true
 		});
 	}
 }
