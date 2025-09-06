@@ -31,7 +31,13 @@ export default defineConfig(({mode}) => {
                         }
                     ],
                 },
-                workbox: false
+                workbox: {
+                    disableDevLogs: true,
+                    globPatterns: [],
+                    runtimeCaching: [],
+                    navigateFallback: null,
+                    cleanupOutdatedCaches: true,
+                }
             }),
             AutoImport({
                 resolvers: [ElementPlusResolver()],
