@@ -166,6 +166,7 @@ async function copyEmail(email) {
 }
 
 function changeLang(lang) {
+  setExtend(lang === 'en' ? 'en' : 'zh-cn')
   settingStore.lang = lang
 }
 
