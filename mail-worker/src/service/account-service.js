@@ -5,7 +5,7 @@ import userService from './user-service';
 import emailService from './email-service';
 import orm from '../entity/orm';
 import account from '../entity/account';
-import { and, asc, eq, gt, inArray, count, sql } from 'drizzle-orm';
+import { and, asc, eq, gt, inArray, count, sql, ne } from 'drizzle-orm';
 import { isDel, settingConst } from '../const/entity-const';
 import settingService from './setting-service';
 import turnstileService from './turnstile-service';
@@ -195,7 +195,37 @@ const accountService = {
 			throw new BizError(t('usernameLengthLimit'));
 		}
 		await orm(c).update(account).set({name}).where(and(eq(account.userId, userId),eq(account.accountId, accountId))).run();
+	},
+
+	async allAccount(c, params) {
+
+		let { userId, num, size } = params
+
+		userId = Number(userId)
+
+		num = Number(num)
+		size = Number(size)
+
+		if (size > 30) {
+			size = 30;
+		}
+
+		num = (num - 1) * size;
+
+		const userRow = await userService.selectByIdIncludeDel(c, userId);
+
+		const list = await orm(c).select().from(account).where(and(eq(account.userId, userId),ne(account.email,userRow.email))).limit(size).offset(num);
+		const { total } = await orm(c).select({ total: count() }).from(account).where(eq(account.userId, userId)).get();
+
+		return { list, total }
+	},
+
+	async physicsDelete(c, params) {
+		const { accountId } = params
+		await emailService.physicsDeleteByAccountId(c, accountId)
+		await orm(c).delete(account).where(eq(account.accountId, accountId)).run();
 	}
+
 };
 
 export default accountService;

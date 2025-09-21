@@ -1,5 +1,5 @@
 const zh = {
-    inbox: '收件箱',
+    '收件箱': '收件箱',
     drafts: '草稿箱',
     sent: '已发送',
     starred: '星标邮件',
@@ -14,6 +14,8 @@ const zh = {
     noMessagesFound: '没有任何邮件',
     addAccount: '添加邮箱',
     emailAccount: '邮箱',
+    account: '邮箱',
+    userAccount: '用户邮箱',
     deleteUser: '删除账户',
     deleteUserBtn: '删除账户',
     changePassword: '修改密码',

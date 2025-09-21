@@ -191,6 +191,11 @@ const attService = {
 			await r2Service.delete(c, batch);
 		}
 
+	},
+
+	async removeByAccountId(c, accountId) {
+		console.log(accountId)
+		await this.removeAttByField(c, "account_id", [accountId])
 	}
 };
 

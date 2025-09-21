@@ -1,5 +1,5 @@
 const en = {
-    inbox: 'Inbox',
+    '收件箱': 'Inbox',
     drafts: 'Drafts',
     sent: 'Sent',
     starred: 'Starred',
@@ -14,6 +14,8 @@ const en = {
     noMessagesFound: 'No messages found',
     addAccount: 'Add Account',
     emailAccount: 'Email',
+    account: 'Account',
+    userAccount: 'User Accounts',
     deleteUser: 'Delete Account',
     deleteUserBtn: 'Delete',
     changePassword: 'Change Password',
