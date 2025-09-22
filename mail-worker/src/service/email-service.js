@@ -489,7 +489,8 @@ const emailService = {
 			.where(and(
 				inArray(email.userId, userIds),
 				eq(email.type, type),
-				eq(email.isDel, del)
+				eq(email.isDel, del),
+				ne(email.status, emailConst.status.SAVING),
 			))
 			.groupBy(email.userId);
 		return result;
@@ -609,6 +610,11 @@ const emailService = {
 			isDel: isDel.NORMAL,
 			status: status
 		}).where(eq(email.emailId, emailId)).returning().get();
+	},
+
+	async completeReceiveAll(c) {
+			await c.env.db.prepare(`UPDATE email as e SET status = ${emailConst.status.RECEIVE} WHERE status = ${emailConst.status.SAVING} AND EXISTS (SELECT 1 FROM account WHERE account_id = e.account_id)`).run();
+			await c.env.db.prepare(`UPDATE email as e SET status = ${emailConst.status.NOONE} WHERE status = ${emailConst.status.SAVING} AND NOT EXISTS (SELECT 1 FROM account WHERE account_id = e.account_id)`).run();
 	},
 
 	async batchDelete(c, params) {
