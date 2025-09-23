@@ -720,6 +720,12 @@ function loadData() {
         display: grid;
         gap: 5px;
         grid-template-columns: auto 1fr;
+
+        > span:last-child {
+          display: flex;
+          align-items: center;
+        }
+
         @media (min-width: 1366px) {
           grid-template-columns: 1fr;
           > span:last-child {

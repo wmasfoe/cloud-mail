@@ -18,19 +18,6 @@ const container = ref(null)
 const contentBox = ref(null)
 let shadowRoot = null
 
-// 确保字体在 Shadow DOM 中可用
-function loadFontInShadow() {
-  const style = document.createElement('style')
-  style.textContent = `
-    @font-face {
-      font-family: 'HarmonyOS';
-      src: url('@/assets/fonts/HarmonyOS_Sans_SC_Regular.woff2') format('woff2');
-      font-display: swap;
-    }
-  `
-  document.head.appendChild(style)
-}
-
 function updateContent() {
   if (!shadowRoot) return;
 
@@ -101,7 +88,6 @@ function autoScale() {
 }
 
 onMounted(() => {
-  loadFontInShadow() // 预加载字体
   shadowRoot = container.value.attachShadow({ mode: 'open' })
   updateContent()
   autoScale()
@@ -118,8 +104,7 @@ watch(() => props.html, () => {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: 'HarmonyOS', -apple-system, BlinkMacSystemFont,
-  'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
 .content-html {
