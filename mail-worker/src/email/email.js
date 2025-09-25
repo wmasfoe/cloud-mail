@@ -103,7 +103,11 @@ export async function email(message, env, ctx) {
 
 		}
 
-		const toName = email.to.find(item => item.address === message.to)?.name || '';
+		let toName = ''
+
+		if (Array.isArray(email.to)) {
+			toName = email.to.find(item => item.address === message.to)?.name || '';
+		}
 
 		const params = {
 			toEmail: message.to,
