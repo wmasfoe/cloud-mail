@@ -22,53 +22,62 @@ jobs:
       DOMAIN: ${{ secrets.DOMAIN }}
       ADMIN: ${{ secrets.ADMIN }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      INIT_URL: ${{ secrets.INIT_URL }}
-    
+
     outputs:
       deployment_skipped: ${{ steps.deploy.outputs.deployment_skipped }}
+      worker_url: ${{ steps.deploy.outputs.worker_url }}
 
     steps:
-      - name: ➡️ Checkout repository
+      - name: ➡️ 检出代码仓库 - Checkout repository
         uses: actions/checkout@v4
 
-      - name: 📦 Setup pnpm
+      - name: 📦 设置 pnpm - Setup pnpm
         uses: pnpm/action-setup@v4.1.0
         with:
           version: latest
 
-      - name: 📦 Setup Node.js
+      - name: 📦 设置 Node.js - Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "pnpm"
           cache-dependency-path: "./mail-worker/pnpm-lock.yaml"
 
-      - name: 📥 Install dependencies
+      - name: 📥 安装依赖 - Install dependencies
         run: pnpm install --frozen-lockfile
         working-directory: ./mail-worker
 
-      - name: 📡 Disable wrangler telemetry
+      - name: 📡 禁用 Wrangler 遥测 - Disable wrangler telemetry
         working-directory: ./mail-worker
         run: npx wrangler telemetry disable
 
-      - name: 🛠️ Prepare Config, Set Secrets and Deploy
+      - name: 🛠️ 设置环境变量和部署 - Set Secrets and Deploy
         id: deploy
         working-directory: ./mail-worker
         run: |
-          if [ -z "$D1_DATABASE_ID" ] || [ -z "$KV_NAMESPACE_ID" ] || [ -z "$R2_BUCKET_NAME" ]; then
-            echo "⚠️ Required secrets (D1_DATABASE_ID, KV_NAMESPACE_ID, or R2_BUCKET_NAME) are not set."
-            echo "🟡 Skipping deployment."
+          if [ -z "$D1_DATABASE_ID" ] || [ -z "$KV_NAMESPACE_ID" ]; then
+            echo "⚠️ Required secrets (D1_DATABASE_ID or KV_NAMESPACE_ID) are not set."
+            echo "❌ Skipping deployment."
             echo "deployment_skipped=true" >> $GITHUB_OUTPUT
             exit 0
           fi
           
           echo "deployment_skipped=false" >> $GITHUB_OUTPUT
+          
           CONFIG_FILE="wrangler-action.toml"
+          
+          if [ -z "$R2_BUCKET_NAME" ]; then
+            sed -i "18,20d" "$CONFIG_FILE"
+          fi
+          
           echo "⚙️ Dynamically updating '$CONFIG_FILE' with binding IDs..."
 
           sed -i "s|\${D1_DATABASE_ID}|${D1_DATABASE_ID}|g" "$CONFIG_FILE"
           sed -i "s|\${KV_NAMESPACE_ID}|${KV_NAMESPACE_ID}|g" "$CONFIG_FILE"
           sed -i "s|\${R2_BUCKET_NAME}|${R2_BUCKET_NAME}|g" "$CONFIG_FILE"
+          sed -i "s|\"\${DOMAIN}\"|${DOMAIN}|g" "$CONFIG_FILE"
+          sed -i "s|\${ADMIN}|${ADMIN}|g" "$CONFIG_FILE"
+          sed -i "s|\${JWT_SECRET}|${JWT_SECRET}|g" "$CONFIG_FILE"
 
           echo "🔍 Debug: Checking configuration after replacement..."
           echo "R2_BUCKET_NAME value: '$R2_BUCKET_NAME'"
@@ -76,51 +85,39 @@ jobs:
           grep -A 2 -B 2 "bucket_name" "$CONFIG_FILE" || true
 
           echo "🔒 Setting Worker secrets..."
-          WORKER_NAME="cloud-mail"
-          for VAR in DOMAIN ADMIN JWT_SECRET; do
-            if [ -n "${!VAR}" ]; then
-              VAR_LOWER=$(echo "$VAR" | tr '[:upper:]' '[:lower:]')
-              echo ">> Processing secret: '$VAR_LOWER'"
-              (echo "${!VAR}" | npx wrangler secret put "$VAR_LOWER" --name "$WORKER_NAME" -c "$CONFIG_FILE") || true
-            else
-              echo "⚠️ Warning: GitHub Secret '$VAR' is not set. Skipping."
-            fi
-          done
-
           echo "🚀 Configuration updated. Starting deployment..."
-          npx wrangler deploy -c "$CONFIG_FILE" | grep -v "https://.*\.workers\.dev" || true
+          npx wrangler deploy -c "$CONFIG_FILE" | tee deploy.log | grep -v "https://.*\.workers\.dev"
+          WORKER_URL=$(grep -o "https://.*\.workers\.dev" deploy.log)
+          echo "::add-mask::$WORKER_URL"
+          echo "worker_url=$WORKER_URL" >> $GITHUB_OUTPUT
           echo "✅ Deployment command executed."
 
-      - name: 🗄️ Initialize Database (if INIT_URL is set)
+      - name: 🗄️ 初始化数据库 - Initialize Database
         if: ${{ steps.deploy.outputs.deployment_skipped == 'false' }}
         run: |
-          if [ -z "$INIT_URL" ]; then
-            echo "✅ Deployment successful. INIT_URL not set, skipping initialization."
-            exit 0
-          fi
           
-          echo "⏳ Waiting 15 秒之前 before checking initialization status..."
+          echo "⏳ Waiting 15s before checking initialization status..."
           sleep 15
           
-          HTTP_CODE=$(curl -s -w "%{http_code}" -o response.txt "$INIT_URL")
+          HTTP_CODE=$(curl -s -w "%{http_code}" -o response.txt "${{ steps.deploy.outputs.worker_url }}/api/init/${JWT_SECRET}")
           RESPONSE_BODY=$(cat response.txt)
           
           echo "🔎 Checking response... (Status: $HTTP_CODE)"
 
-          if [ "$HTTP_CODE" = "200" ] && [ "$RESPONSE_BODY" = "初始化成功" ]; then
-            echo "🎉✅ Fresh initialization successful!"
+          if [ "$HTTP_CODE" = "200" ] && [ "$RESPONSE_BODY" = "初始化成功" -o "$RESPONSE_BODY" = "Successfully initialized" ]; then
+            echo "✅ Database initialization successful!"
           elif [ "$HTTP_CODE" = "200" ]; then
-            echo "✅ Database is already initialized or in a stable state. Response: $RESPONSE_BODY"
+            echo "❌ Database initialization error: $RESPONSE_BODY"
           else
-            echo "⚠️ Database initialization check failed with HTTP status: $HTTP_CODE. Please check your worker logs."
+            echo "❌ Database initialization check failed with HTTP status: $HTTP_CODE. response: $RESPONSE_BODY"
           fi
 
-      - name: 📣 Notify Final Status
+      - name: 📣 部署状态 - Notify Final Status
         if: always()
         run: |
           if [ "${{ job.status }}" == "success" ]; then
             if [ "${{ steps.deploy.outputs.deployment_skipped }}" == "true" ]; then
-              echo "🟡 Deployment was skipped due to missing configuration."
+              echo "❌ Deployment was skipped due to missing configuration."
             else
               echo "🎉🎉🎉 Hooray! Deployment completed successfully! 🎉🎉🎉"
             fi
