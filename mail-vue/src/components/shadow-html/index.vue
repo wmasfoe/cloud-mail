@@ -36,11 +36,26 @@ function updateContent() {
         all: initial;
         width: 100%;
         height: 100%;
-        font-family: 'HarmonyOS', -apple-system, BlinkMacSystemFont,
+        font-family: Inter, -apple-system, BlinkMacSystemFont,
                     'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         font-size: 14px;
+        line-height: 1.5;
         color: #13181D;
         word-break: break-word;
+      }
+
+      h1, h2, h3, h4 {
+          font-size: 18px;
+          font-weight: 700;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      a {
+        text-decoration: none;
+        color: #0E70DF;
       }
 
       .shadow-content {

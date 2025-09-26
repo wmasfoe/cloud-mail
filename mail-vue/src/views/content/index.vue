@@ -116,7 +116,6 @@ function toMessage(message) {
 function formatImage(content) {
   content = content || '';
   const domain = settingStore.settings.r2Domain;
-  console.log(domain)
   return  content.replace(/{{domain}}/g, toOssDomain(domain) + '/');
 }
 
