@@ -59,7 +59,11 @@ export async function email(message, env, ctx) {
 			return;
 		}
 
-		const userRow = await userService.selectById({ env: env }, account.userId);
+		let userRow = {}
+
+		if (account) {
+			 userRow = await userService.selectById({ env: env }, account.userId);
+		}
 
 		if (account && userRow.email !== env.admin) {
 
