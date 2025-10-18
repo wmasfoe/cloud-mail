@@ -167,12 +167,14 @@ const selectRecipientList = ref([])
 const contacts = computed(() => writerStore.sendRecipientRecord.map(item => ({email: item})))
 
 function openContacts() {
-  form.receiveEmail.forEach(item => {
-    if (writerStore.sendRecipientRecord.includes(item)) {
-      contactsTabRef.value.toggleRowSelection({email: item});
-    }
-  })
   showContacts.value = true
+  nextTick(() => {
+    form.receiveEmail.forEach(item => {
+      if (writerStore.sendRecipientRecord.includes(item)) {
+        contactsTabRef.value.toggleRowSelection({email: item});
+      }
+    })
+  })
 }
 
 function deleteContact() {
@@ -372,6 +374,8 @@ async function sendEmail() {
 
     userStore.refreshUserInfo();
 
+    addRecipientRecord();
+
     if (form.draftId) {
       form.subject = ''
       form.content = ''
@@ -379,8 +383,8 @@ async function sendEmail() {
       draftStore.setDraft = {...toRaw(form)}
     }
 
-    resetForm()
     show.value = false
+    resetForm();
   }).catch((e) => {
     ElNotification({
       title: t('sendFailMsg'),
@@ -389,20 +393,22 @@ async function sendEmail() {
       position: 'bottom-right'
     })
     show.value = true
+    addRecipientRecord();
   }).finally(() => {
     percentMessage.close()
     percent.value = 0
     sending = false
-
-    writerStore.sendRecipientRecord = writerStore.sendRecipientRecord.filter(
-        email => !form.receiveEmail.includes(email)
-    );
-
-    writerStore.sendRecipientRecord.unshift(...form.receiveEmail);
-    writerStore.sendRecipientRecord = writerStore.sendRecipientRecord.slice(0, 500);
   })
 }
 
+function addRecipientRecord() {
+  writerStore.sendRecipientRecord = writerStore.sendRecipientRecord.filter(
+      email => !form.receiveEmail.includes(email)
+  );
+
+  writerStore.sendRecipientRecord.unshift(...form.receiveEmail);
+  writerStore.sendRecipientRecord = writerStore.sendRecipientRecord.slice(0, 500);
+}
 
 function resetForm() {
   form.receiveEmail = []

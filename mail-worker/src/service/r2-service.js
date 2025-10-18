@@ -10,9 +10,9 @@ const r2Service = {
 		}
 
 		const setting = await settingService.query(c);
-		const { bucket, region, endpoint, s3AccessKey, s3SecretKey } = setting;
+		const { bucket, endpoint, s3AccessKey, s3SecretKey } = setting;
 
-		return !!(bucket && region && endpoint && s3AccessKey && s3SecretKey);
+		return !!(bucket && endpoint && s3AccessKey && s3SecretKey);
 	},
 
 	async putObj(c, key, content, metadata) {

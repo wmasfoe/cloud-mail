@@ -7,7 +7,7 @@
 <h1>Cloud Mail</h1>
 </div>
 <div align="center">
-    <h4>A responsive email service built with Vue 3 that supports email sending and can be deployed on Cloudflare. 🎉</h4> 
+    <h4>Serverless responsive email service with sending capabilities, deployable on the Cloudflare platform 🎉</h4> 
 </div>
 
 
@@ -15,14 +15,12 @@
 
 - [Online Demo](https://skymail.ink)<br>
 - [Deployment Guide](https://doc.skymail.ink/en/)<br>
-- [Beginner’s Guide – UI Deployment](https://doc.skymail.ink/en/guide/via-ui.html)
+- [UI Deployment](https://doc.skymail.ink/en/guide/via-ui.html)
 
 
 | ![](/doc/demo/demo1.png) | ![](/doc/demo/demo2.png) |
-|--------------------------|---------------------|
+|--------------------------|--------------------------|
 | ![](/doc/demo/demo3.png) | ![](/doc/demo/demo4.png) |
-| ![](/doc/demo/demo5.png) | ![](/doc/demo/demo6.png) |
-| ![](/doc/demo/demo7.png) | ![](/doc/demo/demo8.png) |
 
 ## Features
 
@@ -34,8 +32,6 @@
 
 - **🛡️ Admin Features**: Admins can manage users and emails, with RBAC permission control to limit access to features and resources.
 
-- **🔀 Multiple Accounts**: Users can add multiple email accounts. 
-
 - **📦 Attachment Support**: Send and receive attachments, stored and downloaded via R2 object storage.
 
 - **🔔 Email Push**: Forward received emails to Telegram bots or other email providers.
@@ -44,13 +40,7 @@
 
 - **📈 Data Visualization**: Use Echarts to visualize system data, including user email growth.
 
-- **⭐ Starred Emails**: Mark important emails for quick access.
-
 - **🎨 Personalization**: Customize website title, login background, and transparency.
-
-- **⚙️ Feature Settings**: Toggle on or off features like registration, email sending, and more, with the option to make the site private.
-
-- **🤖 CAPTCHA**: Integrated with Turnstile CAPTCHA to prevent automated registration.
 
 - **📜 More Features**: Under development...
 
@@ -62,7 +52,7 @@
 
 - **ORM**: [Drizzle](https://orm.drizzle.team/)
 
-- **Platform**: [Cloudflare Workers](https://developers.cloudflare.com/workers/)
+- **Serverless Platform**: [Cloudflare Workers](https://developers.cloudflare.com/workers/)
 
 - **Email Service**: [Resend](https://resend.com/)
 
@@ -75,17 +65,9 @@
 
 ## Support
 
-
 <a href="https://doc.skymail.ink/support.html">
 <img width="170px" src="./doc/images/support.png" alt="">
-</a><br><br>
-
-
-**Special Sponsors**
-
-[DartNode](https://dartnode.com)：Providing cloud computing service resource support.
-
-[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
+</a>
 
 ## License
 
