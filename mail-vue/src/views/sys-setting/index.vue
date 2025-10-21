@@ -197,11 +197,28 @@
                 </div>
               </div>
               <div class="setting-item">
-                <div><span>{{ $t('s3Configuration') }}</span></div>
+                <div>
+                  <span>{{ $t('s3Configuration') }}</span>
+                  <el-tooltip effect="dark" :content="$t('s3Desc')">
+                    <Icon class="warning" icon="fe:warning" width="18" height="18"/>
+                  </el-tooltip>
+                </div>
                 <div class="r2domain">
                   <el-button class="opt-button" size="small" type="primary" @click="addS3Show = true">
                     <Icon icon="fluent:settings-48-regular" width="16" height="16"/>
                   </el-button>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div>
+                  <span>{{ $t('kvStorage') }}</span>
+                  <el-tooltip effect="dark" :content="$t('kvStorageDesc')">
+                    <Icon class="warning" icon="fe:warning" width="18" height="18"/>
+                  </el-tooltip>
+                </div>
+                <div class="r2domain">
+                  <el-switch @change="change" :before-change="beforeChange" :active-value="0" :inactive-value="1"
+                             v-model="setting.kvStorage"/>
                 </div>
               </div>
             </div>
@@ -636,7 +653,17 @@
           <el-input class="dialog-input" type="text" placeholder="Region" v-model="s3.region"/>
           <el-input class="dialog-input" type="text" :placeholder="setting.s3AccessKey || 'Access Key'"
                     v-model="s3.s3AccessKey"/>
-          <el-input type="text" :placeholder="setting.s3SecretKey || 'Secret Key'" v-model="s3.s3SecretKey"/>
+          <el-input style="margin-bottom: 10px" type="text" :placeholder="setting.s3SecretKey || 'Secret Key'" v-model="s3.s3SecretKey"/>
+          <div class="force-path-style">
+            <div class="force-path-style-left">
+              <span>ForcePathStyle</span>
+              <el-tooltip effect="dark" :content="$t('forcePathStyleDesc')">
+                <Icon class="warning" icon="fe:warning" width="18" height="18"/>
+              </el-tooltip>
+            </div>
+            <el-switch :before-change="beforeChange" :active-value="0" :inactive-value="1"
+                       v-model="s3.forcePathStyle"/>
+          </div>
           <div class="s3-button">
             <el-button :loading="clearS3Loading" @click="clearS3">{{ t('clear') }}</el-button>
             <el-button type="primary" :loading="settingLoading && !clearS3Loading" @click="saveS3">{{ t('save') }}</el-button>
@@ -649,7 +676,7 @@
 
 <script setup>
 import {computed, defineOptions, reactive, ref} from "vue";
-import {physicsDeleteAll, setBackground, settingQuery, settingSet} from "@/request/setting.js";
+import {deleteBackground, setBackground, settingQuery, settingSet} from "@/request/setting.js";
 import {useSettingStore} from "@/store/setting.js";
 import {useUiStore} from "@/store/ui.js";
 import {useUserStore} from "@/store/user.js";
@@ -718,7 +745,8 @@ const s3 = reactive({
   endpoint: '',
   region: '',
   s3AccessKey: '',
-  s3SecretKey: ''
+  s3SecretKey: '',
+  forcePathStyle: 1
 })
 
 const noticeForm = reactive({
@@ -799,6 +827,7 @@ function resetAddS3Form() {
   s3.region = setting.value.region
   s3.s3AccessKey = ''
   s3.s3SecretKey = ''
+  s3.forcePathStyle = setting.value.forcePathStyle
 }
 
 const resendList = computed(() => {
@@ -977,7 +1006,8 @@ function clearS3() {
     endpoint: '',
     region: '',
     s3AccessKey: '',
-    s3SecretKey: ''
+    s3SecretKey: '',
+    forcePathStyle: 1
   }
   clearS3Loading.value = true
   editSetting(form)
@@ -988,7 +1018,8 @@ function saveS3() {
   const form = {
     bucket: s3.bucket,
     endpoint: s3.endpoint,
-    region: s3.region
+    region: s3.region,
+    forcePathStyle: s3.forcePathStyle
   }
 
   if (s3.s3AccessKey) form.s3AccessKey = s3.s3AccessKey
@@ -1034,35 +1065,21 @@ const opacityChange = debounce(doOpacityChange, 1000, {
   trailing: true
 })
 
-function physicsDeleteAllData() {
-  ElMessageBox.prompt(t('clearAllDelConfirm'), {
-    confirmButtonText: t('confirm'),
-    cancelButtonText: t('cancel'),
-    dangerouslyUseHTMLString: true,
-    title: t('warning'),
-    type: 'warning',
-    inputPattern: new RegExp(`^${t('delInputPattern')}$`),
-    inputErrorMessage: t('inputErrorMessage'),
-  }).then(() => {
-    physicsDeleteAll().then(() => {
-      ElMessage({
-        message: t('delSuccessMsg'),
-        type: "success",
-        plain: true
-      })
-    })
-  })
-}
-
 function delBackground() {
   ElMessageBox.confirm(t('delBackgroundConfirm'), {
     confirmButtonText: t('confirm'),
     cancelButtonText: t('cancel'),
     type: 'warning'
   }).then(() => {
-    backgroundUrl.value = ''
-    setting.value.background = null
-    editSetting({background: null})
+    deleteBackground().then(() => {
+      backgroundUrl.value = ''
+      setting.value.background = null
+      ElMessage({
+        message: t('delSuccessMsg'),
+        type: "success",
+        plain: true
+      })
+    })
   })
 }
 
@@ -1368,7 +1385,7 @@ function editSetting(settingForm, refreshStatus = true) {
 }
 
 .warning {
-  margin-left: 4px;
+  margin-left: 2px;
   color: grey;
   cursor: pointer;
 }
@@ -1595,6 +1612,19 @@ function editSetting(settingForm, refreshStatus = true) {
   margin-bottom: 15px;
 }
 
+.force-path-style {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  .force-path-style-left {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 3px;
+  }
+}
+
 .concerning-item {
   display: flex;
   align-items: center;
@@ -1648,7 +1678,7 @@ function editSetting(settingForm, refreshStatus = true) {
 }
 
 form .el-button {
-  margin-top: 15px;
+  margin-top: 10px;
   width: 100%;
 }
 

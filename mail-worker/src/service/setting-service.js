@@ -1,12 +1,9 @@
 import KvConst from '../const/kv-const';
 import setting from '../entity/setting';
 import orm from '../entity/orm';
-import { settingConst, verifyRecordType } from '../const/entity-const';
+import { verifyRecordType } from '../const/entity-const';
 import fileUtils from '../utils/file-utils';
 import r2Service from './r2-service';
-import emailService from './email-service';
-import accountService from './account-service';
-import userService from './user-service';
 import constant from '../const/constant';
 import BizError from '../error/biz-error';
 import { t } from '../i18n/i18n'
@@ -100,11 +97,37 @@ const settingService = {
 		await this.refresh(c);
 	},
 
+	async deleteBackground(c) {
+
+		const { background } = await this.query(c);
+		if (!background) return
+
+		if (background.startsWith('http')) {
+			await orm(c).update(setting).set({ background: '' }).run();
+			await this.refresh(c)
+			return;
+		}
+
+		const hasOss = await r2Service.hasOSS(c);
+
+		if (hasOss) {
+
+			if (background) {
+				await r2Service.delete(c,background)
+				await orm(c).update(setting).set({ background: '' }).run();
+				await this.refresh(c)
+			}
+
+		}
+	},
+
 	async setBackground(c, params) {
 
 		const settingRow = await this.query(c);
 
 		let { background } = params
+
+		await this.deleteBackground(c);
 
 		if (background && !background.startsWith('http')) {
 
@@ -128,14 +151,6 @@ const settingService = {
 				contentDisposition: `inline; filename="${file.name}"`
 			});
 
-		}
-
-		if (settingRow.background) {
-			try {
-				await r2Service.delete(c, settingRow.background);
-			} catch (e) {
-				console.error(e)
-			}
 		}
 
 		await orm(c).update(setting).set({ background }).run();

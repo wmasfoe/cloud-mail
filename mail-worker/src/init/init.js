@@ -22,8 +22,20 @@ const init = {
 		await this.v1_6DB(c);
 		await this.v1_7DB(c);
 		await this.v2DB(c);
+		await this.v2_3DB(c);
 		await settingService.refresh(c);
 		return c.text(t('initSuccess'));
+	},
+
+	async v2_3DB(c) {
+		try {
+			await c.env.db.batch([
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN force_path_style	INTEGER NOT NULL DEFAULT 1;`),
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN kv_storage INTEGER NOT NULL DEFAULT 1;`)
+			]);
+		} catch (e) {
+			console.error(e.message)
+		}
 	},
 
 	async v2DB(c) {

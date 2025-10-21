@@ -292,8 +292,12 @@ const zh = {
     include: '包含',
     delAllEmailConfirm: '确定要删除吗？',
     s3Configuration: 'S3 配置',
+    s3Desc: '设置其他S3协议存储，如果绑定了R2会优先用R2',
     confirmDeletionOfContacts: '确认清除这些联系人吗？',
     recentContacts: '最近联系人',
-    selectContacts: '选中'
+    selectContacts: '选中',
+    forcePathStyleDesc: '路径样式访问，一些自建的对象存储需要打开',
+    kvStorageDesc: '使用KV替代对象存储，访问域名改成worker自定义域',
+    kvStorage: 'KV存储'
 }
 export default zh
