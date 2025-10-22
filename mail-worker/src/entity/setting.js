@@ -41,6 +41,7 @@ export const setting = sqliteTable('setting', {
 	s3AccessKey: text('s3_access_key').default('').notNull(),
 	s3SecretKey: text('s3_secret_key').default('').notNull(),
 	kvStorage: integer('kv_storage').default(1).notNull(),
-	forcePathStyle: integer('force_path_style').default(1).notNull()
+	forcePathStyle: integer('force_path_style').default(1).notNull(),
+	customDomain: text('custom_domain').default('').notNull()
 });
 export default setting

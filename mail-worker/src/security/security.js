@@ -15,7 +15,9 @@ const exclude = [
 	'/setting/websiteConfig',
 	'/webhooks',
 	'/init',
-	'/public/genToken'
+	'/public/genToken',
+	'/telegram',
+	'/test'
 ];
 
 const requirePerms = [
@@ -84,10 +86,6 @@ const premKey = {
 app.use('*', async (c, next) => {
 
 	const path = c.req.path;
-
-	if (path.startsWith('/test')) {
-		return await next();
-	}
 
 	const index = exclude.findIndex(item => {
 		return path.startsWith(item);
@@ -162,7 +160,9 @@ app.use('*', async (c, next) => {
 });
 
 function permKeyToPaths(permKeys) {
+
 	const paths = [];
+
 	for (const key of permKeys) {
 		const routeList = premKey[key];
 		if (routeList && Array.isArray(routeList)) {

@@ -31,10 +31,11 @@ const init = {
 		try {
 			await c.env.db.batch([
 				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN force_path_style	INTEGER NOT NULL DEFAULT 1;`),
-				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN kv_storage INTEGER NOT NULL DEFAULT 1;`)
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN kv_storage INTEGER NOT NULL DEFAULT 1;`),
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN custom_domain TEXT NOT NULL DEFAULT '';`)
 			]);
 		} catch (e) {
-			console.error(e.message)
+			console.error(e)
 		}
 	},
 

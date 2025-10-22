@@ -485,6 +485,7 @@
           <el-input :placeholder="$t('tgBotToken')" v-model="tgBotToken"></el-input>
           <el-input-tag tag-type="warning" :placeholder="$t('toBotTokenDesc')" v-model="tgChatId"
                         @add-tag="addChatTag"></el-input-tag>
+          <el-input tag-type="warning" :placeholder="$t('customDomainDesc')" v-model="customDomain" ></el-input>
         </div>
         <template #footer>
           <div class="dialog-footer">
@@ -777,6 +778,7 @@ const options = computed(() => [
 ])
 
 const tgChatId = ref([])
+const customDomain = ref('')
 const tgBotStatus = ref(0)
 const tgBotToken = ref('')
 const forwardEmail = ref([])
@@ -898,6 +900,7 @@ function closedSetBackground() {
 function openTgSetting() {
   tgBotStatus.value = setting.value.tgBotStatus
   tgBotToken.value = setting.value.tgBotToken
+  customDomain.value = setting.value.customDomain
   tgChatId.value = []
   if (setting.value.tgChatId) {
     const list = setting.value.tgChatId.split(',')
@@ -1031,6 +1034,7 @@ function saveS3() {
 function tgBotSave() {
   const form = {
     tgBotToken: tgBotToken.value,
+    customDomain: customDomain.value,
     tgBotStatus: tgBotStatus.value,
     tgChatId: tgChatId.value + ''
   }
@@ -1618,10 +1622,11 @@ function editSetting(settingForm, refreshStatus = true) {
   justify-content: space-between;
   gap: 10px;
   .force-path-style-left {
+    padding-left: 2px;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 3px;
+    gap: 5px;
   }
 }
 
