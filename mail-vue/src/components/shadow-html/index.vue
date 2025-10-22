@@ -87,16 +87,11 @@ function autoScale() {
   if (!shadowContent) return
 
   const parentWidth = parent.offsetWidth
-  const parentHeight = parent.offsetHeight
-
   const childWidth = shadowContent.scrollWidth
-  const childHeight = shadowContent.scrollHeight
 
-  if (childWidth === 0 || childHeight === 0) return
+  if (childWidth === 0) return
 
-  const scaleX = parentWidth / childWidth
-  const scaleY = parentHeight / childHeight
-  const scale = Math.min(scaleX, scaleY)
+  const scale = parentWidth / childWidth
 
   const hostElement = shadowRoot.host
   hostElement.style.zoom = scale

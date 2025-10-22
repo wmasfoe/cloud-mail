@@ -298,7 +298,10 @@ const zh = {
     selectContacts: '选中',
     forcePathStyleDesc: '路径样式访问，一些自建的对象存储需要打开',
     kvStorageDesc: '使用KV替代对象存储，访问域名改成worker自定义域',
-    kvStorage: 'KV存储',
-    customDomainDesc: 'Worker 自定义域'
+    kvStorage: 'KV 存储',
+    customDomainDesc: 'Worker 自定义域',
+    show: '显示',
+    hide: '隐藏',
+    onlyName: '仅名字'
 }
 export default zh

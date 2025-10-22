@@ -96,7 +96,7 @@
                       fit="cover"
                   >
                     <template #error>
-                      <div class="error-image" @click="openSetBackground">
+                      <div class="error-image">
                         <Icon icon="ph:image" width="24" height="24"/>
                       </div>
                     </template>
@@ -486,6 +486,28 @@
           <el-input-tag tag-type="warning" :placeholder="$t('toBotTokenDesc')" v-model="tgChatId"
                         @add-tag="addChatTag"></el-input-tag>
           <el-input tag-type="warning" :placeholder="$t('customDomainDesc')" v-model="customDomain" ></el-input>
+          <div class="tg-msg-label">
+            <span>{{t('from')}}</span>
+            <el-select  v-model="tgMsgFrom" >
+              <el-option
+                  v-for="item in tgMsgFromOption"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+              />
+            </el-select>
+          </div>
+          <div class="tg-msg-label">
+            <span>{{t('recipient')}}</span>
+            <el-select  v-model="tgMsgTo" >
+              <el-option
+                  v-for="item in tgMsgToOption"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+              />
+            </el-select>
+          </div>
         </div>
         <template #footer>
           <div class="dialog-footer">
@@ -787,6 +809,12 @@ const emailColumnWidth = ref(0)
 const tokenColumnWidth = ref(0)
 const ruleType = ref(0)
 const ruleEmail = ref([])
+const tgMsgFrom = ref('')
+const tgMsgTo = ref('')
+
+const tgMsgFromOption = [{label: t('show'), value: 'show'}, {label: t('hide'), value: 'hide'}, {label: t('onlyName'), value:'only-name'}]
+const tgMsgToOption = [{label: t('show'), value: 'show'}, {label: t('hide'), value: 'hide'}]
+const tgMsgLabelWidth = computed(() => locale.value === 'en' ? '120px' : '100px');
 
 getSettings()
 getUpdate()
@@ -901,6 +929,8 @@ function openTgSetting() {
   tgBotStatus.value = setting.value.tgBotStatus
   tgBotToken.value = setting.value.tgBotToken
   customDomain.value = setting.value.customDomain
+  tgMsgFrom.value = setting.value.tgMsgFrom
+  tgMsgTo.value = setting.value.tgMsgTo
   tgChatId.value = []
   if (setting.value.tgChatId) {
     const list = setting.value.tgChatId.split(',')
@@ -1036,7 +1066,9 @@ function tgBotSave() {
     tgBotToken: tgBotToken.value,
     customDomain: customDomain.value,
     tgBotStatus: tgBotStatus.value,
-    tgChatId: tgChatId.value + ''
+    tgChatId: tgChatId.value + '',
+    tgMsgFrom: tgMsgFrom.value,
+    tgMsgTo: tgMsgTo.value
   }
   editSetting(form)
 }
@@ -1496,6 +1528,7 @@ function editSetting(settingForm, refreshStatus = true) {
 
     .forward-set-title {
       top: 1px;
+      padding-right: 5px;
       position: relative;
       font-size: 16px;
       font-weight: bold;;
@@ -1548,10 +1581,23 @@ function editSetting(settingForm, refreshStatus = true) {
 .forward-set-body {
   display: flex;
   flex-direction: column;
-  gap: 15px;
 
   .el-switch {
     align-self: end;
+  }
+
+  > *:nth-child(-n+2) {
+    margin-bottom: 15px;
+  }
+
+  .tg-msg-label {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .el-select {
+      width: v-bind(tgMsgLabelWidth);
+    }
   }
 }
 

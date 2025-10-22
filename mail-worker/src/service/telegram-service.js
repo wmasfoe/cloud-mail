@@ -15,26 +15,6 @@ import verifyUtils from '../utils/verify-utils';
 
 const telegramService = {
 
-	async getEmailById(c, params) {
-
-		const { emailId } = params
-
-		const emailRow = await orm(c).select().from(email).where(eq(email.emailId, emailId)).get();
-
-		if (emailRow) {
-
-			if (emailRow.content) {
-				return emailHtmlTemplate(emailRow.content || '')
-			} else {
-				return emailTextTemplate(emailRow.text || '')
-			}
-
-		} else {
-			return emailTextTemplate('The email does not exist')
-		}
-
-	},
-
 	async getEmailContent(c, params) {
 
 		const { token } = params
@@ -50,7 +30,8 @@ const telegramService = {
 		if (emailRow) {
 
 			if (emailRow.content) {
-				return emailHtmlTemplate(emailRow.content || '')
+				const { r2Domain } = await settingService.query(c);
+				return emailHtmlTemplate(emailRow.content || '', r2Domain)
 			} else {
 				return emailTextTemplate(emailRow.text || '')
 			}

@@ -1,10 +1,12 @@
 import { parseHTML } from 'linkedom';
+import domainUtils from '../utils/domain-uitls';
 
-export default function emailHtmlTemplate(html) {
+export default function emailHtmlTemplate(html, domain) {
 
 	const { document } = parseHTML(html);
 	document.querySelectorAll('script').forEach(script => script.remove());
 	html = document.documentElement.outerHTML;
+	html = html.replace(/{{domain}}/g, domainUtils.toOssDomain(domain) + '/');
 
 	return `<!DOCTYPE html>
 <html lang='en' >
@@ -105,6 +107,7 @@ export default function emailHtmlTemplate(html) {
         }
 
         function autoScale(shadowRoot, container) {
+
             if (!shadowRoot || !container) return;
 
             const parent = container;
@@ -113,16 +116,11 @@ export default function emailHtmlTemplate(html) {
             if (!shadowContent) return;
 
             const parentWidth = parent.offsetWidth;
-            const parentHeight = parent.offsetHeight;
-
             const childWidth = shadowContent.scrollWidth;
-            const childHeight = shadowContent.scrollHeight;
 
-            if (childWidth === 0 || childHeight === 0) return;
+            if (childWidth === 0) return;
 
-            const scaleX = parentWidth / childWidth;
-            const scaleY = parentHeight / childHeight;
-            const scale = Math.min(scaleX, scaleY);
+            const scale = parentWidth / childWidth;
 
             const hostElement = shadowRoot.host;
             hostElement.style.zoom = scale;
