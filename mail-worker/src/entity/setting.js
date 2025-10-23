@@ -3,7 +3,7 @@ export const setting = sqliteTable('setting', {
 	register: integer('register').default(0).notNull(),
 	receive: integer('receive').default(0).notNull(),
 	title: text('title').default('').notNull(),
-	manyEmail: integer('many_email').default(1).notNull(),
+	manyEmail: integer('many_email').default(0).notNull(),
 	addEmail: integer('add_email').default(0).notNull(),
 	autoRefreshTime: integer('auto_refresh_time').default(0).notNull(),
 	addEmailVerify: integer('add_email_verify').default(1).notNull(),

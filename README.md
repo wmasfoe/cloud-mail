@@ -35,7 +35,7 @@
 
 - **💻 响应式设计**：响应式布局自动适配PC和大部分手机端浏览器
 
-- **📧 邮件发送**：集成resend发送邮件，支持群发，内嵌图片和附件发送，发送状态查看
+- **📧 邮件发送**：集成Resend发送邮件，支持群发，内嵌图片和附件发送，发送状态查看
 
 - **🛡️ 管理员功能**：可以对用户，邮件进行管理，RABC权限控制对功能及使用资源限制
 
@@ -45,9 +45,11 @@
 
 - **📡 开放API**：支持使用API批量生成用户，多条件查询邮件 
 
-- **📈 数据可视化**：使用echarts对系统数据详情，用户邮件增长可视化显示
+- **📈 数据可视化**：使用Echarts对系统数据详情，用户邮件增长可视化显示
 
 - **🎨 个性化设置**：可以自定义网站标题，登录背景，透明度
+
+- **🤖 人机验证**：集成Turnstile人机验证，防止人机批量注册
 
 - **📜 更多功能**：正在开发中...
 
@@ -55,13 +57,15 @@
 
 ## 技术栈
 
-- **前端框架**：[Vue3](https://vuejs.org/) + [Element Plus](https://element-plus.org/) 
+- **Serverless**：[Cloudflare Workers](https://developers.cloudflare.com/workers/)
 
 - **Web框架**：[Hono](https://hono.dev/)
 
 - **ORM：**[Drizzle](https://orm.drizzle.team/)
 
-- **Serverless 平台：** [Cloudflare workers](https://developers.cloudflare.com/workers/)
+- **前端框架**：[Vue3](https://vuejs.org/) 
+
+- **UI框架**：[Element Plus](https://element-plus.org/) 
 
 - **邮件推送：** [Resend](https://resend.com/)
 
@@ -70,7 +74,6 @@
 - **数据库**：[Cloudflare D1](https://developers.cloudflare.com/d1/)
 
 - **文件存储**：[Cloudflare R2](https://developers.cloudflare.com/r2/)
-
 
 ## 赞助
 

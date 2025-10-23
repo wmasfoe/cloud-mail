@@ -42,21 +42,25 @@
 
 - **🎨 Personalization**: Customize website title, login background, and transparency.
 
+- **🤖 CAPTCHA**: Integrated with Turnstile CAPTCHA to prevent automated registration.
+
 - **📜 More Features**: Under development...
 
 ## Tech Stack
 
-- **Framework**: [Vue3](https://vuejs.org/) + [Element Plus](https://element-plus.org/)
+- **Serverless**: [Cloudflare Workers](https://developers.cloudflare.com/workers/)
 
 - **Web Framework**: [Hono](https://hono.dev/)
 
 - **ORM**: [Drizzle](https://orm.drizzle.team/)
 
-- **Serverless Platform**: [Cloudflare Workers](https://developers.cloudflare.com/workers/)
+- **Frontend Framework**: [Vue3](https://vuejs.org/)
+
+- **UI Framework**: [Element Plus](https://element-plus.org/)
 
 - **Email Service**: [Resend](https://resend.com/)
 
-- **Caching**: [Cloudflare KV](https://developers.cloudflare.com/kv/)
+- **Cache**: [Cloudflare KV](https://developers.cloudflare.com/kv/)
 
 - **Database**: [Cloudflare D1](https://developers.cloudflare.com/d1/)
 
