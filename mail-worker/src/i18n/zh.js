@@ -13,7 +13,7 @@ const zh = {
 	usernameLengthLimit: '用户名长度超出限制',
 	noOsDomainSendPic: '对象存储域名未配置不能发送正文图片',
 	noOsSendPic: '对象存储未配置不能发送正文图片',
-	noOsDomainSendAtt: '域名未配置不能发送附件',
+	noOsDomainSendAtt: '对象存储域名未配置不能发送附件',
 	noOsSendAtt: '对象存储未配置不能发送附件',
 	disabledSend: '邮件发送功能已停用',
 	noSeparateSend: '分别发送暂时不支持附件',
