@@ -14,6 +14,10 @@ const fileUtils = {
 		return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 	},
 
+	base64ToDataStr(base64) {
+		return base64.split(',')[1] || base64;
+	},
+
 	base64ToUint8Array(base64) {
 		const binaryStr = atob(base64);
 		const len = binaryStr.length;

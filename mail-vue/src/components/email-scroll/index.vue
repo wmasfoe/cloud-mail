@@ -54,7 +54,7 @@
                     <el-tooltip v-if="item.status ===  2" effect="dark" :content="$t('delivered')">
                       <Icon icon="bi:send-check-fill" style="color: #51C76B" width="20" height="20"/>
                     </el-tooltip>
-                    <el-tooltip v-if="item.status ===  3" effect="dark" :content="$t('bounced')">
+                    <el-tooltip v-if="item.status ===  3 || item.status === 8" effect="dark" :content="$t('bounced')">
                       <Icon icon="bi:send-x-fill" style="color: #F56C6C" width="20" height="20"/>
                     </el-tooltip>
                     <el-tooltip v-if="item.status ===  4" effect="dark" :content="$t('complained')">
