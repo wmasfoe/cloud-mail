@@ -53,7 +53,7 @@ const userService = {
 		const { password } = params;
 
 		if (password < 6) {
-			throw new BizError(t('pwdMinLengthLimit'));
+			throw new BizError(t('pwdMinLength'));
 		}
 		const { salt, hash } = await cryptoUtils.hashPassword(password);
 		await orm(c).update(user).set({ password: hash, salt: salt }).where(eq(user.userId, userId)).run();
@@ -304,7 +304,7 @@ const userService = {
 		}
 
 		if (password.length < 6) {
-			throw new BizError(t('pwdMinLengthLimit'));
+			throw new BizError(t('pwdMinLength'));
 		}
 
 		const accountRow = await accountService.selectByEmailIncludeDel(c, email);

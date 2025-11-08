@@ -29,20 +29,31 @@ const init = {
 	},
 
 	async v2_4DB(c) {
-		await c.env.db.prepare(`
-      CREATE TABLE IF NOT EXISTS oauth (
-				oauth_id INTEGER PRIMARY KEY AUTOINCREMENT,
-				oauth_user_id TEXT,
-				username TEXT,
-				name TEXT,
-				avatar TEXT,
-				active INTEGER,
-				trust_level INTEGER,
-				silenced INTEGER,
-				create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-				user_id INTEGER NOT NULL DEFAULT 0
-      )
-    `).run();
+		try {
+			await c.env.db.prepare(`
+				CREATE TABLE IF NOT EXISTS oauth (
+					oauth_id INTEGER PRIMARY KEY AUTOINCREMENT,
+					oauth_user_id TEXT,
+					username TEXT,
+					name TEXT,
+					avatar TEXT,
+					active INTEGER,
+					trust_level INTEGER,
+					silenced INTEGER,
+					create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+					platform INTEGER NOT NULL DEFAULT 0,
+					user_id INTEGER NOT NULL DEFAULT 0
+				)
+			`).run();
+		} catch (e) {
+			console.error(e)
+		}
+
+		try {
+			await c.env.db.prepare(`ALTER TABLE setting ADD COLUMN min_email_prefix INTEGER NOT NULL DEFAULT 1;`).run();
+		} catch (e) {
+			console.error(e)
+		}
 	},
 
 	async v2_3DB(c) {
@@ -59,7 +70,7 @@ const init = {
 		}
 
 		try {
-			await c.env.db.prepare(`ALTER TABLE setting ADD COLUMN tg_msg_text TEXT NOT NULL DEFAULT 'hide';`).run();
+			await c.env.db.prepare(`ALTER TABLE setting ADD COLUMN tg_msg_text TEXT NOT NULL DEFAULT 'show';`).run();
 		} catch (e) {
 			console.error(e)
 		}

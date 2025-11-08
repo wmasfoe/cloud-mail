@@ -26,7 +26,7 @@ const loginService = {
 
 		const { email, password, token, code } = params;
 
-		let {regKey, register, registerVerify, regVerifyCount} = await settingService.query(c)
+		let {regKey, register, registerVerify, regVerifyCount, minEmailPrefix} = await settingService.query(c)
 
 		if (oauth) {
 			registerVerify = settingConst.registerVerify.CLOSE;
@@ -41,16 +41,20 @@ const loginService = {
 			throw new BizError(t('notEmail'));
 		}
 
+		if (emailUtils.getName(email).length < minEmailPrefix) {
+			throw new BizError(t('minEmailPrefix', { msg: minEmailPrefix } ));
+		}
+
+		if (emailUtils.getName(email).length > 64) {
+			throw new BizError(t('emailLengthLimit'));
+		}
+
 		if (password.length > 30) {
 			throw new BizError(t('pwdLengthLimit'));
 		}
 
-		if (emailUtils.getName(email).length > 30) {
-			throw new BizError(t('emailLengthLimit'));
-		}
-
 		if (password.length < 6) {
-			throw new BizError(t('pwdMinLengthLimit'));
+			throw new BizError(t('pwdMinLength'));
 		}
 
 		if (!c.env.domain.includes(emailUtils.getDomain(email))) {

@@ -304,6 +304,16 @@ function bind() {
     return
   }
 
+
+  if (bindForm.email.length < settingStore.settings.minEmailPrefix) {
+    ElMessage({
+      message: t('minEmailPrefix', {msg: settingStore.settings.minEmailPrefix}),
+      type: 'error',
+      plain: true,
+    })
+    return
+  }
+
   let email = bindForm.email + suffix.value;
 
 
@@ -401,6 +411,17 @@ function submitRegister() {
   if (!registerForm.email) {
     ElMessage({
       message: t('emptyEmailMsg'),
+      type: 'error',
+      plain: true,
+    })
+    return
+  }
+
+  console.log(registerForm.email)
+
+  if (registerForm.email.length < settingStore.settings.minEmailPrefix) {
+    ElMessage({
+      message: t('minEmailPrefix', {msg: settingStore.settings.minEmailPrefix}),
       type: 'error',
       plain: true,
     })

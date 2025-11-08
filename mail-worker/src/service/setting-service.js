@@ -206,7 +206,8 @@ const settingService = {
 			loginDomain: settingRow.loginDomain,
 			linuxdoClientId: settingRow.linuxdoClientId,
 			linuxdoCallbackUrl: settingRow.linuxdoCallbackUrl,
-			linuxdoSwitch: settingRow.linuxdoSwitch
+			linuxdoSwitch: settingRow.linuxdoSwitch,
+			minEmailPrefix: settingRow.minEmailPrefix
 		};
 	}
 };
