@@ -1,5 +1,5 @@
 <template>
-  <div id="login-box" v-loading="oauthLoading" element-loading-text="登录中...">
+  <div id="login-box" :style=" background ? 'background: var(--el-bg-color)' : ''" v-loading="oauthLoading" element-loading-text="登录中...">
     <div id="background-wrap" v-if="!settingStore.settings.background">
       <div class="x1 cloud"></div>
       <div class="x2 cloud"></div>
