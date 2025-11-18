@@ -16,7 +16,7 @@
               v-if="getSelectedMailsIds().length > 0"
               @click="handleDelete"/>
         <Icon v-perm="'email:delete'" class="icon delete" icon="fluent:mail-read-20-regular" width="21" height="21"
-              v-if="getSelectedMailsIds().length > 0"
+              v-if="getSelectedMailsIds().length > 0 && showUnread"
               @click="handleRead"/>
       </div>
 
