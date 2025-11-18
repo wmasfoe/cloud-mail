@@ -30,11 +30,22 @@ const init = {
 	},
 
 	async v2_5DB(c) {
+
 		try {
 			await c.env.db.prepare(`ALTER TABLE setting ADD COLUMN email_prefix_filter text NOT NULL DEFAULT '';`).run();
 		} catch (e) {
 			console.error(e)
 		}
+
+		try {
+			await c.env.db.batch([
+				c.env.db.prepare(`ALTER TABLE email ADD COLUMN unread INTEGER NOT NULL DEFAULT 0;`).run(),
+				c.env.db.prepare(`UPDATE email SET unread = 1;`).run()
+			]);
+		} catch (e) {
+			console.error(e)
+		}
+
 	},
 
 	async v2_4DB(c) {
