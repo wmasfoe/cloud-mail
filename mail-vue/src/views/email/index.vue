@@ -29,7 +29,7 @@ import {useSettingStore} from "@/store/setting.js";
 import emailScroll from "@/components/email-scroll/index.vue"
 import {emailList, emailDelete, emailLatest, emailRead} from "@/request/email.js";
 import {starAdd, starCancel} from "@/request/star.js";
-import {defineOptions, onMounted, reactive, ref, watch} from "vue";
+import {defineOptions, h, onMounted, reactive, ref, watch} from "vue";
 import {sleep} from "@/utils/time-utils.js";
 import router from "@/router/index.js";
 import {Icon} from "@iconify/vue";
@@ -85,8 +85,27 @@ async function latest() {
           if (list.length > 0) {
 
             list.forEach(email => {
-              existIds.add(email.emailId)
-              scroll.value.addItem(email)
+
+              setTimeout(() => {
+
+                if (!existIds.has(email.emailId) && innerWidth > 1367) {
+
+                  ElNotification({
+                    type: 'primary',
+                    message: `<div style="cursor: pointer;"><div style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis; font-weight: bold;font-size: 16px;margin-bottom: 5px;">${email.name}</div><div style="color: teal;">${email.subject}</div></div>`,
+                    position: 'bottom-right',
+                    dangerouslyUseHTMLString: true,
+                    onClick: () => {
+                      jumpContent(email);
+                    }
+                  })
+                }
+
+                existIds.add(email.emailId)
+                scroll.value.addItem(email)
+
+              },50)
+
             })
 
           }
