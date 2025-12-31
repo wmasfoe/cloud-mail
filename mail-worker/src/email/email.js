@@ -152,13 +152,7 @@ export async function email(message, env, ctx) {
 			attachment.accountId = emailRow.accountId;
 		});
 
-		try {
-			if (attachments.length > 0 && await r2Service.hasOSS({ env })) {
-				await attService.addAtt({ env }, attachments);
-			}
-		} catch (e) {
-			console.error(e);
-		}
+		await attService.addAtt({ env }, attachments);
 
 		emailRow = await emailService.completeReceive({ env }, account ? emailConst.status.RECEIVE : emailConst.status.NOONE, emailRow.emailId);
 

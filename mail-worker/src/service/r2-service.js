@@ -5,20 +5,20 @@ import { settingConst } from '../const/entity-const';
 
 const r2Service = {
 
-	async hasOSS(c) {
+	async storageType(c) {
 
 		const setting = await settingService.query(c);
-		const { kvStorage, bucket, endpoint, s3AccessKey, s3SecretKey } = setting;
+		const { bucket, endpoint, s3AccessKey, s3SecretKey } = setting;
 
-		if (kvStorage === settingConst.kvStorage.OPEN) {
-			return true;
+		if (!!(bucket && endpoint && s3AccessKey && s3SecretKey)) {
+			return 'S3';
 		}
 
 		if (c.env.r2) {
-			return true;
+			return 'R2';
 		}
 
-		return !!(bucket && endpoint && s3AccessKey && s3SecretKey);
+		return 'KV';
 	},
 
 	async putObj(c, key, content, metadata) {
