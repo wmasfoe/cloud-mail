@@ -30,14 +30,6 @@ const init = {
 		return c.text(t('initSuccess'));
 	},
 
-	async v2_7DB(c) {
-		try {
-			await c.env.db.prepare(`ALTER TABLE account ADD COLUMN all_receive INTEGER NOT NULL DEFAULT 0;`).run();
-		} catch (e) {
-			console.error(e)
-		}
-	},
-
 	async v2_6DB(c) {
 		try {
 			await c.env.db.prepare(`ALTER TABLE account ADD COLUMN all_receive INTEGER NOT NULL DEFAULT 0;`).run();
