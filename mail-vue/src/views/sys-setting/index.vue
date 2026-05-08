@@ -1468,7 +1468,7 @@ function editSetting(settingForm, refreshStatus = true) {
 .card-grid {
 
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
   padding: 20px;
   gap: 20px;
   @media (max-width: 500px) {

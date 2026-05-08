@@ -174,21 +174,12 @@ router.afterEach((to) => {
 })
 
 function removeLoading() {
-    if (window.innerWidth < 1025) {
-        document.documentElement.style.setProperty('--loading-hide-transition', 'none')
-    }
     const doc = document.getElementById('loading-first');
     if (!doc) {
         return;
     }
 
-    doc.classList.add('loading-complete')
-    setTimeout(() => {
-        doc.classList.add('loading-hide')
-        setTimeout(() => {
-            doc.remove()
-        }, 1000)
-    }, 200)
+    doc.remove()
 }
 
 export default router
