@@ -21,8 +21,8 @@ importers:
         specifier: ^0.42.0
         version: 0.42.0
       hono:
-        specifier: ^4.7.5
-        version: 4.9.5
+        specifier: 4.12.16
+        version: 4.12.16
       i18next:
         specifier: ^25.3.2
         version: 25.4.2
@@ -1839,8 +1839,8 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
-  hono@4.9.5:
-    resolution: {integrity: sha512-aLAVl5/67ifNnoFVxnhR89dpmSLsgwBprw/PT671ASwUpJqmd7Ne8KPTQo37DbRZfgpHaHeZ4bPVUvbOkeedMw==}
+  hono@4.12.16:
+    resolution: {integrity: sha512-jN0ZewiNAWSe5khM3EyCmBb250+b40wWbwNILNfEvq84VREWwOIkuUsFONk/3i3nqkz7Oe1PcpM2mwQEK2L9Kg==}
     engines: {node: '>=16.9.0'}
 
   html-escaper@3.0.3:
@@ -4197,7 +4197,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.9.5: {}
+  hono@4.12.16: {}
 
   html-escaper@3.0.3: {}
 
