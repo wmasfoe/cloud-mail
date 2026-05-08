@@ -315,6 +315,7 @@ const en = {
     blackSubjectDesc: 'Subject',
     blackContentDesc: 'Content',
     blackFromDesc: 'Sender or domain',
+    blackListDesc: 'Reject emails containing the following information',
     setSuccess: 'Settings saved successfully',
     details: 'Details',
     userDetails: 'User Details',

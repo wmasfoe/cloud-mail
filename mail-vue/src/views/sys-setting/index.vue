@@ -737,7 +737,15 @@
         </div>
         <el-button type="primary" style="width: 100%;" :loading="settingLoading" @click="saveEmailPrefix">{{ $t('save') }}</el-button>
       </el-dialog>
-      <el-dialog v-model="blackFormShow" :title="t('blackList')" class="forward-dialog" @closed="resetBlackList">
+      <el-dialog v-model="blackFormShow" class="forward-dialog" @closed="resetBlackList">
+        <template #header>
+          <div class="forward-head">
+            <span class="forward-set-title">{{ $t('blackList') }}</span>
+            <el-tooltip effect="dark" :content="$t('blackListDesc')">
+              <Icon class="warning" icon="fe:warning" width="18" height="18"/>
+            </el-tooltip>
+          </div>
+        </template>
         <el-form>
           <el-form-item :label="t('blackFromDesc')" label-position="top">
             <el-input-tag v-model="blackListForm.blackFrom" @add-tag="banEmailAddTag"  />

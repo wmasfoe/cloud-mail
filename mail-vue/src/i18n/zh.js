@@ -315,6 +315,7 @@ const zh = {
     blackSubjectDesc: '邮件标题',
     blackContentDesc: '邮件内容',
     blackFromDesc: '发件人邮箱或域名',
+    blackListDesc: '拒收包含以下信息的邮件',
     setSuccess: '设置成功',
     details: '详情',
     userDetails: '用户详情',
