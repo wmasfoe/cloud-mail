@@ -184,6 +184,14 @@ const settingService = {
 		return background;
 	},
 
+
+	async setBlacklist(c, params) {
+		const { blackSubject, blackContent, blackFrom  } = params
+		await orm(c).update(setting).set({ blackSubject, blackContent, blackFrom }).run();
+		await this.refresh(c);
+		return this.get(c);
+	},
+
 	async websiteConfig(c) {
 
 		const settingRow = await this.get(c, true);
@@ -220,7 +228,8 @@ const settingService = {
 			minEmailPrefix: settingRow.minEmailPrefix,
 			projectLink: settingRow.projectLink
 		};
-	}
+	},
+
 };
 
 export default settingService;

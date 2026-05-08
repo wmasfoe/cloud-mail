@@ -24,14 +24,16 @@ export async function email(message, env, ctx) {
 			ruleEmail,
 			ruleType,
 			r2Domain,
-			noRecipient
+			noRecipient,
+			blackSubject,
+			blackContent,
+			blackFrom
 		} = await settingService.query({ env });
 
 		if (receive === settingConst.receive.CLOSE) {
 			message.setReject('Service suspended');
 			return;
 		}
-
 
 		const reader = message.raw.getReader();
 		let content = '';
@@ -43,6 +45,14 @@ export async function email(message, env, ctx) {
 		}
 
 		const email = await PostalMime.parse(content);
+
+
+		const blockFlag = checkBlock(blackSubject, blackContent, blackFrom, email);
+
+		if (blockFlag) {
+			message.setReject('Message rejected');
+			return;
+		}
 
 		const account = await accountService.selectByEmailIncludeDel({ env: env }, message.to);
 
@@ -168,4 +178,32 @@ export async function email(message, env, ctx) {
 		console.error('邮件接收异常: ', e);
 		throw e
 	}
+}
+
+function checkBlock(blackSubjectStr, blackContentStr, blackFromStr, email) {
+
+	const blackFromList = blackFromStr ? blackFromStr.split(',') : []
+	const blackContentList = blackContentStr ? blackContentStr.split(',') : []
+	const blackSubjectList = blackSubjectStr ? blackSubjectStr.split(',') : []
+
+	for (const blackSubject of blackSubjectList) {
+		if (email.subject?.includes(blackSubject)) {
+			return true
+		}
+	}
+
+	for (const blackContent of blackContentList) {
+		if (email.html?.includes(blackContent) || email.text?.includes(blackContent)) {
+			return true
+		}
+	}
+
+	for (const blackFrom of blackFromList) {
+		if (email.from.address.includes(blackFrom)) {
+			return true
+		}
+	}
+
+	return false
+
 }
