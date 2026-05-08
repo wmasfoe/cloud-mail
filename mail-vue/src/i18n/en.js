@@ -134,7 +134,7 @@ const en = {
     loginSwitch: 'Sign in',
     websiteSetting: 'Website',
     websiteReg: 'Sign Up',
-    loginDomain: 'Sign-In Box Domain',
+    loginDomain: 'Hide Sign-In Domain',
     multipleEmail: 'Multiple Email Address',
     multipleEmailDesc: 'Enable this feature to allow users to add multiple email',
     customization: 'Customization',

@@ -8,6 +8,7 @@ import constant from '../const/constant';
 import BizError from '../error/biz-error';
 import {t} from '../i18n/i18n'
 import verifyRecordService from './verify-record-service';
+import userContext from '../security/user-context';
 
 const settingService = {
 
@@ -58,8 +59,6 @@ const settingService = {
 		} else {
 			linuxdoSwitch = false
 		}
-
-		console.log(projectLink)
 
 		if (typeof projectLink === 'string' && projectLink === 'false') {
 			projectLink = false
@@ -195,6 +194,7 @@ const settingService = {
 	async websiteConfig(c) {
 
 		const settingRow = await this.get(c, true);
+		const token = await userContext.getToken(c);
 
 		return {
 			register: settingRow.register,
@@ -209,7 +209,7 @@ const settingService = {
 			siteKey: settingRow.siteKey,
 			background: settingRow.background,
 			loginOpacity: settingRow.loginOpacity,
-			domainList: settingRow.domainList,
+			domainList: settingRow.loginDomain === 1 && !token ? [] : settingRow.domainList,
 			regKey: settingRow.regKey,
 			regVerifyOpen: settingRow.regVerifyOpen,
 			addVerifyOpen: settingRow.addVerifyOpen,
