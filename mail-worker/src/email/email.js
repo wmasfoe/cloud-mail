@@ -28,7 +28,9 @@ export async function email(message, env, ctx) {
 			noRecipient,
 			blackSubject,
 			blackContent,
-			blackFrom
+			blackFrom,
+			aiCode,
+			aiCodeFilter
 		} = await settingService.query({ env });
 
 		if (receive === settingConst.receive.CLOSE) {
@@ -90,7 +92,7 @@ export async function email(message, env, ctx) {
 		}
 
 		const toName = email.to.find(item => item.address === message.to)?.name || '';
-		const code = await aiService.extractCode({ env }, email);
+		const code = aiCode === settingConst.aiCode.OPEN && checkAiCodeFilter(aiCodeFilter, email) ? await aiService.extractCode({ env }, email) : '';
 
 		const params = {
 			toEmail: message.to,
@@ -181,6 +183,19 @@ export async function email(message, env, ctx) {
 		console.error('邮件接收异常: ', e);
 		throw e
 	}
+}
+
+function checkAiCodeFilter(aiCodeFilterStr, email) {
+	const filterList = aiCodeFilterStr ? aiCodeFilterStr.split(',').map(item => item.trim().toLowerCase()).filter(Boolean) : [];
+
+	if (filterList.length === 0) {
+		return true;
+	}
+
+	const fromEmail = (email.from?.address || '').trim().toLowerCase();
+	const fromDomain = emailUtils.getDomain(fromEmail).toLowerCase();
+
+	return filterList.some(item => item === fromEmail || item === fromDomain);
 }
 
 function checkBlock(blackSubjectStr, blackContentStr, blackFromStr, email) {

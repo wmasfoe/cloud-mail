@@ -49,6 +49,18 @@ const dbInit = {
 		} catch (e) {
 			console.warn(`跳过字段：${e.message}`);
 		}
+
+		try {
+			await c.env.db.prepare(`ALTER TABLE setting ADD COLUMN ai_code INTEGER NOT NULL DEFAULT 1;`).run();
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
+
+		try {
+			await c.env.db.prepare(`ALTER TABLE setting ADD COLUMN ai_code_filter TEXT NOT NULL DEFAULT '';`).run();
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
 	},
 
 	async v2_9DB(c) {
@@ -592,7 +604,9 @@ const dbInit = {
 			title TEXT NOT NULL,
 			auto_refresh INTEGER NOT NULL,
 			register_verify INTEGER NOT NULL,
-			add_email_verify INTEGER NOT NULL
+			add_email_verify INTEGER NOT NULL,
+			ai_code INTEGER NOT NULL DEFAULT 1,
+			ai_code_filter TEXT NOT NULL DEFAULT ''
 		  )
 		`).run();
 
