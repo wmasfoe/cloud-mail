@@ -69,7 +69,7 @@
                   <div v-else></div>
                   <span class="name">
                     <span>
-                      <div class="unread" v-if="isMobile && !item.code && (item.unread === EmailUnreadEnum.UNREAD && showUnread) "/>
+                      <div class="unread" v-if="isMobile && (item.unread === EmailUnreadEnum.UNREAD && showUnread) "/>
                       <slot name="name" :email="item"> {{ item.name }}</slot>
                     </span>
                     <span>
@@ -81,7 +81,7 @@
                 <div>
                   <div class="email-text">
                     <span class="email-subject" :style="(item.unread === EmailUnreadEnum.UNREAD && showUnread)  ? 'font-weight: bold' : ''">
-                      <div class="unread" v-if="!isMobile && !item.code && (item.unread === EmailUnreadEnum.UNREAD && showUnread) "/>
+                      <div class="unread" v-if="!isMobile && (item.unread === EmailUnreadEnum.UNREAD && showUnread) "/>
                       <span v-if="item.code" class="code-tag" @click.stop="copyCode(item.code)">[{{ t('codeLabel') }}{{ item.code }}]</span>
                       <span class="subject-text">
                         <slot name="subject" :email="item" >
