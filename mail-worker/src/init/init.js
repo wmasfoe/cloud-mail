@@ -35,7 +35,11 @@ const dbInit = {
 
 	async v3_0DB(c) {
 		try {
-			await c.env.db.prepare(`ALTER TABLE email ADD COLUMN code TEXT NOT NULL DEFAULT '';`).run();
+			await c.env.db.batch([
+				await c.env.db.prepare(`ALTER TABLE email ADD COLUMN code TEXT NOT NULL DEFAULT '';`).run(),
+				await c.env.db.prepare(`ALTER TABLE setting ADD COLUMN ai_code INTEGER NOT NULL DEFAULT 1;`).run(),
+				await c.env.db.prepare(`ALTER TABLE setting ADD COLUMN ai_code_filter TEXT NOT NULL DEFAULT '';`).run()
+			]);
 		} catch (e) {
 			console.warn(`跳过字段：${e.message}`);
 		}
@@ -50,17 +54,6 @@ const dbInit = {
 			console.warn(`跳过字段：${e.message}`);
 		}
 
-		try {
-			await c.env.db.prepare(`ALTER TABLE setting ADD COLUMN ai_code INTEGER NOT NULL DEFAULT 1;`).run();
-		} catch (e) {
-			console.warn(`跳过字段：${e.message}`);
-		}
-
-		try {
-			await c.env.db.prepare(`ALTER TABLE setting ADD COLUMN ai_code_filter TEXT NOT NULL DEFAULT '';`).run();
-		} catch (e) {
-			console.warn(`跳过字段：${e.message}`);
-		}
 	},
 
 	async v2_9DB(c) {

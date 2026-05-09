@@ -104,6 +104,8 @@ const zh = {
     validUntil: '有效至期',
     expired: '已过期',
     copy: '复制',
+    copyCode: '复制验证码',
+    codeLabel: '验证码：',
     history: '记录',
     addRegKey: '添加注册码',
     regKey: '注册码',

@@ -104,6 +104,8 @@ const en = {
     validUntil: 'Valid Until',
     expired: 'Expired',
     copy: 'Copy',
+    copyCode: 'Copy Code',
+    codeLabel: 'Code: ',
     history: 'History',
     addRegKey: 'Add Invite Code',
     regKey: 'Invite Code',
