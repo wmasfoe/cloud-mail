@@ -19,6 +19,9 @@ enabled = true
 #binding = "r2"			#r2对象存储绑定名默认不可修改
 #bucket_name = ""		#r2对象存储桶的名字
 
+[ai]
+binding = "AI"
+
 [assets]
 binding = "assets"		#静态资源绑定名默认不可修改
 directory = "./dist"	#前端vue项目打包的静态资源存放位置,默认dist
@@ -29,7 +32,8 @@ run_worker_first = true
 crons = ["0 16 * * *"]	#定时任务每天晚上12点执行
 
 
-#[vars]
+[vars]
+ai_model = "@cf/meta/llama-3.1-8b-instruct"
 #orm_log = false
 #domain = []				#邮件域名可可配置多个 示例: ["example1.com","example2.com"]
 #admin = ""				#管理员的邮箱	示例: admin@example.com
