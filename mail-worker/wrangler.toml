@@ -33,7 +33,7 @@ crons = ["0 16 * * *"]	#定时任务每天晚上12点执行
 
 
 [vars]
-ai_model = "@cf/meta/llama-3.1-8b-instruct"
+ai_model = ""
 #orm_log = false
 #domain = []				#邮件域名可可配置多个 示例: ["example1.com","example2.com"]
 #admin = ""				#管理员的邮箱	示例: admin@example.com
