@@ -367,7 +367,7 @@
               <div class="setting-item">
                 <div><span>{{ $t('codeRecognition') }}</span></div>
                 <div>
-                  <el-switch @change="change" :before-change="beforeChange" :active-value="0" :inactive-value="1"
+                  <el-switch @change="changeField('aiCode', $event)" :before-change="beforeChange" :active-value="0" :inactive-value="1"
                              v-model="setting.aiCode"/>
                 </div>
               </div>
@@ -801,7 +801,7 @@
 </template>
 
 <script setup>
-import {computed, defineOptions, reactive, ref} from "vue";
+import {computed, defineOptions, nextTick, reactive, ref} from "vue";
 import {deleteBackground, setBackground, setBlackList, settingQuery, settingSet} from "@/request/setting.js";
 import {useSettingStore} from "@/store/setting.js";
 import {useUiStore} from "@/store/ui.js";
@@ -827,6 +827,7 @@ const hasUpdate = ref(false)
 let getUpdateErrorCount = 1;
 const {t, locale} = useI18n();
 const firstLoading = ref(true)
+const settingReady = ref(false)
 const backgroundImage = ref('')
 const localUpShow = ref(false)
 const accountStore = useAccountStore();
@@ -936,6 +937,7 @@ getSettings()
 getUpdate()
 
 function getSettings() {
+  settingReady.value = false
   settingQuery().then(settingData => {
     setting.value = settingData
     settingStore.domainList = settingData.domainList;
@@ -953,6 +955,9 @@ function getSettings() {
     resetEmailPrefix()
     resetBlackList()
     resetAiCodeFilter()
+    nextTick(() => {
+      settingReady.value = true
+    })
   })
 }
 
@@ -1217,6 +1222,7 @@ function ruleEmailSave() {
 }
 
 function doOpacityChange() {
+  if (!settingReady.value) return
   const form = {}
   form.loginOpacity = loginOpacity.value
   editSetting(form, true)
@@ -1420,12 +1426,13 @@ function cleanResendTokenForm() {
 }
 
 function beforeChange() {
-  if (settingLoading.value) return false
+  if (!settingReady.value || settingLoading.value) return false
   backupSetting()
   return true
 }
 
 function change(e) {
+  if (!settingReady.value) return
   const settingForm = {...setting.value}
   delete settingForm.siteKey
   delete settingForm.secretKey
@@ -1433,6 +1440,12 @@ function change(e) {
   delete settingForm.s3SecretKey
   delete settingForm.resendTokens
   editSetting(settingForm, false)
+}
+
+function changeField(key, value) {
+  if (!settingReady.value) return
+  setting.value[key] = value
+  editSetting({[key]: value}, false)
 }
 
 function saveTitle() {
