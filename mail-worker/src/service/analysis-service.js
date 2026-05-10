@@ -9,6 +9,10 @@ import { toUtc } from '../utils/date-uitil';
 const analysisService = {
 
 	async echarts(c, params) {
+		if (!this.analysisCacheEnabled(c)) {
+			return await this.queryEcharts(c, params);
+		}
+
 		const cacheKey = this.echartsCacheKey(params);
 		const cache = await c.env.kv.get(cacheKey, { type: 'json' });
 
@@ -27,6 +31,10 @@ const analysisService = {
 	},
 
 	async refreshEchartsCache(c) {
+		if (!this.analysisCacheEnabled(c)) {
+			return;
+		}
+
 		const { keys } = await c.env.kv.list({ prefix: kvConst.ANALYSIS_ECHARTS });
 
 		await Promise.all(keys.map(key => this.refreshEchartsCacheByKey(c, key.name)));
@@ -117,6 +125,10 @@ const analysisService = {
 		return {
 			timeZone: decodeURIComponent(cacheKey.replace(kvConst.ANALYSIS_ECHARTS, ''))
 		};
+	},
+
+	analysisCacheEnabled(c) {
+		return c.env.analysis_cache === true || c.env.analysis_cache === 'true';
 	}
 }
 
