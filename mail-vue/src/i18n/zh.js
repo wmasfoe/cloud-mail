@@ -149,6 +149,7 @@ const zh = {
     autoRefreshDesc: '轮询请求服务器获取最新邮件',
     sendEmail: '邮件发送',
     resendToken: 'Resend Token',
+    cloudflareEmailSending: 'Cloudflare 邮件发送',
     blackList: '邮件黑名单',
     codeRecognition: '识别验证码',
     codeRecognitionRules: '识别规则',

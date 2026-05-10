@@ -149,6 +149,7 @@ const en = {
     autoRefreshDesc: 'Automatically fetch the latest emails from the server',
     sendEmail: 'Send Email',
     resendToken: 'Resend Token',
+    cloudflareEmailSending: 'Cloudflare Email Sending',
     blackList: 'Blocklist',
     codeRecognition: 'Verification Code Recognition',
     codeRecognitionRules: 'Recognition Rules',

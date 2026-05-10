@@ -177,8 +177,11 @@
                 </div>
               </div>
               <div class="setting-item">
-                <div><span>{{ $t('resendToken') }}</span></div>
-                <div>
+                <div><span>{{ setting.hasCfEmail ? $t('cloudflareEmailSending') : $t('resendToken') }}</span></div>
+                <div v-if="setting.hasCfEmail">
+                  <span>{{ $t('enabled') }}</span>
+                </div>
+                <div v-else>
                   <el-button class="opt-button" style="margin-top: 0" @click="openResendList" size="small"
                              type="primary">
                     <Icon icon="ic:round-list" width="18" height="18"/>
