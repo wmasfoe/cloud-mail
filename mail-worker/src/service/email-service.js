@@ -472,14 +472,6 @@ const emailService = {
 	async toAttachmentArrayBuffer(attachment) {
 		let content = attachment.content;
 
-		if (!content && attachment.path) {
-			const response = await fetch(attachment.path);
-			if (!response.ok) {
-				throw new BizError(`Attachment fetch failed: ${attachment.filename}`);
-			}
-			return await response.arrayBuffer();
-		}
-
 		if (!content) {
 			return null;
 		}
