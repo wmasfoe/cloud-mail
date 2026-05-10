@@ -19,6 +19,9 @@ enabled = true
 #binding = "r2"			#r2对象存储绑定名默认不可修改
 #bucket_name = ""		#r2对象存储桶的名字
 
+#[[send_email]]
+#name = "EMAIL"			#配置后站外发信优先使用 Cloudflare Email Service
+
 [ai]
 binding = "AI"
 
