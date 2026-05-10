@@ -311,7 +311,7 @@ const emailService = {
 		emailData.content = html;
 		emailData.text = text;
 		emailData.accountId = accountId;
-		emailData.status = emailConst.status.SENT;
+		emailData.status = useCloudflareEmail ? emailConst.status.DELIVERED : emailConst.status.SENT;
 		emailData.type = emailConst.type.SEND;
 		emailData.userId = userId;
 		emailData.resendEmailId = data?.id;
@@ -402,7 +402,7 @@ const emailService = {
 			};
 		}
 
-		console.log(sendForm)
+		console.error(sendForm)
 
 		const result = await c.env.email.send(sendForm);
 
@@ -422,7 +422,7 @@ const emailService = {
 			subject: params.subject,
 			text: params.text,
 			html: params.html,
-			attachments: await this.toArrayBufferAttachments(params.attachments)
+			attachments: await this.toResendAttachments(params.attachments)
 		};
 
 		if (params.sendType === 'reply') {
@@ -454,6 +454,25 @@ const emailService = {
 		});
 	},
 
+	async toResendAttachments(attachments = []) {
+		const result = [];
+
+		for (const attachment of attachments) {
+			const content = await this.toAttachmentBase64(attachment);
+			if (!content) {
+				continue;
+			}
+
+			result.push({
+				...attachment,
+				content,
+				contentType: attachment.contentType || attachment.mimeType || attachment.type || 'application/octet-stream'
+			});
+		}
+
+		return result;
+	},
+
 	async toArrayBufferAttachments(attachments = []) {
 		const result = [];
 
@@ -467,6 +486,35 @@ const emailService = {
 		}
 
 		return result;
+	},
+
+	async toAttachmentBase64(attachment) {
+		let content = attachment.content;
+
+		if (!content) {
+			return null;
+		}
+
+		if (typeof content === 'string') {
+			if (content.startsWith('data:')) {
+				content = content.split(',')[1] || content;
+			}
+			return content.replace(/\s+/g, '');
+		}
+
+		const arrayBuffer = await this.toAttachmentArrayBuffer(attachment);
+		if (!arrayBuffer) {
+			return null;
+		}
+
+		const bytes = new Uint8Array(arrayBuffer);
+		let binary = '';
+
+		for (let i = 0; i < bytes.length; i += 0x8000) {
+			binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+		}
+
+		return btoa(binary);
 	},
 
 	async toAttachmentArrayBuffer(attachment) {
