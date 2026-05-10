@@ -7,7 +7,7 @@ const aiService = {
 			return '';
 		}
 
-		const ai = c.env.AI;
+		const ai = c.env.ai;
 
 		try {
 			const subject = email.subject || '';

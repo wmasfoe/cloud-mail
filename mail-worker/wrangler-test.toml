@@ -21,7 +21,7 @@ id = "REDACTED-KV-NAMESPACE-ID"					#kv数据库id
 #bucket_name = "test-email"		#r2对象存储桶的名字
 
 [ai]
-binding = "AI"
+binding = "ai"
 
 [assets]
 binding = "assets"		#静态资源绑定名默认不可修改

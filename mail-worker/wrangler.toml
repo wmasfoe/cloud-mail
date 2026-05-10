@@ -20,10 +20,10 @@ enabled = true
 #bucket_name = ""		#r2对象存储桶的名字
 
 #[[send_email]]
-#name = "EMAIL"			#配置后站外发信优先使用 Cloudflare Email Service
+#name = "email"			#CF发件, 配置后优先使用
 
 [ai]
-binding = "AI"
+binding = "ai"
 
 [assets]
 binding = "assets"		#静态资源绑定名默认不可修改

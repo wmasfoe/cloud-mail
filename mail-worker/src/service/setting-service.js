@@ -101,7 +101,7 @@ const settingService = {
 		settingRow.s3AccessKey = settingRow.s3AccessKey ? `${settingRow.s3AccessKey.slice(0, 12)}******` : null;
 		settingRow.s3SecretKey = settingRow.s3SecretKey ? `${settingRow.s3SecretKey.slice(0, 12)}******` : null;
 		settingRow.hasR2 = !!c.env.r2
-		settingRow.hasCfEmail = !!c.env.EMAIL
+		settingRow.hasCfEmail = !!c.env.email
 
 		let regVerifyOpen = false
 		let addVerifyOpen = false
