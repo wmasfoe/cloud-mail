@@ -422,7 +422,7 @@ const emailService = {
 			subject: params.subject,
 			text: params.text,
 			html: params.html,
-			attachments: params.attachments
+			attachments: await this.toArrayBufferAttachments(params.attachments)
 		};
 
 		if (params.sendType === 'reply') {
@@ -436,34 +436,11 @@ const emailService = {
 	},
 
 	async toCloudflareAttachments(attachments) {
+		const arrayBufferAttachments = await this.toArrayBufferAttachments(attachments);
 
-		const result = [];
-
-		for (const attachment of attachments) {
-			let content = attachment.content;
-
-			if (!content && attachment.path) {
-				const response = await fetch(attachment.path);
-				if (!response.ok) {
-					throw new BizError(`Attachment fetch failed: ${attachment.filename}`);
-				}
-				content = await response.arrayBuffer();
-			}
-
-			if (!content) {
-				continue;
-			}
-
-			if (typeof content === 'string' && content.startsWith('data:')) {
-				content = content.split(',')[1] || content;
-			}
-
-			if (typeof content === 'string') {
-				content = fileUtils.base64ToUint8Array(content.replace(/\s+/g, '')).buffer;
-			}
-
+		return arrayBufferAttachments.map(attachment => {
 			const item = {
-				content,
+				content: attachment.content,
 				filename: attachment.filename,
 				type: attachment.mimeType || attachment.contentType || attachment.type || 'application/octet-stream',
 				disposition: attachment.contentId ? 'inline' : 'attachment'
@@ -473,10 +450,56 @@ const emailService = {
 				item.contentId = attachment.contentId.replace(/^<|>$/g, '');
 			}
 
-			result.push(item);
+			return item;
+		});
+	},
+
+	async toArrayBufferAttachments(attachments = []) {
+		const result = [];
+
+		for (const attachment of attachments) {
+			const content = await this.toAttachmentArrayBuffer(attachment);
+			if (!content) {
+				continue;
+			}
+
+			result.push({ ...attachment, content });
 		}
 
 		return result;
+	},
+
+	async toAttachmentArrayBuffer(attachment) {
+		let content = attachment.content;
+
+		if (!content && attachment.path) {
+			const response = await fetch(attachment.path);
+			if (!response.ok) {
+				throw new BizError(`Attachment fetch failed: ${attachment.filename}`);
+			}
+			return await response.arrayBuffer();
+		}
+
+		if (!content) {
+			return null;
+		}
+
+		if (content instanceof ArrayBuffer) {
+			return content;
+		}
+
+		if (content instanceof Uint8Array) {
+			return content.buffer.slice(content.byteOffset, content.byteOffset + content.byteLength);
+		}
+
+		if (typeof content === 'string') {
+			if (content.startsWith('data:')) {
+				content = content.split(',')[1] || content;
+			}
+			return fileUtils.base64ToUint8Array(content.replace(/\s+/g, '')).buffer;
+		}
+
+		return content;
 	},
 
 	//处理站内邮件发送
