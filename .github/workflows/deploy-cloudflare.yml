@@ -26,6 +26,7 @@ jobs:
       R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME || vars.R2_BUCKET_NAME }}
       PROJECT_LINK: ${{ secrets.PROJECT_LINK || vars.PROJECT_LINK }}
       AI_MODEL: ${{ secrets.AI_MODEL || vars.AI_MODEL || '@cf/meta/llama-3.1-8b-instruct' }}
+      CF_EMAIL: ${{ secrets.CF_EMAIL || vars.CF_EMAIL || false }}
       ANALYSIS_CACHE: ${{ secrets.ANALYSIS_CACHE || vars.ANALYSIS_CACHE || false }}
       LINUXDO_CLIENT_ID: ${{ secrets.LINUXDO_CLIENT_ID || vars.LINUXDO_CLIENT_ID }}
       LINUXDO_CLIENT_SECRET: ${{ secrets.LINUXDO_CLIENT_SECRET || vars.LINUXDO_CLIENT_SECRET }}
@@ -112,6 +113,14 @@ jobs:
           
           if [ -z "$CUSTOM_DOMAIN" ]; then
             sed -i '/\[\[routes\]\]/,/^$/d' "$CONFIG_FILE"
+          fi
+          
+          if [ "$(printf '%s' "$CF_EMAIL" | tr '[:upper:]' '[:lower:]')" = "true" ]; then
+            cat >> "$CONFIG_FILE" <<'EOF'
+
+          [[send_email]]
+          name = "email"
+          EOF
           fi
 
           sed -i "s|\${NAME}|${NAME}|g" "$CONFIG_FILE"
