@@ -94,13 +94,6 @@
                                    :step="0.01" :max="1" :min="0"/>
                 </div>
               </div>
-              <div class="setting-item">
-                <div class="title-item"><span>{{ $t('backgroundDarken') }}</span></div>
-                <div>
-                  <el-input-number size="small" v-model="loginDarkenFactor" @change="darkenChange" :precision="2"
-                                   :step="0.01" :max="1" :min="0"/>
-                </div>
-              </div>
               <div class="setting-item personalized">
                 <div><span>{{ $t('loginBackground') }}</span></div>
                 <div>
@@ -862,7 +855,6 @@ const settingLoading = ref(false)
 const clearS3Loading = ref(false)
 const r2DomainInput = ref('')
 const loginOpacity = ref(0)
-const loginDarkenFactor = ref(0)
 const minEmailPrefix = ref(0)
 const emailPrefixFilter = ref([])
 const backgroundUrl = ref('')
@@ -954,7 +946,6 @@ function getSettings() {
     settingStore.domainList = settingData.domainList;
     resendTokenForm.domain = setting.value.domainList[0]
     loginOpacity.value = setting.value.loginOpacity
-    loginDarkenFactor.value = normalizeFactor(setting.value.loginDarkenFactor)
     minEmailPrefix.value = setting.value.minEmailPrefix
     firstLoading.value = false
     backgroundUrl.value = setting.value.background?.startsWith('http') ? setting.value.background : ''
@@ -1240,19 +1231,6 @@ function doOpacityChange() {
   editSetting(form, true)
 }
 
-function normalizeFactor(value) {
-  const factor = Number(value ?? 0)
-  if (Number.isNaN(factor)) return 0
-  return Math.min(1, Math.max(0, factor))
-}
-
-function doDarkenChange() {
-  if (!settingReady.value) return
-  const form = {}
-  form.loginDarkenFactor = normalizeFactor(loginDarkenFactor.value)
-  editSetting(form, true)
-}
-
 function resetEmailPrefix() {
   minEmailPrefix.value = setting.value.minEmailPrefix
   emailPrefixFilter.value = setting.value.emailPrefixFilter
@@ -1280,11 +1258,6 @@ function saveAiCodeFilter() {
 }
 
 const opacityChange = debounce(doOpacityChange, 1000, {
-  leading: false,
-  trailing: true
-})
-
-const darkenChange = debounce(doDarkenChange, 1000, {
   leading: false,
   trailing: true
 })
@@ -1522,7 +1495,6 @@ function editSetting(settingForm, refreshStatus = true) {
     aiCodeFilterShow.value = false
   }).catch((e) => {
     loginOpacity.value = setting.value.loginOpacity
-    loginDarkenFactor.value = normalizeFactor(setting.value.loginDarkenFactor)
     setting.value = {...setting.value, ...JSON.parse(backup)}
   }).finally(() => {
     settingLoading.value = false
