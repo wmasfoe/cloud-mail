@@ -9,6 +9,7 @@ import { isDel, emailConst, userConst } from '../const/entity-const';
 import orm from '../entity/orm';
 import account from '../entity/account';
 import email from '../entity/email';
+import user from '../entity/user';
 import { star } from '../entity/star';
 import { and, eq, gt, asc, inArray, sql } from 'drizzle-orm';
 import PostalMime from 'postal-mime';
@@ -38,7 +39,16 @@ app.post('/gateway/auth', async (c) => {
 		return c.json(result.fail('email and password are required', 400));
 	}
 
-	const userRow = await userService.selectByEmailIncludeDel(c, email);
+	let userRow = await userService.selectByEmailIncludeDel(c, email);
+	if (!userRow || userRow.isDel === isDel.DELETE) {
+		// 子邮箱登录:email 是 account,解析到所属用户(密码统一用主用户密码)
+		const acc = await orm(c).select().from(account)
+			.where(and(eq(account.email, email), eq(account.isDel, isDel.NORMAL)))
+			.get();
+		if (acc) {
+			userRow = await orm(c).select().from(user).where(eq(user.userId, acc.userId)).get();
+		}
+	}
 	if (!userRow || userRow.isDel === isDel.DELETE) {
 		return c.json(result.fail('user not found', 401));
 	}
