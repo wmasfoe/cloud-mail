@@ -69,4 +69,13 @@ export default {
 			body: JSON.stringify({ userId, ...flags }),
 		});
 	},
+
+	/** 发信(SMTP 网关):提交完整 MIME,Worker 解析+发送+回写 D1 */
+	send(userId, mime) {
+		return request('/gateway/send', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ userId, mime }),
+		});
+	},
 };

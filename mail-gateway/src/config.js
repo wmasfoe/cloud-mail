@@ -22,6 +22,7 @@ const config = {
 	apiBase: (process.env.API_BASE_URL || 'http://127.0.0.1:8787').replace(/\/$/, ''),
 	gatewayKey: process.env.GATEWAY_KEY || '',
 	imapPort: Number(process.env.IMAP_PORT || 1143),
+	smtpPort: Number(process.env.SMTP_PORT || 465),
 	tlsCert: readPem(process.env.TLS_CERT),
 	tlsKey: readPem(process.env.TLS_KEY),
 	idlePollMs: Number(process.env.IDLE_POLL_MS || 30000),

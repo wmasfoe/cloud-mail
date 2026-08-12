@@ -2,6 +2,7 @@ import app from '../hono/hono';
 import result from '../model/result';
 import userService from '../service/user-service';
 import attService from '../service/att-service';
+import emailService from '../service/email-service';
 import cryptoUtils from '../utils/crypto-utils';
 import constant from '../const/constant';
 import { isDel, emailConst, userConst } from '../const/entity-const';
@@ -10,6 +11,7 @@ import account from '../entity/account';
 import email from '../entity/email';
 import { star } from '../entity/star';
 import { and, eq, gt, asc, inArray, sql } from 'drizzle-orm';
+import PostalMime from 'postal-mime';
 
 /**
  * IMAP/SMTP 网关专用接口(仅供 mail-gateway 调用)
@@ -309,3 +311,64 @@ function formatDateHeader(createTime) {
 	const date = new Date(normalized);
 	return isNaN(date.getTime()) ? new Date().toUTCString() : date.toUTCString();
 }
+
+/**
+ * 发信(SMTP 网关调用):body { userId, mime }
+ * 流程:解析 MIME → 校验 From 属于该用户名下邮箱 → 复用 emailService.send 发送并回写 D1
+ * From 非名下邮箱 → 403(防伪造);发送走 CF Email Service(优先)/Resend(回退)
+ */
+app.post('/gateway/send', async (c) => {
+	const { userId, mime } = await c.req.json();
+	if (!userId || !mime) {
+		return c.json(result.fail('userId and mime required', 400));
+	}
+
+	let parsed;
+	try {
+		parsed = await PostalMime.parse(mime);
+	} catch (e) {
+		return c.json(result.fail('invalid mime: ' + e.message, 400));
+	}
+
+	const fromAddress = parsed.from?.address;
+	if (!fromAddress) {
+		return c.json(result.fail('from address required', 400));
+	}
+
+	// 校验发件地址属于该用户(防伪造)
+	const accountRow = await orm(c).select().from(account)
+		.where(and(
+			eq(account.userId, userId),
+			eq(account.email, fromAddress),
+			eq(account.isDel, isDel.NORMAL)
+		))
+		.get();
+	if (!accountRow) {
+		return c.json(result.fail('sender address not allowed: ' + fromAddress, 403));
+	}
+
+	const toList = (parsed.to || []).map(t => t.address);
+	if (toList.length === 0) {
+		return c.json(result.fail('no recipient', 400));
+	}
+
+	const attachments = (parsed.attachments || []).map(att => ({
+		filename: att.filename,
+		content: att.content,
+		contentType: att.mimeType || 'application/octet-stream',
+		contentId: att.contentId ? att.contentId.replace(/^<|>$/g, '') : undefined,
+		disposition: att.disposition || (att.contentId ? 'inline' : 'attachment'),
+	}));
+
+	const [emailResult] = await emailService.send(c, {
+		accountId: accountRow.accountId,
+		name: parsed.from?.name || null,
+		receiveEmail: toList,
+		subject: parsed.subject || '',
+		text: parsed.text || '',
+		content: parsed.html || '',
+		attachments,
+	}, userId);
+
+	return c.json(result.ok({ emailId: emailResult.emailId, status: emailResult.status }));
+});

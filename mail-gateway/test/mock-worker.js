@@ -108,6 +108,20 @@ const server = http.createServer(async (req, res) => {
 		});
 	}
 
+	if (req.method === 'POST' && path === '/api/gateway/send') {
+		const body = await readBody(req);
+		const userId = Number(body.userId);
+		if (!userId || !body.mime) {
+			return json(res, null, 400);
+		}
+		// mock:校验 From 属于该用户(简单检查 mime 里含 account 邮箱)
+		const accounts = ACCOUNTS.filter(a => a.userId === userId).map(a => a.email);
+		if (!accounts.some(addr => body.mime.includes(addr))) {
+			return json(res, null, 403);
+		}
+		return json(res, { emailId: 500, status: 1 });
+	}
+
 	if (req.method === 'GET' && path === '/api/gateway/mailboxes') {
 		const userId = Number(url.searchParams.get('userId'));
 		const all = EMAILS.filter(e => e.userId === userId && e.isDel === 0);
