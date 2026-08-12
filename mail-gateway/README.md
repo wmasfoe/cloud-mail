@@ -4,7 +4,7 @@
 **不需要端口 25**(收信走 Cloudflare Email Routing,发信走 API 通道)。
 本机已验证:mock 环境 22/22 协议测试通过。
 
-> 前置版本:M1(IMAP 只读 + STORE/EXPUNGE + 伪 IDLE;SMTP 发信网关在 M2,当前客户端发信请用网页端)
+> 当前版本:M2 —— IMAP 收信(993)+ **SMTP 发信(465)**;发件账号自动匹配(From 校验属于名下邮箱);已发送回写 D1
 
 ---
 
@@ -105,9 +105,15 @@ python3 test/test-imap.py          # 22 项断言:登录/列目录/取信/中文
 3. 收件服务器(IMAP):
    - 主机名:`imap.yourdomain.com`(或 VPS IP)
    - 端口:`993`,SSL ✅
-4. 发件服务器(SMTP):M2 前可留空/跳过;用网页端发信
+4. 发件服务器(SMTP):
+   - 主机名:`imap.yourdomain.com`(同 IMAP)
+   - 端口:`465`,SSL ✅
+   - 账号密码同 IMAP
 
-> 说明:登录名用**用户邮箱**(user 表 email),收件箱展示该用户名下全部 account 的收件。
+> 说明:
+> - 登录名用**用户邮箱**(user 表 email),收件箱展示该用户名下全部 account 的收件(合流)
+> - 发件 From 必须是**名下邮箱**,否则被拒(防伪造);iOS 原生一个账户一个发件人,多身份用 Spark/Outlook
+> - 已发送会回写 D1,网页端同样可见
 
 ## 7. 运维
 
