@@ -146,7 +146,7 @@ app.get('/gateway/emails', async (c) => {
  */
 app.get('/gateway/email/:id', async (c) => {
 	const userId = Number(c.req.query('userId'));
-	const emailId = Number(c.req.params.id);
+	const emailId = Number(c.req.param('id'));
 	if (!userId || !emailId) {
 		return c.json(result.fail('userId and email id required', 400));
 	}
@@ -174,7 +174,7 @@ app.get('/gateway/email/:id', async (c) => {
  */
 app.post('/gateway/email/:id/flags', async (c) => {
 	const { userId, seen, starred, deleted } = await c.req.json();
-	const emailId = Number(c.req.params.id);
+	const emailId = Number(c.req.param('id'));
 	if (!userId || !emailId) {
 		return c.json(result.fail('userId and email id required', 400));
 	}
