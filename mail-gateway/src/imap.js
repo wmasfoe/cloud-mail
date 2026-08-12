@@ -694,7 +694,8 @@ class ImapSession {
 			this.tagged(tag, 'NO', 'No mailbox selected');
 			return;
 		}
-		const criteria = args.map(a => a.toUpperCase());
+		const raw = args.map(a => a.replace(/^\(|\)$/g, ''));
+		const criteria = raw.map(a => a.toUpperCase());
 		const seqOf = (m, i) => (isUid ? m.emailId : i + 1);
 		let result = [];
 		if (criteria.includes('ALL') || criteria.length === 0) {
@@ -705,7 +706,7 @@ class ImapSession {
 			result = [];
 		} else if (criteria.includes('SINCE')) {
 			const sinceIdx = criteria.indexOf('SINCE');
-			const dateText = args[sinceIdx + 1];
+			const dateText = raw[sinceIdx + 1];
 			if (dateText) {
 				// IMAP 日期格式:13-Jul-2026 → Date(UTC 当日 0 点)
 				const m = /^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/.exec(dateText);

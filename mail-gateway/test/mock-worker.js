@@ -56,6 +56,7 @@ const EMAILS = [
 ];
 
 const FLAGS_STORE = new Map(); // emailId -> {seen, starred, deleted}
+let nextEmailId = 105;         // APPEND 新邮件自增
 
 function json(res, data, code = 200) {
 	const body = JSON.stringify({ code, data });
@@ -134,7 +135,29 @@ const server = http.createServer(async (req, res) => {
 		if (!accounts.some(addr => mime.includes(addr))) {
 			return json(res, null, 403);
 		}
-		return json(res, { emailId: 600, duplicate: false });
+		// mock:真正落库(带当前时间,让 SINCE 能搜到)
+		const subjectM = mime.match(/^Subject:\s*(.+)$/mi);
+		const msgIdM = mime.match(/^Message-ID:\s*<(.+)>$/mi);
+		const fromM = mime.match(/^From:\s*(.+)$/mi);
+		const toM = mime.match(/^To:\s*(.+)$/mi);
+		const newEmail = {
+			emailId: nextEmailId++,
+			userId,
+			accountId: 1,
+			type: body.folder === 'Sent' ? 1 : 0,
+			unread: 0,
+			isDel: 0,
+			subject: subjectM ? subjectM[1] : '(no subject)',
+			sendEmail: fromM ? fromM[1].replace(/^.*<|>.*$/g, '') : accounts[0],
+			name: '',
+			toEmail: toM ? toM[1].replace(/^.*<|>.*$/g, '') : '',
+			createTime: new Date().toISOString().slice(0, 19).replace('T', ' '),
+			starred: false,
+			mime,
+			messageId: msgIdM ? msgIdM[1] : '',
+		};
+		EMAILS.push(newEmail);
+		return json(res, { emailId: newEmail.emailId, duplicate: false });
 	}
 
 	if (req.method === 'GET' && path === '/api/gateway/mailboxes') {
