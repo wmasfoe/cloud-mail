@@ -5,12 +5,25 @@
  * IMAP_PORT     - IMAP 监听端口(生产 993,开发可用 1143 明文)
  * TLS_CERT/TLS_KEY - 启用 TLS 时提供证书路径;不配置则以明文运行(仅开发)
  */
+import fs from 'node:fs';
+
+/** 读取证书文件内容(Node tls 需要 PEM 内容而非路径) */
+function readPem(path) {
+	if (!path) return null;
+	try {
+		return fs.readFileSync(path);
+	} catch (e) {
+		console.warn(`[config] 读取证书失败 ${path}: ${e.message}`);
+		return null;
+	}
+}
+
 const config = {
 	apiBase: (process.env.API_BASE_URL || 'http://127.0.0.1:8787').replace(/\/$/, ''),
 	gatewayKey: process.env.GATEWAY_KEY || '',
 	imapPort: Number(process.env.IMAP_PORT || 1143),
-	tlsCert: process.env.TLS_CERT || '',
-	tlsKey: process.env.TLS_KEY || '',
+	tlsCert: readPem(process.env.TLS_CERT),
+	tlsKey: readPem(process.env.TLS_KEY),
 	idlePollMs: Number(process.env.IDLE_POLL_MS || 30000),
 	pageSize: Number(process.env.PAGE_SIZE || 100),
 };

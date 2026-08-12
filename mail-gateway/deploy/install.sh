@@ -116,6 +116,12 @@ EOF
 		--cert-name mail-gateway --keep-until-expiring; then
 		echo "✅ 证书签发成功"
 
+		# 授权 mailgate 用户读取证书(Node 以非 root 运行,letsencrypt 目录默认仅 root 可读)
+		apt-get install -y acl >/dev/null 2>&1 || true
+		setfacl -R -m u:mailgate:rX /etc/letsencrypt/live /etc/letsencrypt/archive 2>/dev/null || true
+		setfacl -R -d -m u:mailgate:rX /etc/letsencrypt/live /etc/letsencrypt/archive 2>/dev/null || true
+		echo "✅ 已授权 mailgate 读取证书(含续期新文件)"
+
 		# 把证书路径写回 .env(如果 .env 里没填 TLS_CERT/TLS_KEY)
 		CERT_DIR="/etc/letsencrypt/live/mail-gateway"
 		if [[ -z "$TLS_CERT" ]]; then
@@ -136,7 +142,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/certbot renew --quiet --deploy-hook "systemctl restart mail-gateway"
+ExecStart=/usr/bin/certbot renew --quiet --deploy-hook "setfacl -R -m u:mailgate:rX /etc/letsencrypt/live /etc/letsencrypt/archive && systemctl restart mail-gateway"
 EOF
 		cat > /etc/systemd/system/mail-gateway-renew.timer <<'EOF'
 [Unit]
