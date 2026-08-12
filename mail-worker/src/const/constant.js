@@ -4,6 +4,7 @@ const constant = {
 	JWT_TOKEN: 'token:',
 	TOKEN_EXPIRE: 60 * 60 * 24 * 30,
 	ATTACHMENT_PREFIX: 'attachments/',
+	RAW_PREFIX: 'raw/',
 	BACKGROUND_PREFIX: 'static/background/',
 	ADMIN_ROLE: {
 		name: 'admin',

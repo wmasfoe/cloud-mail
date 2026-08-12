@@ -1,0 +1,14 @@
+{
+	"name": "mail-gateway",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"description": "cloud-mail 的 IMAP/SMTP 网关:无状态协议翻译层,数据源为 Cloudflare D1/R2",
+	"engines": {
+		"node": ">=20"
+	},
+	"scripts": {
+		"start": "node src/index.js",
+		"dev": "node --watch src/index.js"
+	}
+}

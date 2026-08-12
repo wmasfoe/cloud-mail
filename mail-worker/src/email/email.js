@@ -146,6 +146,13 @@ export async function email(message, env, ctx) {
 
 		emailRow = await emailService.completeReceive({ env }, account ? emailConst.status.RECEIVE : emailConst.status.NOONE, emailRow.emailId);
 
+		//保存原始 MIME 到 R2,供 IMAP 网关等第三方客户端读取
+		try {
+			await env.r2.put(constant.RAW_PREFIX + emailRow.emailId + '.eml', content);
+		} catch (e) {
+			console.error('保存原始邮件到 R2 失败: ', e);
+		}
+
 
 		if (ruleType === settingConst.ruleType.RULE) {
 

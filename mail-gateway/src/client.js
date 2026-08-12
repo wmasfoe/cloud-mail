@@ -1,0 +1,72 @@
+/**
+ * Worker API 客户端(网关 → cloud-mail /api/gateway/*)
+ * 所有请求携带网关专用密钥,出错时做有限重试
+ */
+import config from './config.js';
+
+const MAX_RETRY = 2;
+
+async function request(path, options = {}, retry = 0) {
+	const url = `${config.apiBase}/api${path}`;
+	const headers = {
+		Authorization: `Bearer ${config.gatewayKey}`,
+		...(options.headers || {}),
+	};
+
+	let resp;
+	try {
+		resp = await fetch(url, { ...options, headers });
+	} catch (e) {
+		if (retry < MAX_RETRY) {
+			return request(path, options, retry + 1);
+		}
+		throw new Error(`API 请求失败 ${url}: ${e.message}`);
+	}
+
+	if (!resp.ok) {
+		throw new Error(`API ${resp.status}: ${url}`);
+	}
+
+	const body = await resp.json();
+	if (body.code !== 200) {
+		throw new Error(`API 业务错误 ${body.code}: ${body.msg || body.message || ''}`);
+	}
+	return body.data;
+}
+
+export default {
+	/** IMAP/SMTP 登录校验:{ userId, email, accounts } */
+	auth(email, password) {
+		return request('/gateway/auth', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ email, password }),
+		});
+	},
+
+	/** 邮箱目录 + 水位线:{ uidvalidity, latestEmailId, accounts } */
+	mailboxes(userId) {
+		return request(`/gateway/mailboxes?userId=${userId}`);
+	},
+
+	/** 邮件增量列表:{ list, latestEmailId } */
+	emails(userId, folder, sinceEmailId = 0, limit = config.pageSize) {
+		return request(
+			`/gateway/emails?userId=${userId}&folder=${folder}&sinceEmailId=${sinceEmailId}&limit=${limit}`
+		);
+	},
+
+	/** 取完整 MIME:{ emailId, mime } */
+	email(userId, emailId) {
+		return request(`/gateway/email/${emailId}?userId=${userId}`);
+	},
+
+	/** 更新状态:seen/starred/deleted */
+	flags(userId, emailId, flags) {
+		return request(`/gateway/email/${emailId}/flags`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ userId, ...flags }),
+		});
+	},
+};
