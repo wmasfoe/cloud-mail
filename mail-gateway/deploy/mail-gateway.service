@@ -1,0 +1,30 @@
+[Unit]
+Description=cloud-mail IMAP Gateway (无状态,数据源为 Cloudflare D1/R2)
+Documentation=https://github.com/wmasfoe/cloud-mail/blob/main/docs/imap-gateway-design.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mailgate
+Group=mailgate
+# 配置从 /opt/mail-gateway/.env 读取(KEY=value 格式)
+EnvironmentFile=/opt/mail-gateway/.env
+ExecStart=/usr/bin/node /opt/mail-gateway/src/index.js
+WorkingDirectory=/opt/mail-gateway
+Restart=always
+RestartSec=5
+
+# 安全加固
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target
