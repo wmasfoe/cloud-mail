@@ -211,6 +211,10 @@ class ImapSession {
 	}
 
 	async handleLine(line) {
+		if (process.env.IMAP_DEBUG) {
+			const dbg = line.length > 120 ? line.slice(0, 120) + '...' : line;
+			console.log(`[imap] < ${dbg}`);
+		}
 		if (this.idleState) {
 			if (line.trim().toUpperCase() === 'DONE') {
 				clearInterval(this.idleTimer);
@@ -288,7 +292,12 @@ class ImapSession {
 				this.tagged(tag, 'OK', 'CLOSE completed');
 				return;
 			case 'FETCH':
+				return this.cmdFetchOrUid(tag, command, args);
 			case 'UID':
+				// UID SEARCH / UID FETCH 分流
+				if (args[0] && args[0].toUpperCase() === 'SEARCH') {
+					return this.cmdSearch(tag, args.slice(1), true);
+				}
 				return this.cmdFetchOrUid(tag, command, args);
 			case 'STORE':
 				return this.cmdStore(tag, args, false);
@@ -679,19 +688,36 @@ class ImapSession {
 		this.tagged(tag, 'OK', 'EXPUNGE completed');
 	}
 
-	async cmdSearch(tag, args) {
+	/** SEARCH:支持 ALL/UNSEEN/RECENT/SINCE <date>;UID SEARCH 返回 UID(emailId) */
+	async cmdSearch(tag, args, isUid = false) {
 		if (this.state !== 'selected') {
 			this.tagged(tag, 'NO', 'No mailbox selected');
 			return;
 		}
 		const criteria = args.map(a => a.toUpperCase());
+		const seqOf = (m, i) => (isUid ? m.emailId : i + 1);
 		let result = [];
 		if (criteria.includes('ALL') || criteria.length === 0) {
-			result = this.messages.map((m, i) => i + 1);
+			result = this.messages.map((m, i) => seqOf(m, i));
 		} else if (criteria.includes('UNSEEN')) {
-			result = this.messages.map((m, i) => (!m.unread ? i + 1 : 0)).filter(Boolean);
+			result = this.messages.map((m, i) => (!m.unread ? seqOf(m, i) : 0)).filter(Boolean);
 		} else if (criteria.includes('RECENT')) {
 			result = [];
+		} else if (criteria.includes('SINCE')) {
+			const sinceIdx = criteria.indexOf('SINCE');
+			const dateText = args[sinceIdx + 1];
+			if (dateText) {
+				// IMAP 日期格式:13-Jul-2026 → Date(UTC 当日 0 点)
+				const m = /^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/.exec(dateText);
+				if (m) {
+					const months = { JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5, JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11 };
+					const since = Date.UTC(Number(m[3]), months[m[2].toUpperCase()], Number(m[1]));
+					result = this.messages.map((m2, i) => {
+						const t = Date.parse(m2.createTime.replace(' ', 'T') + 'Z');
+						return !isNaN(t) && t >= since ? seqOf(m2, i) : 0;
+					}).filter(Boolean);
+				}
+			}
 		}
 		this.untagged(`SEARCH ${result.join(' ')}`.trim());
 		this.tagged(tag, 'OK', 'SEARCH completed');
