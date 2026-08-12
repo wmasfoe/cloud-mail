@@ -294,9 +294,12 @@ class ImapSession {
 			case 'FETCH':
 				return this.cmdFetchOrUid(tag, command, args);
 			case 'UID':
-				// UID SEARCH / UID FETCH 分流
+				// UID SEARCH / UID FETCH / UID STORE 分流
 				if (args[0] && args[0].toUpperCase() === 'SEARCH') {
 					return this.cmdSearch(tag, args.slice(1), true);
+				}
+				if (args[0] && args[0].toUpperCase() === 'STORE') {
+					return this.cmdStore(tag, args.slice(1), true);
 				}
 				return this.cmdFetchOrUid(tag, command, args);
 			case 'STORE':
@@ -317,7 +320,7 @@ class ImapSession {
 		}
 	}
 
-	/** APPEND:解析 literal 大小,进入收集状态 */
+	/** APPEND:解析 literal 大小与 flags,进入收集状态 */
 	async cmdAppendStart(tag, args) {
 		if (this.state === 'not-authenticated') {
 			this.tagged(tag, 'NO', 'Please authenticate first');
@@ -339,7 +342,16 @@ class ImapSession {
 			this.tagged(tag, 'NO', 'Message too large');
 			return;
 		}
-		this.appendState = { tag, mailbox, size, received: 0, chunks: [] };
+		// 可选 flags:APPEND "Sent" (\Seen) {size}
+		let flags = [];
+		for (const a of args.slice(1, -1)) {
+			const fm = /^\(([^)]*)\)$/.exec(a);
+			if (fm) {
+				flags = fm[1].split(/\s+/).filter(Boolean).map(f => f.toUpperCase());
+			}
+		}
+		const seen = flags.includes('\\SEEN');
+		this.appendState = { tag, mailbox, size, received: 0, chunks: [], seen };
 		this.send('+ Ready for literal data');
 	}
 
@@ -349,7 +361,7 @@ class ImapSession {
 		this.appendState = null;
 		try {
 			const mimeBuf = Buffer.concat(st.chunks);
-			const data = await client.append(this.user.userId, st.mailbox, mimeBuf);
+			const data = await client.append(this.user.userId, st.mailbox, mimeBuf, { seen: st.seen });
 			this.tagged(st.tag, 'OK', 'APPEND completed' + (data.duplicate ? ' (duplicate skipped)' : ''));
 		} catch (e) {
 			console.error('[imap] APPEND 失败:', e.message);
@@ -496,10 +508,31 @@ class ImapSession {
 			} else if (upper === 'RFC822.HEADER' || upper === 'BODY.PEEK[HEADER]' || upper === 'BODY[HEADER]') {
 				const mime = await this.getMime(msg);
 				const { head } = splitMime(mime);
-				parts.push({ t: `${item.includes('HEADER') && item.startsWith('BODY') ? 'BODY[HEADER]' : 'RFC822.HEADER'} {${Buffer.byteLength(head, 'utf-8')}}\r\n` });
-				parts.push({ t: head });
+				const headBuf = Buffer.isBuffer(head) ? head : Buffer.from(head, 'utf-8');
+				parts.push({ t: `${item.includes('HEADER') && item.startsWith('BODY') ? 'BODY[HEADER]' : 'RFC822.HEADER'} {${headBuf.length}}\r\n` });
+				parts.push({ b: headBuf });
 				parts.push({ t: ' ' });
-				if (upper === 'BODY[HEADER]') msg.unread = true;
+				if (upper === 'BODY[HEADER]') {
+					msg.unread = true;
+					this.persistSeen(msg);
+				}
+			} else if (/^BODY(?:\.PEEK)?\[HEADER\.FIELDS\s*\(([^)]*)\)\]$/.test(upper)) {
+				// HEADER.FIELDS (名字列表):只返回请求的头字段(Outlook 列表/验证依赖,返回整封会导致解析失败)
+				const mime = await this.getMime(msg);
+				const { headers } = splitMime(mime);
+				const fieldMatch = /^BODY(?:\.PEEK)?\[HEADER\.FIELDS\s*\(([^)]*)\)\]$/.exec(upper);
+				const fields = fieldMatch[1].split(/\s+/).filter(Boolean);
+				const selected = [];
+				for (const name of fields) {
+					const lower = name.toLowerCase();
+					if (headers.has(lower)) {
+						selected.push(`${name}: ${headers.get(lower)}`);
+					}
+				}
+				const headBuf = Buffer.from(selected.join('\r\n') + '\r\n\r\n', 'utf-8');
+				parts.push({ t: `BODY[HEADER.FIELDS (${fields.join(' ')})] {${headBuf.length}}\r\n` });
+				parts.push({ b: headBuf });
+				parts.push({ t: ' ' });
 			} else if (upper === 'BODY.PEEK[TEXT]' || upper === 'BODY[TEXT]') {
 				const mime = await this.getMime(msg);
 				const { body } = splitMime(mime);
@@ -507,14 +540,20 @@ class ImapSession {
 				parts.push({ t: `BODY[TEXT] {${bodyBuf.length}}\r\n` });
 				parts.push({ b: bodyBuf });
 				parts.push({ t: ' ' });
-				if (upper === 'BODY[TEXT]') msg.unread = true;
+				if (upper === 'BODY[TEXT]') {
+					msg.unread = true;
+					this.persistSeen(msg);
+				}
 			} else if (upper === 'BODY[]' || upper === 'BODY.PEEK[]' || upper === 'RFC822.ALL' || upper === 'RFC822') {
 				const mime = await this.getMime(msg);
 				const name = upper === 'RFC822.ALL' || upper === 'RFC822' ? 'RFC822.ALL' : 'BODY[]';
 				parts.push({ t: `${name} {${mime.length}}\r\n` });
 				parts.push({ b: mime });
 				parts.push({ t: ' ' });
-				if (upper === 'BODY[]') msg.unread = true;
+				if (upper === 'BODY[]') {
+					msg.unread = true;
+					this.persistSeen(msg);
+				}
 			} else if (upper === 'ENVELOPE') {
 				parts.push({ t: `ENVELOPE ${await this.buildEnvelope(msg)}` });
 			} else if (upper === 'BODYSTRUCTURE') {
@@ -619,7 +658,7 @@ class ImapSession {
 		this.tagged(tag, 'OK', 'FETCH completed');
 	}
 
-	async cmdStore(tag, args, isUid) {
+	async cmdStore(tag, args, isUid = false) {
 		if (this.state !== 'selected') {
 			this.tagged(tag, 'NO', 'No mailbox selected');
 			return;
@@ -638,9 +677,22 @@ class ImapSession {
 		const silent = !!m[2];
 		const flags = flagText.split(/\s+/).filter(Boolean);
 
-		const seqs = parseSequenceSet(setText, this.messages.length);
-		if (!seqs) {
-			this.tagged(tag, 'BAD', 'Invalid sequence set');
+		let seqs;
+		if (isUid) {
+			// UID STORE:set 是 UID 集合,映射到 messages 下标
+			seqs = [];
+			const uids = parseSequenceSet(setText, this.uidnext - 1);
+			if (uids) {
+				for (const uid of uids) {
+					const idx = this.messages.findIndex(m => m.emailId === uid);
+					if (idx !== -1) seqs.push(idx + 1);
+				}
+			}
+		} else {
+			seqs = parseSequenceSet(setText, this.messages.length);
+		}
+		if (!seqs || seqs.length === 0) {
+			this.tagged(tag, 'OK', 'STORE completed');
 			return;
 		}
 
@@ -649,16 +701,17 @@ class ImapSession {
 			if (!msg) continue;
 			for (const flag of flags) {
 				const on = flag.toUpperCase();
-				if (on === FLAG_SEEN) msg.unread = !(add || (remove ? msg.unread : false));
-				else if (on === FLAG_FLAGGED) msg.starred = add ? true : (remove ? false : true);
-				else if (on === FLAG_DELETED) msg.deleted = add ? true : (remove ? false : true);
+				// 注意语义:unread=true 表示"已读"(D1 unread=1=已读);IMAP flags 大小写不敏感
+				if (on === '\\SEEN') msg.unread = add ? true : (remove ? false : msg.unread);
+				else if (on === '\\FLAGGED') msg.starred = add ? true : (remove ? false : true);
+				else if (on === '\\DELETED') msg.deleted = add ? true : (remove ? false : false);
 			}
-			// 写入 D1(单一数据源)
+			// 写入 D1(单一数据源);\Deleted 是待删除标记,EXPUNGE 时才真正删除
 			try {
 				await client.flags(this.user.userId, msg.emailId, {
 					seen: msg.unread,
 					starred: msg.starred,
-					deleted: msg.deleted,
+					deleted: false,
 				});
 			} catch (e) {
 				console.error('[imap] flags 写入失败:', e);
@@ -670,6 +723,17 @@ class ImapSession {
 		this.tagged(tag, 'OK', 'STORE completed');
 	}
 
+	/** 非 PEEK 读取后隐式置已读并持久化 D1 */
+	async persistSeen(msg) {
+		if (msg.unread) return;
+		msg.unread = true;
+		try {
+			await client.flags(this.user.userId, msg.emailId, { seen: true });
+		} catch (e) {
+			console.error('[imap] 隐式已读写入失败:', e);
+		}
+	}
+
 	async cmdExpunge(tag, args, isUid) {
 		if (this.state !== 'selected') {
 			this.tagged(tag, 'NO', 'No mailbox selected');
@@ -678,11 +742,25 @@ class ImapSession {
 		const removed = [];
 		for (let i = this.messages.length - 1; i >= 0; i--) {
 			if (this.messages[i].deleted) {
-				this.send(`* ${i + 1} EXPUNGE`);
 				removed.push(i);
 			}
 		}
-		for (const idx of removed.sort((a, b) => a - b)) {
+		if (process.env.IMAP_DEBUG) {
+			console.log(`[imap] EXPUNGE: removed=${JSON.stringify(removed)} total=${this.messages.length} deleted_flags=${this.messages.filter(m => m.deleted).map(m => m.emailId)}`);
+		}
+		// 先真正删除(D1 is_del=1,网页端同步),再移除内存
+		for (const idx of removed) {
+			const msg = this.messages[idx];
+			try {
+				await client.flags(this.user.userId, msg.emailId, { deleted: true });
+			} catch (e) {
+				console.error('[imap] EXPUNGE 删除失败:', e);
+				continue;
+			}
+			this.send(`* ${idx + 1} EXPUNGE`);
+		}
+		// 降序 splice(先删大索引,避免位移错乱)
+		for (const idx of removed.sort((a, b) => b - a)) {
 			this.messages.splice(idx, 1);
 		}
 		this.tagged(tag, 'OK', 'EXPUNGE completed');
@@ -774,14 +852,17 @@ function parseFetchItems(text) {
 		content = content.slice(1, -1);
 	}
 	if (!content) return ['BODY[]'];
-	// 按空格切分,但保留 BODY[HEADER.FIELDS (X Y)] 这类括号
+	// 按空格切分,但保留 BODY[HEADER.FIELDS (X Y)] 这类括号([] 内的括号不参与切分)
 	const items = [];
 	let current = '';
 	let depth = 0;
+	let bracketDepth = 0;
 	for (const ch of content) {
-		if (ch === '(') depth++;
-		if (ch === ')') depth--;
-		if (ch === ' ' && depth === 0) {
+		if (ch === '[') bracketDepth++;
+		if (ch === ']') bracketDepth--;
+		if (ch === '(' && bracketDepth === 0) depth++;
+		if (ch === ')' && bracketDepth === 0) depth--;
+		if (ch === ' ' && depth === 0 && bracketDepth === 0) {
 			if (current) items.push(current);
 			current = '';
 		} else {

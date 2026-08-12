@@ -80,12 +80,12 @@ export default {
 		});
 	},
 
-	/** 追加邮件(IMAP APPEND,客户端"已发送副本"):body { userId, folder, mimeB64 } */
-	append(userId, folder, mimeBuf) {
+	/** 追加邮件(IMAP APPEND,客户端"已发送副本"):body { userId, folder, mimeB64, seen? } */
+	append(userId, folder, mimeBuf, opts = {}) {
 		return request('/gateway/append', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ userId, folder, mimeB64: mimeBuf.toString('base64') }),
+			body: JSON.stringify({ userId, folder, mimeB64: mimeBuf.toString('base64'), seen: opts.seen }),
 		});
 	},
 };

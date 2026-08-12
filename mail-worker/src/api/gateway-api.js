@@ -402,7 +402,7 @@ app.post('/gateway/send', async (c) => {
  *     → 写 D1(type=SEND/SENT)→ 附件存 R2 → raw MIME 存 R2
  */
 app.post('/gateway/append', async (c) => {
-	const { userId, folder, mimeB64 } = await c.req.json();
+	const { userId, folder, mimeB64, seen } = await c.req.json();
 	if (!userId || !mimeB64) {
 		return c.json(result.fail('userId and mimeB64 required', 400));
 	}
@@ -458,7 +458,7 @@ app.post('/gateway/append', async (c) => {
 		messageId,
 		type: emailConst.type.SEND,
 		status: emailConst.status.SENT,
-		unread: emailConst.unread.READ,
+		unread: seen ? emailConst.unread.READ : emailConst.unread.UNREAD,
 	};
 
 	const emailResult = await orm(c).insert(email).values(emailData).returning().get();

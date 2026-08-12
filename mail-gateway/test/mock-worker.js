@@ -210,6 +210,13 @@ const server = http.createServer(async (req, res) => {
 		const emailId = Number(flagsMatch[1]);
 		const body = await readBody(req);
 		FLAGS_STORE.set(emailId, body);
+		// 同步 EMAILS(模拟 D1 写回,让重 SELECT 能看到状态变化)
+		const em = EMAILS.find(e => e.emailId === emailId);
+		if (em) {
+			if (body.seen !== undefined) em.unread = body.seen ? 1 : 0;
+			if (body.deleted !== undefined) em.isDel = body.deleted ? 1 : 0;
+			if (body.starred !== undefined) em.starred = body.starred;
+		}
 		return json(res, {});
 	}
 
