@@ -18,7 +18,9 @@ import { and, eq, gt, asc, inArray, sql } from 'drizzle-orm';
 app.use('/gateway/*', async (c, next) => {
 	const auth = c.req.header('authorization') || '';
 	const key = auth.replace(/^Bearer\s+/i, '');
-	if (!c.env.GATEWAY_KEY || key !== c.env.GATEWAY_KEY) {
+	// 兼容大小写:wrangler.toml 注释习惯用 gateway_key,环境变量名大小写敏感
+	const gatewayKey = c.env.GATEWAY_KEY || c.env.gateway_key;
+	if (!gatewayKey || key !== gatewayKey) {
 		return c.json(result.fail('Unauthorized', 401));
 	}
 	return await next();
