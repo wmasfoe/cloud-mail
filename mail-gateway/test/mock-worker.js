@@ -111,15 +111,30 @@ const server = http.createServer(async (req, res) => {
 	if (req.method === 'POST' && path === '/api/gateway/send') {
 		const body = await readBody(req);
 		const userId = Number(body.userId);
-		if (!userId || !body.mime) {
+		if (!userId || !body.mimeB64) {
 			return json(res, null, 400);
 		}
+		const mime = Buffer.from(body.mimeB64, 'base64').toString('utf-8');
 		// mock:校验 From 属于该用户(简单检查 mime 里含 account 邮箱)
 		const accounts = ACCOUNTS.filter(a => a.userId === userId).map(a => a.email);
-		if (!accounts.some(addr => body.mime.includes(addr))) {
+		if (!accounts.some(addr => mime.includes(addr))) {
 			return json(res, null, 403);
 		}
 		return json(res, { emailId: 500, status: 1 });
+	}
+
+	if (req.method === 'POST' && path === '/api/gateway/append') {
+		const body = await readBody(req);
+		const userId = Number(body.userId);
+		if (!userId || !body.mimeB64) {
+			return json(res, null, 400);
+		}
+		const mime = Buffer.from(body.mimeB64, 'base64').toString('utf-8');
+		const accounts = ACCOUNTS.filter(a => a.userId === userId).map(a => a.email);
+		if (!accounts.some(addr => mime.includes(addr))) {
+			return json(res, null, 403);
+		}
+		return json(res, { emailId: 600, duplicate: false });
 	}
 
 	if (req.method === 'GET' && path === '/api/gateway/mailboxes') {
@@ -164,7 +179,7 @@ const server = http.createServer(async (req, res) => {
 		const emailId = Number(emailMatch[1]);
 		const email = EMAILS.find(e => e.emailId === emailId);
 		if (!email) return json(res, { code: 404, msg: 'email not found' });
-		return json(res, { emailId, mime: email.mime });
+		return json(res, { emailId, mimeB64: Buffer.from(email.mime, 'utf-8').toString('base64') });
 	}
 
 	const flagsMatch = path.match(/^\/api\/gateway\/email\/(\d+)\/flags$/);

@@ -133,11 +133,20 @@ function parseAddressList(value) {
 	return parts.length ? '(' + parts.join(' ') + ')' : 'NIL';
 }
 
-/** MIME 头解析 → { headers: Map(小写名→值), head: 头文本, body: 正文文本 } */
+/** MIME 头解析 → { headers: Map(小写名→值), head: 头文本, body: 正文(Buffer 时保留字节) } */
 function splitMime(mime) {
-	const idx = mime.indexOf('\r\n\r\n');
-	const head = idx === -1 ? mime : mime.slice(0, idx);
-	const body = idx === -1 ? '' : mime.slice(idx + 4);
+	const isBuf = Buffer.isBuffer(mime);
+	const sep = Buffer.from('\r\n\r\n');
+	let idx, head, body;
+	if (isBuf) {
+		idx = mime.indexOf(sep);
+		head = (idx === -1 ? mime : mime.subarray(0, idx)).toString('utf-8');
+		body = idx === -1 ? Buffer.alloc(0) : mime.subarray(idx + 4);
+	} else {
+		idx = mime.indexOf('\r\n\r\n');
+		head = idx === -1 ? mime : mime.slice(0, idx);
+		body = idx === -1 ? '' : mime.slice(idx + 4);
+	}
 	const headers = new Map();
 	for (const line of head.split('\r\n')) {
 		if (/^[\t ]/.test(line)) {
@@ -191,6 +200,7 @@ class ImapSession {
 		this.idleTimer = null;
 		this.idleState = false;
 		this.buffer = '';
+		this.appendState = null; // { tag, mailbox, size, received, chunks }
 	}
 
 	send(line) { write(this.socket, line); }
@@ -219,6 +229,10 @@ class ImapSession {
 		const tag = parts[0];
 		const command = (parts[1] || '').toUpperCase();
 		const args = parts.slice(2);
+
+		if (command === 'APPEND') {
+			return this.cmdAppendStart(tag, args);
+		}
 
 		try {
 			await this.dispatch(tag, command, args);
@@ -287,8 +301,50 @@ class ImapSession {
 			case 'CHECK':
 				this.tagged(tag, 'OK', 'CHECK completed');
 				return;
+			case 'APPEND':
+				return this.cmdAppendStart(tag, args);
 			default:
 				this.tagged(tag, 'BAD', `${command} not implemented (M1 subset)`);
+		}
+	}
+
+	/** APPEND:解析 literal 大小,进入收集状态 */
+	async cmdAppendStart(tag, args) {
+		if (this.state === 'not-authenticated') {
+			this.tagged(tag, 'NO', 'Please authenticate first');
+			return;
+		}
+		const mailbox = args[0];
+		if (!FOLDERS[mailbox]) {
+			this.tagged(tag, 'NO', 'Mailbox does not exist');
+			return;
+		}
+		const sizeArg = args[args.length - 1];
+		const m = /^\{(\d+)\}$/.exec(sizeArg || '');
+		if (!m) {
+			this.tagged(tag, 'BAD', 'APPEND requires literal size');
+			return;
+		}
+		const size = Number(m[1]);
+		if (size > 25 * 1024 * 1024) {
+			this.tagged(tag, 'NO', 'Message too large');
+			return;
+		}
+		this.appendState = { tag, mailbox, size, received: 0, chunks: [] };
+		this.send('+ Ready for literal data');
+	}
+
+	/** literal 收满后:提交 Worker 存 D1(Message-ID 去重) */
+	async finishAppend() {
+		const st = this.appendState;
+		this.appendState = null;
+		try {
+			const mimeBuf = Buffer.concat(st.chunks);
+			const data = await client.append(this.user.userId, st.mailbox, mimeBuf);
+			this.tagged(st.tag, 'OK', 'APPEND completed' + (data.duplicate ? ' (duplicate skipped)' : ''));
+		} catch (e) {
+			console.error('[imap] APPEND 失败:', e.message);
+			this.tagged(st.tag, 'NO', e.message || 'APPEND failed');
 		}
 	}
 
@@ -401,7 +457,7 @@ class ImapSession {
 	async getMime(msg) {
 		if (!msg.mime) {
 			const data = await client.email(this.user.userId, msg.emailId);
-			msg.mime = data.mime;
+			msg.mime = data.mime; // Buffer(Worker 端 base64 解码,附件字节无损)
 		}
 		return msg.mime;
 	}
@@ -415,48 +471,60 @@ class ImapSession {
 	}
 
 	async fetchMessage(msg, seq, items) {
-		const parts = [];
+		// 返回混合数组:[{ t: '文本' }, { b: Buffer }];literal 内容用 Buffer 保证二进制无损
+		const parts = [{ t: `* ${seq} FETCH (` }];
 		for (const item of items) {
 			const upper = item.toUpperCase();
 			if (upper === 'UID') {
-				parts.push(`UID ${msg.emailId}`);
+				parts.push({ t: `UID ${msg.emailId}` });
 			} else if (upper === 'FLAGS') {
-				parts.push(`FLAGS ${this.buildFlags(msg)}`);
+				parts.push({ t: `FLAGS ${this.buildFlags(msg)}` });
 			} else if (upper === 'INTERNALDATE') {
-				parts.push(`INTERNALDATE ${qstr(formatInternalDate(msg.createTime))}`);
+				parts.push({ t: `INTERNALDATE ${qstr(formatInternalDate(msg.createTime))}` });
 			} else if (upper === 'RFC822.SIZE') {
 				const mime = await this.getMime(msg);
-				parts.push(`RFC822.SIZE ${Buffer.byteLength(mime, 'utf-8')}`);
+				parts.push({ t: `RFC822.SIZE ${mime.length}` });
 			} else if (upper === 'RFC822.HEADER' || upper === 'BODY.PEEK[HEADER]' || upper === 'BODY[HEADER]') {
 				const mime = await this.getMime(msg);
 				const { head } = splitMime(mime);
-				parts.push(`${item.includes('HEADER') && item.startsWith('BODY') ? 'BODY[HEADER]' : 'RFC822.HEADER'} {${Buffer.byteLength(head, 'utf-8')}}\r\n${head}`);
+				parts.push({ t: `${item.includes('HEADER') && item.startsWith('BODY') ? 'BODY[HEADER]' : 'RFC822.HEADER'} {${Buffer.byteLength(head, 'utf-8')}}\r\n` });
+				parts.push({ t: head });
+				parts.push({ t: ' ' });
 				if (upper === 'BODY[HEADER]') msg.unread = true;
 			} else if (upper === 'BODY.PEEK[TEXT]' || upper === 'BODY[TEXT]') {
 				const mime = await this.getMime(msg);
 				const { body } = splitMime(mime);
-				parts.push(`BODY[TEXT] {${Buffer.byteLength(body, 'utf-8')}}\r\n${body}`);
+				const bodyBuf = Buffer.isBuffer(body) ? body : Buffer.from(body, 'utf-8');
+				parts.push({ t: `BODY[TEXT] {${bodyBuf.length}}\r\n` });
+				parts.push({ b: bodyBuf });
+				parts.push({ t: ' ' });
 				if (upper === 'BODY[TEXT]') msg.unread = true;
 			} else if (upper === 'BODY[]' || upper === 'BODY.PEEK[]' || upper === 'RFC822.ALL' || upper === 'RFC822') {
 				const mime = await this.getMime(msg);
 				const name = upper === 'RFC822.ALL' || upper === 'RFC822' ? 'RFC822.ALL' : 'BODY[]';
-				parts.push(`${name} {${Buffer.byteLength(mime, 'utf-8')}}\r\n${mime}`);
+				parts.push({ t: `${name} {${mime.length}}\r\n` });
+				parts.push({ b: mime });
+				parts.push({ t: ' ' });
 				if (upper === 'BODY[]') msg.unread = true;
 			} else if (upper === 'ENVELOPE') {
-				parts.push(`ENVELOPE ${await this.buildEnvelope(msg)}`);
+				parts.push({ t: `ENVELOPE ${await this.buildEnvelope(msg)}` });
 			} else if (upper === 'BODYSTRUCTURE') {
 				const mime = await this.getMime(msg);
-				parts.push(`BODYSTRUCTURE ${buildBasicStructure(mime)}`);
+				parts.push({ t: `BODYSTRUCTURE ${buildBasicStructure(mime)}` });
 			} else if (upper.startsWith('BODY.PEEK[')) {
 				// 其他 body section:取全文(简化)
 				const mime = await this.getMime(msg);
-				parts.push(`BODY[${item.slice(10, -1)}] {${Buffer.byteLength(mime, 'utf-8')}}\r\n${mime}`);
+				parts.push({ t: `BODY[${item.slice(10, -1)}] {${mime.length}}\r\n` });
+				parts.push({ b: mime });
+				parts.push({ t: ' ' });
 			} else {
 				// 未知 item,返回空
-				parts.push(`${item} NIL`);
+				parts.push({ t: `${item} NIL` });
 			}
+			parts.push({ t: ' ' });
 		}
-		return `* ${seq} FETCH (${parts.join(' ')})`;
+		parts.push({ t: ')' });
+		return parts;
 	}
 
 	async buildEnvelope(msg) {
@@ -525,8 +593,19 @@ class ImapSession {
 		}
 
 		for (const { seq, msg } of target) {
-			const line = await this.fetchMessage(msg, seq, items);
-			this.send(line);
+			const parts = await this.fetchMessage(msg, seq, items);
+			// 文本累积成一行,literal(Buffer)插入,行尾统一 \r\n
+			let out = '';
+			for (const p of parts) {
+				if (p.b) {
+					this.socket.write(out);
+					out = '';
+					this.socket.write(p.b);
+				} else {
+					out += p.t;
+				}
+			}
+			this.socket.write(out + '\r\n');
 		}
 		this.tagged(tag, 'OK', 'FETCH completed');
 	}
@@ -717,8 +796,7 @@ export function createServer(handler) {
 		untagged(socket, 'OK [CAPABILITY IMAP4rev1 AUTH=PLAIN IDLE] cloud-mail gateway ready');
 
 		let buffer = '';
-		socket.on('data', chunk => {
-			buffer += chunk.toString('utf-8');
+		const processLines = () => {
 			let nl;
 			while ((nl = buffer.indexOf('\r\n')) !== -1) {
 				const line = buffer.slice(0, nl);
@@ -729,6 +807,30 @@ export function createServer(handler) {
 					session.handleLine(line);
 				}
 			}
+		};
+		socket.on('data', chunk => {
+			// APPEND literal:按字节收集(Buffer),不经过 UTF-8 字符串转换,附件无损
+			const st = session.appendState;
+			if (st) {
+				const need = st.size - st.received;
+				if (chunk.length >= need) {
+					st.chunks.push(chunk.subarray(0, need));
+					st.received += need;
+					const rest = chunk.subarray(need);
+					session.finishAppend().then(() => {
+						if (rest.length) {
+							buffer += rest.toString('utf-8');
+							processLines();
+						}
+					});
+				} else {
+					st.chunks.push(chunk);
+					st.received += chunk.length;
+				}
+				return;
+			}
+			buffer += chunk.toString('utf-8');
+			processLines();
 		});
 		socket.on('error', e => {
 			console.error('[imap] 连接错误:', e.message);

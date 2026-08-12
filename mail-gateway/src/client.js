@@ -56,9 +56,10 @@ export default {
 		);
 	},
 
-	/** 取完整 MIME:{ emailId, mime } */
-	email(userId, emailId) {
-		return request(`/gateway/email/${emailId}?userId=${userId}`);
+	/** 取完整 MIME:{ emailId, mimeB64 } → 解码为 Buffer */
+	async email(userId, emailId) {
+		const data = await request(`/gateway/email/${emailId}?userId=${userId}`);
+		return { emailId: data.emailId, mime: Buffer.from(data.mimeB64, 'base64') };
 	},
 
 	/** 更新状态:seen/starred/deleted */
@@ -70,12 +71,21 @@ export default {
 		});
 	},
 
-	/** 发信(SMTP 网关):提交完整 MIME,Worker 解析+发送+回写 D1 */
-	send(userId, mime) {
+	/** 发信(SMTP 网关):提交完整 MIME(base64),Worker 解析+发送+回写 D1 */
+	send(userId, mimeBuf) {
 		return request('/gateway/send', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ userId, mime }),
+			body: JSON.stringify({ userId, mimeB64: mimeBuf.toString('base64') }),
+		});
+	},
+
+	/** 追加邮件(IMAP APPEND,客户端"已发送副本"):body { userId, folder, mimeB64 } */
+	append(userId, folder, mimeBuf) {
+		return request('/gateway/append', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ userId, folder, mimeB64: mimeBuf.toString('base64') }),
 		});
 	},
 };

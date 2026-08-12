@@ -172,12 +172,25 @@ app.get('/gateway/email/:id', async (c) => {
 
 	const raw = await c.env.r2.get(constant.RAW_PREFIX + emailId + '.eml');
 	if (raw) {
-		return c.json(result.ok({ emailId, mime: await raw.text() }));
+		// base64 传输,避免 JSON 破坏二进制附件
+		const buf = await raw.arrayBuffer();
+		const bytes = new Uint8Array(buf);
+		let bin = '';
+		for (let i = 0; i < bytes.length; i++) {
+			bin += String.fromCharCode(bytes[i]);
+		}
+		return c.json(result.ok({ emailId, mimeB64: btoa(bin) }));
 	}
 
 	const attList = await attService.selectByEmailIds(c, [emailId]);
 	const mime = await buildMimeFromRow(c, emailRow, attList);
-	return c.json(result.ok({ emailId, mime }));
+	// 组装 MIME 为文本(base64 内嵌),UTF-8 安全编码后传输
+	const mimeBytes = new TextEncoder().encode(mime);
+	let mimeBin = '';
+	for (let i = 0; i < mimeBytes.length; i++) {
+		mimeBin += String.fromCharCode(mimeBytes[i]);
+	}
+	return c.json(result.ok({ emailId, mimeB64: btoa(mimeBin) }));
 });
 
 /**
@@ -328,14 +341,14 @@ function formatDateHeader(createTime) {
  * From 非名下邮箱 → 403(防伪造);发送走 CF Email Service(优先)/Resend(回退)
  */
 app.post('/gateway/send', async (c) => {
-	const { userId, mime } = await c.req.json();
-	if (!userId || !mime) {
-		return c.json(result.fail('userId and mime required', 400));
+	const { userId, mimeB64 } = await c.req.json();
+	if (!userId || !mimeB64) {
+		return c.json(result.fail('userId and mimeB64 required', 400));
 	}
 
 	let parsed;
 	try {
-		parsed = await PostalMime.parse(mime);
+		parsed = await PostalMime.parse(Uint8Array.from(atob(mimeB64), ch => ch.charCodeAt(0)));
 	} catch (e) {
 		return c.json(result.fail('invalid mime: ' + e.message, 400));
 	}
@@ -381,4 +394,94 @@ app.post('/gateway/send', async (c) => {
 	}, userId);
 
 	return c.json(result.ok({ emailId: emailResult.emailId, status: emailResult.status }));
+});
+
+/**
+ * 追加邮件(IMAP APPEND,客户端"已发送副本"保存):body { userId, folder, mime }
+ * 流程:解析 MIME → From 校验属于名下邮箱 → Message-ID 去重(避免与 SMTP 发送回写重复)
+ *     → 写 D1(type=SEND/SENT)→ 附件存 R2 → raw MIME 存 R2
+ */
+app.post('/gateway/append', async (c) => {
+	const { userId, folder, mimeB64 } = await c.req.json();
+	if (!userId || !mimeB64) {
+		return c.json(result.fail('userId and mimeB64 required', 400));
+	}
+
+	let parsed;
+	try {
+		parsed = await PostalMime.parse(Uint8Array.from(atob(mimeB64), ch => ch.charCodeAt(0)));
+	} catch (e) {
+		return c.json(result.fail('invalid mime: ' + e.message, 400));
+	}
+
+	const fromAddress = parsed.from?.address;
+	if (!fromAddress) {
+		return c.json(result.fail('from address required', 400));
+	}
+
+	// 校验 From 属于该用户(防伪造)
+	const accountRow = await orm(c).select().from(account)
+		.where(and(eq(account.userId, userId), eq(account.email, fromAddress), eq(account.isDel, isDel.NORMAL)))
+		.get();
+	if (!accountRow) {
+		return c.json(result.fail('sender address not allowed: ' + fromAddress, 403));
+	}
+
+	// 去重:客户端 SMTP 发送时网关已回写 D1,Message-ID 相同则跳过
+	const messageId = parsed.messageId || '';
+	if (messageId) {
+		const dup = await orm(c).select().from(email)
+			.where(and(eq(email.userId, userId), eq(email.messageId, messageId), eq(email.type, emailConst.type.SEND)))
+			.get();
+		if (dup) {
+			return c.json(result.ok({ emailId: dup.emailId, duplicate: true }));
+		}
+	}
+
+	const recipient = (parsed.to || []).map(t => ({ address: t.address, name: t.name || '' }));
+	const ccList = (parsed.cc || []).map(t => t.address);
+
+	const emailData = {
+		sendEmail: fromAddress,
+		name: parsed.from?.name || '',
+		accountId: accountRow.accountId,
+		userId,
+		subject: parsed.subject || '',
+		text: parsed.text || '',
+		content: parsed.html || '',
+		cc: JSON.stringify(ccList),
+		recipient: JSON.stringify(recipient),
+		toEmail: recipient.map(r => r.address).join(','),
+		toName: recipient.map(r => r.name).join(','),
+		inReplyTo: parsed.inReplyTo || '',
+		relation: Array.isArray(parsed.references) && parsed.references[0] ? parsed.references[0] : '',
+		messageId,
+		type: emailConst.type.SEND,
+		status: emailConst.status.SENT,
+		unread: emailConst.unread.READ,
+	};
+
+	const emailResult = await orm(c).insert(email).values(emailData).returning().get();
+
+	// 附件存 R2
+	const attachments = (parsed.attachments || []).map(att => ({
+		filename: att.filename,
+		content: att.content,
+		contentType: att.mimeType || 'application/octet-stream',
+		contentId: att.contentId ? att.contentId.replace(/^<|>$/g, '') : undefined,
+		disposition: att.disposition || (att.contentId ? 'inline' : 'attachment'),
+	}));
+	if (attachments.length > 0) {
+		await attService.saveSendAtt(c, attachments, userId, accountRow.accountId, emailResult.emailId);
+	}
+
+	// raw MIME 存 R2(IMAP 读取走 raw 路径,零组装)
+	try {
+		await c.env.r2.put(constant.RAW_PREFIX + emailResult.emailId + '.eml',
+			Uint8Array.from(atob(mimeB64), ch => ch.charCodeAt(0)));
+	} catch (e) {
+		console.error('[gateway] append 存 raw 失败:', e.message);
+	}
+
+	return c.json(result.ok({ emailId: emailResult.emailId, duplicate: false }));
 });

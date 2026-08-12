@@ -17,7 +17,8 @@ class SmtpSession {
 		this.authPending = null;   // 等待 base64 凭据
 		this.mailFrom = null;
 		this.rcptTos = [];
-		this.dataBuffer = '';
+		this.dataMode = false;     // DATA 收集模式(Buffer,附件无损)
+		this.dataChunks = [];
 		this.dataSize = 0;
 		this.buffer = '';
 		this._send('220 imap.example.com cloud-mail gateway ESMTP ready');
@@ -28,24 +29,6 @@ class SmtpSession {
 	}
 
 	async handleLine(line) {
-		// DATA 模式:收集到 ".\r\n" 为止
-		if (this.state === 'data') {
-			if (line === '.') {
-				await this.finishData();
-			} else {
-				const content = line.startsWith('..') ? line.slice(1) : line;
-				this.dataBuffer += content + '\r\n';
-				this.dataSize += content.length + 2;
-				if (this.dataSize > MAX_MESSAGE_SIZE) {
-					this._send('552 Message size exceeds fixed limit');
-					this.state = 'mail';
-					this.dataBuffer = '';
-					this.dataSize = 0;
-				}
-			}
-			return;
-		}
-
 		// AUTH 交互模式
 		if (this.authPending) {
 			await this.resolveAuth(line);
@@ -104,14 +87,15 @@ class SmtpSession {
 					return;
 				}
 				this._send('354 End data with <CR><LF>.<CR><LF>');
-				this.state = 'data';
-				this.dataBuffer = '';
+				this.dataMode = true;
+				this.dataChunks = [];
 				this.dataSize = 0;
 				return;
 			case 'RSET':
 				this.mailFrom = null;
 				this.rcptTos = [];
-				this.dataBuffer = '';
+				this.dataMode = false;
+				this.dataChunks = [];
 				this.state = this.user ? 'auth' : 'greeting';
 				this._send('250 2.0.0 Ok');
 				return;
@@ -198,16 +182,16 @@ class SmtpSession {
 	}
 
 	async finishData() {
-		const mime = this.dataBuffer;
-		this.dataBuffer = '';
+		const mimeBuf = Buffer.concat(this.dataChunks);
+		this.dataChunks = [];
 		this.dataSize = 0;
 		this.state = 'mail';
-		if (!mime.trim()) {
+		if (mimeBuf.length === 0) {
 			this._send('451 4.3.0 Empty message');
 			return;
 		}
 		try {
-			const data = await client.send(this.user.userId, mime);
+			const data = await client.send(this.user.userId, mimeBuf);
 			console.log(`[smtp] 已发送 ${this.user.email} → ${this.rcptTos.length} 收件人 (emailId=${data.emailId})`);
 			this.mailFrom = null;
 			this.rcptTos = [];
@@ -223,13 +207,42 @@ export function createSmtpServer() {
 	const onConnection = socket => {
 		socket.setNoDelay(true);
 		const session = new SmtpSession(socket);
-		let buffer = '';
+		let buffer = Buffer.alloc(0);
+		const CRLF = Buffer.from('\r\n');
 		socket.on('data', chunk => {
-			buffer += chunk.toString('utf-8');
+			buffer = Buffer.concat([buffer, chunk]);
+			if (session.dataMode) {
+				// DATA:按行切分(Buffer),行首 '.' 结束,行首 '..' 还原
+				let nl;
+				while ((nl = buffer.indexOf(CRLF)) !== -1) {
+					const line = buffer.subarray(0, nl);
+					buffer = buffer.subarray(nl + 2);
+					if (line.length === 1 && line[0] === 0x2e) {
+						session.dataMode = false;
+						session.finishData();
+						break;
+					}
+					if (line.length > 1 && line[0] === 0x2e && line[1] === 0x2e) {
+						session.dataChunks.push(line.subarray(1));
+					} else {
+						session.dataChunks.push(line);
+					}
+					session.dataChunks.push(CRLF);
+					session.dataSize += line.length + 2;
+					if (session.dataSize > MAX_MESSAGE_SIZE) {
+						session._send('552 Message size exceeds fixed limit');
+						session.dataMode = false;
+						session.dataChunks = [];
+						session.dataSize = 0;
+						break;
+					}
+				}
+				return;
+			}
 			let nl;
-			while ((nl = buffer.indexOf('\r\n')) !== -1) {
-				const line = buffer.slice(0, nl);
-				buffer = buffer.slice(nl + 2);
+			while ((nl = buffer.indexOf(CRLF)) !== -1) {
+				const line = buffer.subarray(0, nl).toString('utf-8');
+				buffer = buffer.subarray(nl + 2);
 				session.handleLine(line);
 			}
 		});
