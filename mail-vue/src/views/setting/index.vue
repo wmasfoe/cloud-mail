@@ -139,10 +139,15 @@ async function togglePush(v) {
         }
         try {
             const reg = await navigator.serviceWorker.ready;
-            const {data} = await pushVapidKey();
+            const resp = await pushVapidKey();
+            const key = resp?.publicKey || resp?.data?.publicKey;
+            if (!key) {
+                ElMessage.error('获取推送密钥失败:' + JSON.stringify(resp));
+                return;
+            }
             const sub = await reg.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: b64urlToUint8Array(data.publicKey),
+                applicationServerKey: b64urlToUint8Array(key),
             });
             const j = sub.toJSON();
             await pushSubscribe(j.endpoint, j.keys.p256dh, j.keys.auth);
