@@ -99,6 +99,7 @@ const pushEnabled = ref(false)
 const subAccounts = ref([])
 const pushSwitching = ref(false)
 const subSwitching = ref(0)
+let vapidKeyCache = null   // 预取 VAPID 公钥,点击开关时免网络请求
 
 /** base64url → Uint8Array(applicationServerKey 格式) */
 function b64urlToUint8Array(b64) {
@@ -122,6 +123,11 @@ async function loadPushState() {
         console.error('[push] 子邮箱列表加载失败:', e);
         ElMessage.error('子邮箱列表加载失败:' + (e?.message || '未知错误'));
     }
+    // 预取 VAPID 公钥(首次进设置页就取,点开关时直接用)
+    try {
+        const resp = await pushVapidKey();
+        vapidKeyCache = resp?.publicKey || resp?.data?.publicKey || null;
+    } catch (e) { /* 点击开关时再取 */ }
     // 当前推送订阅状态
     if ('serviceWorker' in navigator && 'PushManager' in window) {
         try {
@@ -149,12 +155,16 @@ async function togglePush(v) {
             }
             try {
                 const reg = await navigator.serviceWorker.ready;
-                const resp = await pushVapidKey();
-                const key = resp?.publicKey || resp?.data?.publicKey;
+                let key = vapidKeyCache;
                 if (!key) {
-                    ElMessage.error('获取推送密钥失败:' + JSON.stringify(resp));
+                    const resp = await pushVapidKey();
+                    key = resp?.publicKey || resp?.data?.publicKey;
+                }
+                if (!key) {
+                    ElMessage.error('获取推送密钥失败');
                     return;
                 }
+                // 首次注册:浏览器与推送服务(APNs)握手,需几秒~十几秒,属正常
                 const sub = await reg.pushManager.subscribe({
                     userVisibleOnly: true,
                     applicationServerKey: b64urlToUint8Array(key),
