@@ -49,11 +49,11 @@
           <div>网页推送通知</div>
           <div class="push-tip">添加到主屏幕后,新邮件实时提醒(子邮箱可单独关闭)</div>
         </div>
-        <el-switch :model-value="pushEnabled" @change="togglePush"/>
+        <el-switch :model-value="pushEnabled" :loading="pushSwitching" @change="togglePush"/>
       </div>
       <div class="item" v-for="acc in subAccounts" :key="acc.accountId">
         <div>{{ acc.email }}</div>
-        <el-switch :model-value="!!acc.pushEnabled" @change="(v) => setSubPush(acc, v)"/>
+        <el-switch :model-value="!!acc.pushEnabled" :loading="subSwitching === acc.accountId" @change="(v) => setSubPush(acc, v)"/>
       </div>
     </div>
     <div class="del-email" v-perm="'my:delete'">
@@ -97,6 +97,8 @@ const accountName = ref(null)
 const langSelect = ref(settingStore.lang)
 const pushEnabled = ref(false)
 const subAccounts = ref([])
+const pushSwitching = ref(false)
+const subSwitching = ref(0)
 
 /** base64url → Uint8Array(applicationServerKey 格式) */
 function b64urlToUint8Array(b64) {
@@ -127,59 +129,69 @@ async function loadPushState() {
 
 /** 启用网页推送 */
 async function togglePush(v) {
-    if (v) {
-        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-            ElMessage.warning('当前浏览器不支持网页推送(需 iOS 16.4+ / 现代浏览器)');
-            return;
-        }
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-            ElMessage.warning('未获得通知权限');
-            return;
-        }
-        try {
-            const reg = await navigator.serviceWorker.ready;
-            const resp = await pushVapidKey();
-            const key = resp?.publicKey || resp?.data?.publicKey;
-            if (!key) {
-                ElMessage.error('获取推送密钥失败:' + JSON.stringify(resp));
+    if (pushSwitching.value) return;   // 防重复点击
+    pushSwitching.value = true;
+    try {
+        if (v) {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                ElMessage.warning('当前浏览器不支持网页推送(需 iOS 16.4+ / 现代浏览器)');
                 return;
             }
-            const sub = await reg.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: b64urlToUint8Array(key),
-            });
-            const j = sub.toJSON();
-            await pushSubscribe(j.endpoint, j.keys.p256dh, j.keys.auth);
-            pushEnabled.value = true;
-            ElMessage.success('已开启推送');
-        } catch (e) {
-            ElMessage.error('开启失败:' + e.message);
-        }
-    } else {
-        try {
-            const reg = await navigator.serviceWorker.ready;
-            const sub = await reg.pushManager.getSubscription();
-            if (sub) {
-                await pushUnsubscribe(sub.endpoint);
-                await sub.unsubscribe();
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                ElMessage.warning('未获得通知权限');
+                return;
             }
-            pushEnabled.value = false;
-            ElMessage.success('已关闭推送');
-        } catch (e) {
-            ElMessage.error('关闭失败:' + e.message);
+            try {
+                const reg = await navigator.serviceWorker.ready;
+                const resp = await pushVapidKey();
+                const key = resp?.publicKey || resp?.data?.publicKey;
+                if (!key) {
+                    ElMessage.error('获取推送密钥失败:' + JSON.stringify(resp));
+                    return;
+                }
+                const sub = await reg.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: b64urlToUint8Array(key),
+                });
+                const j = sub.toJSON();
+                await pushSubscribe(j.endpoint, j.keys.p256dh, j.keys.auth);
+                pushEnabled.value = true;
+                ElMessage.success('已开启推送');
+            } catch (e) {
+                ElMessage.error('开启失败:' + e.message);
+            }
+        } else {
+            try {
+                const reg = await navigator.serviceWorker.ready;
+                const sub = await reg.pushManager.getSubscription();
+                if (sub) {
+                    await pushUnsubscribe(sub.endpoint);
+                    await sub.unsubscribe();
+                }
+                pushEnabled.value = false;
+                ElMessage.success('已关闭推送');
+            } catch (e) {
+                ElMessage.error('关闭失败:' + e.message);
+            }
         }
+    } finally {
+        pushSwitching.value = false;
     }
 }
 
 /** 子邮箱推送开关 */
 async function setSubPush(acc, v) {
+    if (subSwitching.value) return;    // 防重复点击
+    subSwitching.value = acc.accountId;
     try {
         await accountSetPushEnabled(acc.accountId, v ? 1 : 0);
         acc.pushEnabled = v ? 1 : 0;
         ElMessage.success(v ? `已开启 ${acc.email} 推送` : `已关闭 ${acc.email} 推送`);
     } catch (e) {
         ElMessage.error('设置失败:' + e.message);
+    } finally {
+        subSwitching.value = 0;
     }
 }
 
