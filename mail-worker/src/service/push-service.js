@@ -8,11 +8,6 @@
 
 const enc = obj => btoa(JSON.stringify(obj)).replace(/=+$/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 
-import orm from '../entity/orm';
-import account from '../entity/account';
-import pushSubscription from '../entity/push-subscription';
-import { eq } from 'drizzle-orm';
-
 function b64urlToBuf(b64url) {
 	const b64 = b64url.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (b64url.length % 4)) % 4);
 	const bin = atob(b64);
@@ -99,13 +94,13 @@ async function encryptPayload(clientPublicKeyB64, authB64, payloadBuf) {
 		payloadBuf
 	));
 
-	// 组装 aes128gcm 消息: header(2+1+4+4+1+65) + ciphertext
-	const body = new Uint8Array(87 + cipher.length);
+	// 组装 aes128gcm 消息:头部(2 salt_len + 16 salt + 4 rs + 4 idlen + 1 keyid_len + 65 keyid = 92)+ 密文
+	const body = new Uint8Array(92 + cipher.length);
 	body[0] = 0; body[1] = 16;                        // salt 长度 16
 	body.set(salt, 2);                                // salt
 	body[18] = 0;                                     // rs = 4096 高位(4 字节)
 	body[19] = 16; body[20] = 0; body[21] = 0;        // rs = 4096
-	body[22] = cipher.length + 16;                    // idlen(4 字节)
+	body[22] = cipher.length + 16;                    // idlen(4 字节,小端)
 	body[23] = 0; body[24] = 0; body[25] = 0;
 	body[26] = 65;                                    // 服务器公钥长度
 	body.set(serverPub, 27);                          // 服务器公钥(65 字节)
@@ -169,6 +164,10 @@ export async function sendWebPush(sub, payload = '', env = {}) {
  * @param {object} email PostalMime 解析结果(含 from/subject)
  */
 export async function pushNotify(env, emailRow, email) {
+	const { default: orm } = await import('../entity/orm');
+	const { default: account } = await import('../entity/account');
+	const { default: pushSubscription } = await import('../entity/push-subscription');
+	const { eq } = await import('drizzle-orm');
 	// 1. 子邮箱推送开关
 	const acc = await orm(env).select({ pushEnabled: account.pushEnabled }).from(account)
 		.where(eq(account.accountId, emailRow.accountId))
