@@ -540,11 +540,11 @@ class ImapSession {
 				parts.push({ b: headBuf });
 				parts.push({ t: ' ' });
 			} else if (upper === 'BODY.PEEK[TEXT]' || upper === 'BODY[TEXT]') {
+				// BODY[TEXT]:返回可显示文本(Outlook 依赖;multipart 时提取 text/plain 并解码)
 				const mime = await this.getMime(msg);
-				const { body } = splitMime(mime);
-				const bodyBuf = Buffer.isBuffer(body) ? body : Buffer.from(body, 'utf-8');
-				parts.push({ t: `BODY[TEXT] {${bodyBuf.length}}\r\n` });
-				parts.push({ b: bodyBuf });
+				const textBuf = getPlainTextBody(mime);
+				parts.push({ t: `BODY[TEXT] {${textBuf.length}}\r\n` });
+				parts.push({ b: textBuf });
 				parts.push({ t: ' ' });
 				if (upper === 'BODY[TEXT]') {
 					msg.unread = true;
@@ -565,6 +565,46 @@ class ImapSession {
 			} else if (upper === 'BODYSTRUCTURE') {
 				const mime = await this.getMime(msg);
 				parts.push({ t: `BODYSTRUCTURE ${buildBasicStructure(mime)}` });
+			} else if (/^BODY(?:\.PEEK)?\[(.*)\]<(\d+)\.(\d+)>$/.test(upper)) {
+				// BODY[section]<origin.size>:partial fetch(iOS/Outlook 拉正文用,如 BODY.PEEK[]<0.393216>)
+				const mime = await this.getMime(msg);
+				const section = RegExp.$1;
+				const origin = Number(RegExp.$2);
+				const size = Number(RegExp.$3);
+				let content = mime;
+				let respSection = '';
+				if (section === '') {
+					respSection = 'BODY[]';
+				} else if (section === 'HEADER') {
+					const { head } = splitMime(mime);
+					content = Buffer.isBuffer(head) ? head : Buffer.from(head, 'utf-8');
+					respSection = 'BODY[HEADER]';
+				} else if (section === 'TEXT') {
+					const { body } = splitMime(mime);
+					content = Buffer.isBuffer(body) ? body : Buffer.from(body, 'utf-8');
+					respSection = 'BODY[TEXT]';
+				} else if (/^\d+$/.test(section)) {
+					const partNum = Number(section) - 1;
+					const { headers } = splitMime(mime);
+					const bm = /boundary="?([^";]+)"?/i.exec(headers.get('content-type') || '');
+					if (bm) {
+						const allParts = splitMultipart(mime, bm[1]);
+						const part = allParts[partNum];
+						if (part) {
+							content = Buffer.isBuffer(part) ? part : Buffer.from(part, 'utf-8');
+						}
+					}
+					respSection = `BODY[${section}]`;
+				} else {
+					// 其他 section:返回整封(简化)
+					respSection = `BODY[${section}]`;
+				}
+				const start = Math.min(origin, content.length);
+				const end = Math.min(origin + size, content.length);
+				const slice = content.subarray(start, end);
+				parts.push({ t: `${respSection}<${start}> {${slice.length}}\r\n` });
+				parts.push({ b: slice });
+				parts.push({ t: ' ' });
 			} else if (/^BODY(?:\.PEEK)?\[(\d+)\]$/.test(upper)) {
 				// BODY[1] / BODY[2] 等:返回 multipart 指定部分(Outlook/iOS 按 BODYSTRUCTURE 逐部分拉正文)
 				const mime = await this.getMime(msg);
@@ -932,6 +972,58 @@ function parseFetchItems(text) {
 }
 
 // ---------- BODYSTRUCTURE ----------
+
+/** 解码 Content-Transfer-Encoding(base64 / quoted-printable / 7bit / 8bit)→ Buffer */
+function decodeTransfer(bodyBuf, encoding) {
+	const enc = (encoding || '7bit').toLowerCase();
+	const str = bodyBuf.toString('utf-8');
+	if (enc === 'base64') {
+		return Buffer.from(str.replace(/\s+/g, ''), 'base64');
+	}
+	if (enc === 'quoted-printable') {
+		const out = str
+			.replace(/=\r?\n/g, '')           // 软换行
+			.replace(/=([0-9A-Fa-f]{2})/g, (m, hex) => String.fromCharCode(parseInt(hex, 16)));
+		return Buffer.from(out, 'latin1');
+	}
+	return bodyBuf;
+}
+
+/** BODY[TEXT]:提取可显示文本(multipart → 第一个 text/plain 部分解码;单部分 → 原 body 解码) */
+function getPlainTextBody(mime) {
+	const { headers, body } = splitMime(mime);
+	const ct = headers.get('content-type') || 'text/plain';
+	const ctM = ct.match(/^([^/;\s]+)\/([^;\s]+)(.*)$/i);
+	const type = (ctM ? ctM[1] : 'text').toLowerCase();
+	const subtype = (ctM ? ctM[2] : 'plain').toLowerCase();
+
+	if (type === 'multipart') {
+		const params = parseCTypeParams(ctM ? ctM[3] : '');
+		if (params.boundary) {
+			const parts = splitMultipart(mime, params.boundary);
+			// 优先 text/plain,其次任意文本部分
+			for (const part of parts) {
+				const { headers: ph, body: pb } = splitMime(part);
+				const pct = ph.get('content-type') || '';
+				if (/^text\//i.test(pct)) {
+					return decodeTransfer(
+						Buffer.isBuffer(pb) ? pb : Buffer.from(pb, 'utf-8'),
+						ph.get('content-transfer-encoding')
+					);
+				}
+			}
+			// 没有文本部分:返回第一个 part 原始内容
+			if (parts.length) {
+				return Buffer.isBuffer(parts[0]) ? parts[0] : Buffer.from(parts[0], 'utf-8');
+			}
+		}
+	}
+	// 单部分
+	return decodeTransfer(
+		Buffer.isBuffer(body) ? body : Buffer.from(body, 'utf-8'),
+		headers.get('content-transfer-encoding')
+	);
+}
 
 /** 解析 Content-Type 参数:charset="utf-8"; boundary="xx" → {charset, boundary} */
 function parseCTypeParams(attrStr) {
