@@ -559,6 +559,48 @@ class ImapSession {
 			} else if (upper === 'BODYSTRUCTURE') {
 				const mime = await this.getMime(msg);
 				parts.push({ t: `BODYSTRUCTURE ${buildBasicStructure(mime)}` });
+			} else if (/^BODY(?:\.PEEK)?\[(\d+)\]$/.test(upper)) {
+				// BODY[1] / BODY[2] 等:返回 multipart 指定部分(Outlook/iOS 按 BODYSTRUCTURE 逐部分拉正文)
+				const mime = await this.getMime(msg);
+				const partNum = Number(RegExp.$1) - 1;
+				const { headers } = splitMime(mime);
+				const ct = headers.get('content-type') || '';
+				const bm = /boundary="?([^";]+)"?/i.exec(ct);
+				const name = `BODY[${partNum + 1}]`;
+				let part = null;
+				if (bm) {
+					const allParts = splitMultipart(mime, bm[1]);
+					part = allParts[partNum] || null;
+				}
+				if (part) {
+					const partBuf = Buffer.isBuffer(part) ? part : Buffer.from(part, 'utf-8');
+					parts.push({ t: `${name} {${partBuf.length}}\r\n` });
+					parts.push({ b: partBuf });
+					parts.push({ t: ' ' });
+				} else {
+					parts.push({ t: `${name} NIL` });
+				}
+			} else if (/^BODY(?:\.PEEK)?\[(\d+)\.HEADER\]$/.test(upper)) {
+				// BODY[1.HEADER]:指定部分的头(少见,简化返回该部分完整内容)
+				const mime = await this.getMime(msg);
+				const partNum = Number(RegExp.$1) - 1;
+				const { headers } = splitMime(mime);
+				const bm = /boundary="?([^";]+)"?/i.exec(headers.get('content-type') || '');
+				const name = `BODY[${partNum + 1}.HEADER]`;
+				let part = null;
+				if (bm) {
+					const allParts = splitMultipart(mime, bm[1]);
+					part = allParts[partNum] || null;
+				}
+				if (part) {
+					const { head } = splitMime(part);
+					const headBuf = Buffer.isBuffer(head) ? head : Buffer.from(head, 'utf-8');
+					parts.push({ t: `${name} {${headBuf.length}}\r\n` });
+					parts.push({ b: headBuf });
+					parts.push({ t: ' ' });
+				} else {
+					parts.push({ t: `${name} NIL` });
+				}
 			} else if (upper.startsWith('BODY.PEEK[')) {
 				// 其他 body section:取全文(简化)
 				const mime = await this.getMime(msg);
@@ -874,25 +916,100 @@ function parseFetchItems(text) {
 	return items.length ? items : ['BODY[]'];
 }
 
-// ---------- BODYSTRUCTURE 简化 ----------
+// ---------- BODYSTRUCTURE ----------
+
+/** 解析 Content-Type 参数:charset="utf-8"; boundary="xx" → {charset, boundary} */
+function parseCTypeParams(attrStr) {
+	const params = {};
+	const re = /([\w-]+)\s*=\s*"?([^";\s]*)"?/g;
+	let m;
+	while ((m = re.exec(attrStr))) params[m[1].toLowerCase()] = m[2];
+	return params;
+}
+
+/** 按 boundary 拆分 multipart 正文 → 各部分(每部分是头+空行+体的完整 MIME,支持 Buffer/字符串) */
+function splitMultipart(mime, boundary) {
+	const parts = [];
+	if (Buffer.isBuffer(mime)) {
+		const delim = Buffer.from(`\r\n--${boundary}`, 'utf-8');
+		let pos = 0;
+		while (pos < mime.length) {
+			const idx = mime.indexOf(delim, pos);
+			if (idx === -1) break;
+			let end = idx + delim.length;
+			// 结束标记 --boundary--
+			if (mime[end] === 0x2d && mime[end + 1] === 0x2d) break;
+			// 跳过 boundary 后的换行
+			if (mime[end] === 0x0d && mime[end + 1] === 0x0a) end += 2;
+			else if (mime[end] === 0x0a) end += 1;
+			const next = mime.indexOf(delim, end);
+			const partEnd = next === -1 ? mime.length : next;
+			let part = mime.subarray(end, partEnd);
+			// 去掉 part 尾部残留的 \r\n
+			if (part.length >= 2 && part[part.length - 2] === 0x0d && part[part.length - 1] === 0x0a) {
+				part = part.subarray(0, part.length - 2);
+			}
+			if (part.length) parts.push(part);
+			pos = next === -1 ? mime.length : next;
+		}
+		return parts;
+	}
+	// 字符串版
+	const esc = boundary.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	const re = new RegExp('\\r\\n--' + esc + '(--)?[\\r\\n]');
+	const chunks = mime.split(re);
+	for (let i = 1; i < chunks.length; i++) {
+		const chunk = chunks[i];
+		if (chunk && chunk.trim() !== '') parts.push(chunk);
+	}
+	return parts;
+}
+
+/** 构建单部分 body structure */
+function buildPartStructure(partMime) {
+	const { headers } = splitMime(partMime);
+	const ct = headers.get('content-type') || 'text/plain';
+	const ctM = ct.match(/^([^/;\s]+)\/([^;\s]+)(.*)$/i);
+	const type = (ctM ? ctM[1] : 'text').toLowerCase();
+	const subtype = (ctM ? ctM[2] : 'plain').toLowerCase();
+	const params = parseCTypeParams(ctM ? ctM[3] : '');
+	const paramStr = Object.keys(params).length
+		? '(' + Object.entries(params).map(([k, v]) => `${qstr(k)} ${qstr(v)}`).join(' ') + ')'
+		: 'NIL';
+	const encoding = (headers.get('content-transfer-encoding') || '7bit').toLowerCase();
+	const { body } = splitMime(partMime);
+	const bodyBuf = Buffer.isBuffer(body) ? body : Buffer.from(body, 'utf-8');
+	const size = bodyBuf.length;
+	const lines = bodyBuf.toString('utf-8').split('\r\n').length;
+
+	// multipart 嵌套(罕见但支持)
+	if (type === 'multipart') {
+		if (params.boundary) {
+			const subs = splitMultipart(partMime, params.boundary).map(buildPartStructure);
+			return `(${subs.join(' ')} ${qstr(subtype)})`;
+		}
+	}
+	return `(${qstr(type)} ${qstr(subtype)} ${paramStr} NIL NIL NIL NIL ${qstr(encoding)} ${size} ${lines})`;
+}
 
 function buildBasicStructure(mime) {
 	const { headers } = splitMime(mime);
 	const contentType = headers.get('content-type') || 'text/plain';
-	const m = contentType.match(/^([^/;]+)\/([^;]+)/i);
-	const type = (m ? m[1] : 'text').toLowerCase();
-	const subtype = (m ? m[2] : 'plain').toLowerCase();
-	const size = Buffer.byteLength(mime, 'utf-8');
+	const ctM = contentType.match(/^([^/;\s]+)\/([^;\s]+)(.*)$/i);
+	const type = (ctM ? ctM[1] : 'text').toLowerCase();
+	const subtype = (ctM ? ctM[2] : 'plain').toLowerCase();
 
 	if (type === 'multipart') {
-		// 简化:返回单部分结构,避免 iOS 解析失败
-		return `("text" "plain" ("charset" "utf-8") NIL NIL NIL NIL 7bit ${size} 1)`;
+		const params = parseCTypeParams(ctM ? ctM[3] : '');
+		if (params.boundary) {
+			const parts = splitMultipart(mime, params.boundary).map(buildPartStructure);
+			if (parts.length) {
+				return `(${parts.join(' ')} ${qstr(subtype)})`;
+			}
+		}
 	}
-
-	const lines = mime.split('\r\n').length;
-	const params = /charset="?([^";]+)"?/i.exec(contentType);
-	const paramStr = params ? `("charset" ${qstr(params[1])})` : '("charset" "utf-8")';
-	return `(${qstr(type)} ${qstr(subtype)} ${paramStr} NIL NIL NIL NIL 7bit ${size} ${lines})`;
+	// 单部分(复用 part 逻辑)
+	return buildPartStructure(mime);
 }
 
 // ---------- 服务器 ----------
