@@ -10,8 +10,10 @@ import config from './config.js';
 const MAX_MESSAGE_SIZE = 25 * 1024 * 1024; // 25MB
 
 class SmtpSession {
-	constructor(socket) {
+	constructor(socket, opts = {}) {
 		this.socket = socket;
+		this.starttls = !!opts.starttls;   // 587 模式:明文 + STARTTLS 升级
+		this.tlsMode = !opts.starttls;     // 465 直接 TLS;587 初始明文
 		this.state = 'greeting';   // greeting | auth | mail | rcpt | data
 		this.user = null;          // { userId, email, accounts }
 		this.authPending = null;   // 等待 base64 凭据
@@ -55,12 +57,33 @@ class SmtpSession {
 				this._send('250-imap.example.com');
 				this._send('250-SIZE ' + MAX_MESSAGE_SIZE);
 				this._send('250-8BITMIME');
-				this._send('250-AUTH PLAIN LOGIN');
+				if (this.starttls && !this.tlsMode) {
+					this._send('250-STARTTLS');
+				} else {
+					this._send('250-AUTH PLAIN LOGIN');
+				}
 				this._send('250 HELP');
 				this.state = 'auth';
 				return;
 			}
+			case 'STARTTLS': {
+				if (!this.starttls || this.tlsMode) {
+					this._send('554 5.5.1 Already in TLS / not available');
+					return;
+				}
+				if (!config.tlsCert || !config.tlsKey) {
+					this._send('454 4.7.0 TLS not available');
+					return;
+				}
+				this._send('220 2.0.0 Ready to start TLS');
+				this.upgradeTls();
+				return;
+			}
 			case 'AUTH':
+				if (this.starttls && !this.tlsMode) {
+					this._send('530 5.7.0 Must issue STARTTLS first');
+					return;
+				}
 				return this.handleAuth(arg);
 			case 'MAIL':
 				if (!this.user) {
@@ -201,57 +224,80 @@ class SmtpSession {
 			this._send('451 4.3.0 Temporary failure: ' + e.message);
 		}
 	}
+
+	/** STARTTLS 升级:当前明文 socket → TLSSocket(465 不需要,587 用) */
+	upgradeTls() {
+		const raw = this.socket;
+		raw.removeAllListeners('data');
+		raw.removeAllListeners('error');
+		const secure = new tls.TLSSocket(raw, {
+			isServer: true,
+			secureContext: tls.createSecureContext({ cert: config.tlsCert, key: config.tlsKey }),
+		});
+		this.socket = secure;
+		this.tlsMode = true;
+		this.state = 'greeting';
+		this.authPending = null;
+		this.user = null;
+		attachDataHandler(secure, this);
+		secure.on('error', e => console.error('[smtp] TLS 连接错误:', e.message));
+	}
 }
 
-export function createSmtpServer() {
-	const onConnection = socket => {
-		socket.setNoDelay(true);
-		const session = new SmtpSession(socket);
-		let buffer = Buffer.alloc(0);
-		const CRLF = Buffer.from('\r\n');
-		socket.on('data', chunk => {
-			buffer = Buffer.concat([buffer, chunk]);
-			if (session.dataMode) {
-				// DATA:按行切分(Buffer),行首 '.' 结束,行首 '..' 还原
-				let nl;
-				while ((nl = buffer.indexOf(CRLF)) !== -1) {
-					const line = buffer.subarray(0, nl);
-					buffer = buffer.subarray(nl + 2);
-					if (line.length === 1 && line[0] === 0x2e) {
-						session.dataMode = false;
-						session.finishData();
-						break;
-					}
-					if (line.length > 1 && line[0] === 0x2e && line[1] === 0x2e) {
-						session.dataChunks.push(line.subarray(1));
-					} else {
-						session.dataChunks.push(line);
-					}
-					session.dataChunks.push(CRLF);
-					session.dataSize += line.length + 2;
-					if (session.dataSize > MAX_MESSAGE_SIZE) {
-						session._send('552 Message size exceeds fixed limit');
-						session.dataMode = false;
-						session.dataChunks = [];
-						session.dataSize = 0;
-						break;
-					}
-				}
-				return;
-			}
+/** 挂载 data 处理(明文/升级后 TLS 通用;buffer 为连接级闭包) */
+function attachDataHandler(socket, session) {
+	let buffer = Buffer.alloc(0);
+	const CRLF = Buffer.from('\r\n');
+	socket.on('data', chunk => {
+		buffer = Buffer.concat([buffer, chunk]);
+		if (session.dataMode) {
+			// DATA:按行切分(Buffer),行首 '.' 结束,行首 '..' 还原
 			let nl;
 			while ((nl = buffer.indexOf(CRLF)) !== -1) {
-				const line = buffer.subarray(0, nl).toString('utf-8');
+				const line = buffer.subarray(0, nl);
 				buffer = buffer.subarray(nl + 2);
-				session.handleLine(line);
+				if (line.length === 1 && line[0] === 0x2e) {
+					session.dataMode = false;
+					session.finishData();
+					break;
+				}
+				if (line.length > 1 && line[0] === 0x2e && line[1] === 0x2e) {
+					session.dataChunks.push(line.subarray(1));
+				} else {
+					session.dataChunks.push(line);
+				}
+				session.dataChunks.push(CRLF);
+				session.dataSize += line.length + 2;
+				if (session.dataSize > MAX_MESSAGE_SIZE) {
+					session._send('552 Message size exceeds fixed limit');
+					session.dataMode = false;
+					session.dataChunks = [];
+					session.dataSize = 0;
+					break;
+				}
 			}
-		});
-		socket.on('error', e => {
-			console.error('[smtp] 连接错误:', e.message);
-		});
+			return;
+		}
+		let nl;
+		while ((nl = buffer.indexOf(CRLF)) !== -1) {
+			const line = buffer.subarray(0, nl).toString('utf-8');
+			buffer = buffer.subarray(nl + 2);
+			session.handleLine(line);
+		}
+	});
+	socket.on('error', e => {
+		console.error('[smtp] 连接错误:', e.message);
+	});
+}
+
+export function createSmtpServer({ starttls = false } = {}) {
+	const onConnection = socket => {
+		socket.setNoDelay(true);
+		const session = new SmtpSession(socket, { starttls });
+		attachDataHandler(socket, session);
 	};
 
-	if (config.tlsCert && config.tlsKey) {
+	if (config.tlsCert && config.tlsKey && !starttls) {
 		return tls.createServer({ cert: config.tlsCert, key: config.tlsKey }, onConnection);
 	}
 	return net.createServer(onConnection);

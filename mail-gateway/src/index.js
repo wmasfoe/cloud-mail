@@ -17,4 +17,10 @@ smtpServer.listen(config.smtpPort, '0.0.0.0', () => {
 	console.log(`[gateway] SMTP 服务已启动:端口 ${config.smtpPort} (${mode})`);
 });
 
+// 587 STARTTLS(标准提交端口,iOS 等客户端默认)
+const smtpStarttlsServer = createSmtpServer({ starttls: true });
+smtpStarttlsServer.listen(config.smtpStarttlsPort, '0.0.0.0', () => {
+	console.log(`[gateway] SMTP STARTTLS 服务已启动:端口 ${config.smtpStarttlsPort}`);
+});
+
 console.log(`[gateway] Worker API: ${config.apiBase}`);

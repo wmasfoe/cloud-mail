@@ -86,14 +86,15 @@ IMAP_PORT=$(grep -E '^IMAP_PORT=' "$SCRIPT_DIR/.env" | cut -d= -f2)
 IMAP_PORT=${IMAP_PORT:-993}
 SMTP_PORT=$(grep -E '^SMTP_PORT=' "$SCRIPT_DIR/.env" | cut -d= -f2)
 SMTP_PORT=${SMTP_PORT:-465}
+SMTP_STARTTLS_PORT=${SMTP_STARTTLS_PORT:-587}
 
 if command -v ufw >/dev/null 2>&1; then
 	ufw allow "$IMAP_PORT"/tcp >/dev/null 2>&1 && ufw allow "$SMTP_PORT"/tcp >/dev/null 2>&1 && echo "✅ ufw 已放行 $IMAP_PORT/tcp + $SMTP_PORT/tcp" || echo "⚠️ ufw 放行失败,请手动执行: ufw allow $IMAP_PORT/tcp && ufw allow $SMTP_PORT/tcp"
 elif command -v firewall-cmd >/dev/null 2>&1; then
-	firewall-cmd --permanent --add-port="$IMAP_PORT"/tcp >/dev/null 2>&1 && firewall-cmd --permanent --add-port="$SMTP_PORT"/tcp >/dev/null 2>&1 && firewall-cmd --reload >/dev/null 2>&1 && echo "✅ firewalld 已放行 $IMAP_PORT/tcp + $SMTP_PORT/tcp" || echo "⚠️ firewalld 配置失败,请手动放行 $IMAP_PORT/tcp + $SMTP_PORT/tcp"
+	firewall-cmd --permanent --add-port="$IMAP_PORT"/tcp >/dev/null 2>&1 && firewall-cmd --permanent --add-port="$SMTP_PORT"/tcp >/dev/null 2>&1; firewall-cmd --permanent --add-port="$SMTP_STARTTLS_PORT"/tcp >/dev/null 2>&1 && firewall-cmd --reload >/dev/null 2>&1 && echo "✅ firewalld 已放行 $IMAP_PORT/tcp + $SMTP_PORT/tcp + $SMTP_STARTTLS_PORT/tcp" || echo "⚠️ firewalld 配置失败,请手动放行 $IMAP_PORT/tcp + $SMTP_PORT/tcp + $SMTP_STARTTLS_PORT/tcp"
 else
-	echo "⚠️ 未检测到 ufw/firewalld,请手动放行 TCP $IMAP_PORT + $SMTP_PORT"
-	echo "   (云厂商安全组也需要放行:如 GCP/AWS 控制台 → 防火墙规则)"
+	echo "⚠️ 未检测到 ufw/firewalld,请手动放行 TCP $IMAP_PORT + $SMTP_PORT + $SMTP_STARTTLS_PORT"
+	echo "   (云厂商安全组也需要放行:如 GCP/AWS 控制台 → 防火墙规则,端口 $IMAP_PORT/$SMTP_PORT/$SMTP_STARTTLS_PORT)"
 fi
 
 # ---------- 5.5 TLS 证书(可选自动签发) ----------
