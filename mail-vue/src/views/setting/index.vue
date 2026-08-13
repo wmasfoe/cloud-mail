@@ -114,9 +114,14 @@ function b64urlToUint8Array(b64) {
 async function loadPushState() {
     // 子邮箱列表(含 pushEnabled)
     try {
-        const {data} = await accountList(0, 100, 9999999999);
-        subAccounts.value = data || [];
-    } catch (e) { /* 忽略 */ }
+        const resp = await accountList(0, 100, 9999999999);
+        const list = Array.isArray(resp) ? resp : (resp?.data || []);
+        subAccounts.value = list;
+        console.log('[push] 子邮箱列表:', list.length, list.map(a => a.email).join(','));
+    } catch (e) {
+        console.error('[push] 子邮箱列表加载失败:', e);
+        ElMessage.error('子邮箱列表加载失败:' + (e?.message || '未知错误'));
+    }
     // 当前推送订阅状态
     if ('serviceWorker' in navigator && 'PushManager' in window) {
         try {
