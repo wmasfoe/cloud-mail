@@ -20,7 +20,7 @@ const exclude = [
 	'/test',
 	'/oauth',
 	'/gateway',
-	'/push'
+	'/push/vapid-key'
 ];
 
 const requirePerms = [
