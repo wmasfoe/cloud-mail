@@ -8,7 +8,7 @@
 
 const enc = obj => btoa(JSON.stringify(obj)).replace(/=+$/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 
-import { orm } from '../entity/orm';
+import orm from '../entity/orm';
 import account from '../entity/account';
 import pushSubscription from '../entity/push-subscription';
 import { eq } from 'drizzle-orm';

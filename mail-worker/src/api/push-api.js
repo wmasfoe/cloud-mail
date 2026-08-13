@@ -1,7 +1,7 @@
 import app from '../hono/hono';
 import result from '../model/result';
 import userContext from '../security/user-context';
-import { orm } from '../entity/orm';
+import orm from '../entity/orm';
 import pushSubscription from '../entity/push-subscription';
 import account from '../entity/account';
 import { eq, and } from 'drizzle-orm';
