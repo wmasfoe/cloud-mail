@@ -17,6 +17,9 @@ export default defineConfig(({mode}) => {
         base: env.VITE_STATIC_URL || '/',
         plugins: [vue(),
             VitePWA({
+                strategies: 'injectManifest',
+                srcDir: 'src',
+                filename: 'sw.js',
                 injectRegister: 'script-defer',
                 manifest: {
                     name: env.VITE_PWA_NAME,

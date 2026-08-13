@@ -42,6 +42,20 @@
         <el-option label="English" value="en" @pointerdown.prevent.stop="changeLang('en')"/>
       </el-select>
     </div>
+    <div class="push">
+      <div class="title">🔔 通知推送</div>
+      <div class="item">
+        <div>
+          <div>网页推送通知</div>
+          <div class="push-tip">添加到主屏幕后,新邮件实时提醒(子邮箱可单独关闭)</div>
+        </div>
+        <el-switch :model-value="pushEnabled" @change="togglePush"/>
+      </div>
+      <div class="item" v-for="acc in subAccounts" :key="acc.accountId">
+        <div>{{ acc.email }}</div>
+        <el-switch :model-value="!!acc.pushEnabled" @change="(v) => setSubPush(acc, v)"/>
+      </div>
+    </div>
     <div class="del-email" v-perm="'my:delete'">
       <div class="title">{{$t('deleteUser')}}</div>
       <div style="color: var(--regular-text-color);">
@@ -69,6 +83,9 @@ import {accountSetName} from "@/request/account.js";
 import {useAccountStore} from "@/store/account.js";
 import {useI18n} from "vue-i18n";
 import {useSettingStore} from "@/store/setting.js";
+import {accountSetPushEnabled, pushSubscribe, pushUnsubscribe, pushVapidKey} from "@/request/push.js";
+import {accountList} from "@/request/account.js";
+import {ElMessage} from "element-plus";
 
 const { t } = useI18n()
 const accountStore = useAccountStore()
@@ -78,6 +95,90 @@ const setPwdLoading = ref(false)
 const setNameShow = ref(false)
 const accountName = ref(null)
 const langSelect = ref(settingStore.lang)
+const pushEnabled = ref(false)
+const subAccounts = ref([])
+
+/** base64url → Uint8Array(applicationServerKey 格式) */
+function b64urlToUint8Array(b64) {
+    const padding = '='.repeat((4 - (b64.length % 4)) % 4);
+    const base64 = (b64 + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(base64);
+    const arr = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    return arr;
+}
+
+/** 页面加载:读取当前订阅状态 + 子邮箱列表 */
+async function loadPushState() {
+    // 子邮箱列表(含 pushEnabled)
+    try {
+        const {data} = await accountList(0, 100, 9999999999);
+        subAccounts.value = data || [];
+    } catch (e) { /* 忽略 */ }
+    // 当前推送订阅状态
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+        try {
+            const reg = await navigator.serviceWorker.ready;
+            const sub = await reg.pushManager.getSubscription();
+            pushEnabled.value = !!sub;
+        } catch (e) { /* 忽略 */ }
+    }
+}
+
+/** 启用网页推送 */
+async function togglePush(v) {
+    if (v) {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            ElMessage.warning('当前浏览器不支持网页推送(需 iOS 16.4+ / 现代浏览器)');
+            return;
+        }
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            ElMessage.warning('未获得通知权限');
+            return;
+        }
+        try {
+            const reg = await navigator.serviceWorker.ready;
+            const {data} = await pushVapidKey();
+            const sub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: b64urlToUint8Array(data.publicKey),
+            });
+            const j = sub.toJSON();
+            await pushSubscribe(j.endpoint, j.keys.p256dh, j.keys.auth);
+            pushEnabled.value = true;
+            ElMessage.success('已开启推送');
+        } catch (e) {
+            ElMessage.error('开启失败:' + e.message);
+        }
+    } else {
+        try {
+            const reg = await navigator.serviceWorker.ready;
+            const sub = await reg.pushManager.getSubscription();
+            if (sub) {
+                await pushUnsubscribe(sub.endpoint);
+                await sub.unsubscribe();
+            }
+            pushEnabled.value = false;
+            ElMessage.success('已关闭推送');
+        } catch (e) {
+            ElMessage.error('关闭失败:' + e.message);
+        }
+    }
+}
+
+/** 子邮箱推送开关 */
+async function setSubPush(acc, v) {
+    try {
+        await accountSetPushEnabled(acc.accountId, v ? 1 : 0);
+        acc.pushEnabled = v ? 1 : 0;
+        ElMessage.success(v ? `已开启 ${acc.email} 推送` : `已关闭 ${acc.email} 推送`);
+    } catch (e) {
+        ElMessage.error('设置失败:' + e.message);
+    }
+}
+
+loadPushState()
 
 defineOptions({
   name: 'setting'

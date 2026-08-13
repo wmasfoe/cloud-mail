@@ -153,6 +153,14 @@ export async function email(message, env, ctx) {
 			console.error('保存原始邮件到 R2 失败: ', e);
 		}
 
+		// PWA 推送通知(子邮箱 push_enabled 开关控制,默认开;失败不影响收信)
+		try {
+			const { pushNotify } = await import('../service/push-service');
+			await pushNotify(env, emailRow, email);
+		} catch (e) {
+			console.error('推送通知失败: ', e);
+		}
+
 
 		if (ruleType === settingConst.ruleType.RULE) {
 

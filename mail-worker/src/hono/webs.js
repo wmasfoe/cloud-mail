@@ -20,5 +20,6 @@ import '../api/reg-key-api'
 import '../api/public-api'
 import '../api/telegram-api'
 import '../api/oauth-api'
-import '../api/gateway-api'
+import '../api/gateway-api';
+import '../api/push-api';
 export default app;

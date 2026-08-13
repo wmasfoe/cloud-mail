@@ -29,8 +29,30 @@ const dbInit = {
 		await this.v2_8DB(c);
 		await this.v2_9DB(c);
 		await this.v3_0DB(c);
+		await this.v3_1DB(c);
 		await settingService.refresh(c);
 		return c.text('success');
+	},
+
+	async v3_1DB(c) {
+		// PWA 推送:account 推送开关 + 订阅表
+		try {
+			await c.env.db.prepare(`ALTER TABLE account ADD COLUMN push_enabled INTEGER NOT NULL DEFAULT 1;`).run();
+		} catch (e) {
+			console.warn(`跳过字段:${e.message}`);
+		}
+		try {
+			await c.env.db.prepare(`CREATE TABLE IF NOT EXISTS push_subscriptions (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				user_id INTEGER NOT NULL,
+				endpoint TEXT NOT NULL,
+				p256dh TEXT NOT NULL,
+				auth TEXT NOT NULL,
+				create_time TEXT DEFAULT CURRENT_TIMESTAMP
+			);`).run();
+		} catch (e) {
+			console.warn(`跳过建表:${e.message}`);
+		}
 	},
 
 	async v3_0DB(c) {
