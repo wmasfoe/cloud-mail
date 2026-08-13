@@ -203,7 +203,13 @@ class ImapSession {
 		this.appendState = null; // { tag, mailbox, size, received, chunks }
 	}
 
-	send(line) { write(this.socket, line); }
+	send(line) {
+		if (process.env.IMAP_DEBUG) {
+			const dbg = line.length > 500 ? line.slice(0, 500) + '...' : line;
+			console.log(`[imap] > ${dbg}`);
+		}
+		write(this.socket, line);
+	}
 	untagged(line) { untagged(this.socket, line); }
 
 	tagged(tag, status, text = '') {
@@ -212,7 +218,7 @@ class ImapSession {
 
 	async handleLine(line) {
 		if (process.env.IMAP_DEBUG) {
-			const dbg = line.length > 120 ? line.slice(0, 120) + '...' : line;
+			const dbg = line.length > 500 ? line.slice(0, 500) + '...' : line;
 			console.log(`[imap] < ${dbg}`);
 		}
 		if (this.idleState) {
@@ -631,8 +637,10 @@ class ImapSession {
 		const replyTo = parseAddressList(get('reply-to') || get('from'));
 		const inReplyTo = get('in-reply-to');
 		const messageId = get('message-id');
+		// RFC 3501:envelope 空字段必须用 NIL,不能用 ""(Outlook 严格解析会丢弃整条 FETCH)
+		const nstr = v => (v ? qstr(v) : 'NIL');
 
-		return `(${qstr(date)} ${qstr(subject)} ${from} ${from} ${replyTo} ${to} ${cc} ${bcc} ${qstr(inReplyTo)} ${qstr(messageId)})`;
+		return `(${nstr(date)} ${nstr(subject)} ${from} ${from} ${replyTo} ${to} ${cc} ${bcc} ${nstr(inReplyTo)} ${nstr(messageId)})`;
 	}
 
 	async cmdFetchOrUid(tag, command, args) {
@@ -824,6 +832,13 @@ class ImapSession {
 			result = this.messages.map((m, i) => (!m.unread ? seqOf(m, i) : 0)).filter(Boolean);
 		} else if (criteria.includes('RECENT')) {
 			result = [];
+		} else if (criteria[0] === 'UID' && raw[1]) {
+			// UID <set>:按 UID 范围搜索(iOS 同步用 UID SEARCH UID 1:* 拉取全部 UID)
+			const uids = parseSequenceSet(raw[1], this.uidnext - 1);
+			if (uids) {
+				const uidSet = new Set(uids);
+				result = this.messages.map((m, i) => (uidSet.has(m.emailId) ? seqOf(m, i) : 0)).filter(Boolean);
+			}
 		} else if (criteria.includes('SINCE')) {
 			const sinceIdx = criteria.indexOf('SINCE');
 			const dateText = raw[sinceIdx + 1];
