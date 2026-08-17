@@ -7,21 +7,21 @@ keep_vars = true
 enabled = true
 
 [[routes]]
-pattern = "mail.example.com"
+pattern = "${CUSTOM_DOMAIN}"
 custom_domain = true
 
 [[d1_databases]]
 binding = "db"			#d1数据库绑定名默认不可修改
 database_name = "cloud-mail"
-database_id = "REDACTED-D1-DATABASE-ID"
+database_id = "${D1_DATABASE_ID}"
 
 [[kv_namespaces]]
 binding = "kv"			#kv绑定名默认不可修改
-id = "REDACTED-KV-NAMESPACE-ID"
+id = "${KV_NAMESPACE_ID}"
 
 [[r2_buckets]]
 binding = "r2"			#r2对象存储绑定名默认不可修改
-bucket_name = "cloud-mail"
+bucket_name = "${R2_BUCKET_NAME}"
 
 #[[send_email]]
 #name = "email"			#CF发件, 配置后优先使用

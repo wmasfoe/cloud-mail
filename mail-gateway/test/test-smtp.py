@@ -2,7 +2,7 @@
 """SMTP 网关测试(M2):连 465 SMTPS,验证 AUTH → 发信流程
 
 用法:python3 test-smtp.py [host] [email] [password]
-默认连本机 10465(mock 环境);传参连真实环境 imap.example.com
+默认连本机 10465(mock 环境);传参连真实环境(如 imap.example.com)
 """
 import smtplib
 import ssl

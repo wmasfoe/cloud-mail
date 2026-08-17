@@ -39,13 +39,6 @@
 - [在线演示](https://skymail.ink)<br>
 - [部署文档](https://doc.skymail.ink)<br>
 
-| ![](/doc/demo/demo1.png) | ![](/doc/demo/demo2.png) |
-|-----------------------|-----------------------|
-| ![](/doc/demo/demo3.png) | ![](/doc/demo/demo4.png) |
-
-
-
-
 ## 功能介绍
 
 - **💰 低成本使用**： 可部署到 Cloudflare Workers 降低服务器成本

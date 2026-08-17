@@ -23,7 +23,7 @@ class SmtpSession {
 		this.dataChunks = [];
 		this.dataSize = 0;
 		this.buffer = '';
-		this._send('220 imap.example.com cloud-mail gateway ESMTP ready');
+		this._send('220 mail.example.com cloud-mail gateway ESMTP ready');
 	}
 
 	_send(line) {
@@ -54,7 +54,7 @@ class SmtpSession {
 		switch (command) {
 			case 'EHLO':
 			case 'HELO': {
-				this._send('250-imap.example.com');
+				this._send('250-mail.example.com');
 				this._send('250-SIZE ' + MAX_MESSAGE_SIZE);
 				this._send('250-8BITMIME');
 				if (this.starttls && !this.tlsMode) {

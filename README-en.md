@@ -37,10 +37,6 @@ With only one domain, you can create multiple different email addresses, similar
 - [Deployment Guide](https://doc.skymail.ink/en/)<br>
 
 
-| ![](/doc/demo/demo1.png) | ![](/doc/demo/demo2.png) |
-|--------------------------|--------------------------|
-| ![](/doc/demo/demo3.png) | ![](/doc/demo/demo4.png) |
-
 ## Features
 
 - **💰 Low-Cost Usage**: No server required — deploy to Cloudflare Workers to reduce costs.

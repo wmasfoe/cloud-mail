@@ -12,11 +12,11 @@ ip = "0.0.0.0"
 [[d1_databases]]
 binding = "db"
 database_name = "email"
-database_id = "REDACTED-D1-DATABASE-ID"
+database_id = "replace-with-your-d1-database-id"
 
 [[kv_namespaces]]
 binding = "kv"
-id = "REDACTED-KV-NAMESPACE-ID"
+id = "replace-with-your-kv-namespace-id"
 
 #[[r2_buckets]]
 #binding = "r2"
@@ -41,4 +41,4 @@ analysis_cache = false
 orm_log = false
 domain = ["example.com", "example2.com", "example3.com", "example4.com"]
 admin = "admin@example.com"
-jwt_secret = "REDACTED-JWT-SECRET"
+jwt_secret = "bc0a0e3f-a12d-449a-bb25-5f144c267782"

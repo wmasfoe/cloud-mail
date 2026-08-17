@@ -42,7 +42,7 @@ def main():
     check('登录成功', True)
 
     # 模拟 Outlook 发送的副本(MIME 带 Message-ID)
-    msg_id = f'<outlook-sim-{int(time.time())}@example.app>'
+    msg_id = f'<outlook-sim-{int(time.time())}@example.com>'
     mime = (
         'From: user <user@example.com>\r\n'
         'To: friend@example.com\r\n'
